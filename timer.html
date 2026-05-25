@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タイマー</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      width: 360px;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      color: #888;
+      margin-bottom: 48px;
+      text-transform: uppercase;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 40px;
+    }
+
+    .tab {
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #888;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+    }
+
+    .display {
+      font-size: 5rem;
+      font-weight: 200;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+
+    .display.running {
+      color: #4ade80;
+    }
+
+    .display.finished {
+      color: #f87171;
+      animation: pulse 0.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 1; }
+      to { opacity: 0.4; }
+    }
+
+    .milliseconds {
+      font-size: 1.8rem;
+      color: #555;
+      margin-bottom: 40px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* タイマー設定 */
+    .timer-inputs {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 40px;
+    }
+
+    .timer-inputs input {
+      width: 64px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1.4rem;
+      text-align: center;
+      padding: 8px 4px;
+      outline: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-inputs input:focus {
+      border-color: #555;
+    }
+
+    .timer-inputs span {
+      color: #555;
+      font-size: 1.4rem;
+    }
+
+    .progress-ring {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 32px;
+    }
+
+    .progress-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring .track {
+      fill: none;
+      stroke: #1f1f1f;
+      stroke-width: 6;
+    }
+
+    .progress-ring .bar {
+      fill: none;
+      stroke: #4ade80;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.1s linear, stroke 0.3s;
+    }
+
+    .progress-ring .bar.finished {
+      stroke: #f87171;
+    }
+
+    .progress-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .progress-center .time {
+      font-size: 2.6rem;
+      font-weight: 200;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s;
+    }
+
+    .progress-center .time.finished {
+      color: #f87171;
+    }
+
+    .progress-center .label {
+      font-size: 0.75rem;
+      color: #555;
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+    }
+
+    .laps {
+      max-height: 160px;
+      overflow-y: auto;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+
+    .laps::-webkit-scrollbar { width: 4px; }
+    .laps::-webkit-scrollbar-track { background: transparent; }
+    .laps::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    .lap-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a1a;
+      font-size: 0.9rem;
+      color: #888;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lap-item.best { color: #4ade80; }
+    .lap-item.worst { color: #f87171; }
+    .lap-item .lap-num { color: #444; }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .btn:active { transform: scale(0.94); }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+      font-size: 1.5rem;
+    }
+
+    .btn-primary.running {
+      background: #4ade80;
+    }
+
+    .btn-secondary {
+      background: #1f1f1f;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>タイマー</h1>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchMode('stopwatch')">ストップウォッチ</button>
+    <button class="tab" onclick="switchMode('timer')">タイマー</button>
+  </div>
+
+  <!-- ストップウォッチ -->
+  <div id="stopwatch-view">
+    <div class="display" id="sw-display">00:00</div>
+    <div class="milliseconds" id="sw-ms">.00</div>
+    <div class="laps" id="sw-laps"></div>
+    <div class="controls">
+      <button class="btn btn-secondary" id="sw-lap-btn" onclick="lap()" disabled>ラップ</button>
+      <button class="btn btn-primary" id="sw-start-btn" onclick="swToggle()">▶</button>
+      <button class="btn btn-secondary" id="sw-reset-btn" onclick="swReset()" disabled>リセット</button>
+    </div>
+  </div>
+
+  <!-- カウントダウンタイマー -->
+  <div id="timer-view" class="hidden">
+    <div class="timer-inputs" id="timer-inputs">
+      <input type="number" id="t-hours" min="0" max="99" value="0" placeholder="00">
+      <span>h</span>
+      <input type="number" id="t-minutes" min="0" max="59" value="5" placeholder="00">
+      <span>m</span>
+      <input type="number" id="t-seconds" min="0" max="59" value="0" placeholder="00">
+      <span>s</span>
+    </div>
+
+    <div class="progress-ring hidden" id="timer-ring">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle class="track" cx="100" cy="100" r="88"/>
+        <circle class="bar" id="ring-bar" cx="100" cy="100" r="88"
+          stroke-dasharray="553" stroke-dashoffset="0"/>
+      </svg>
+      <div class="progress-center">
+        <div class="time" id="timer-ring-time">05:00</div>
+        <div class="label">残り時間</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-secondary" id="t-reset-btn" onclick="tReset()" disabled>リセット</button>
+      <button class="btn btn-primary" id="t-start-btn" onclick="tToggle()">▶</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Stopwatch ----
+let swInterval = null;
+let swElapsed = 0;
+let swStart = 0;
+let swRunning = false;
+let lapTimes = [];
+
+function swToggle() {
+  if (swRunning) {
+    swRunning = false;
+    swElapsed += Date.now() - swStart;
+    clearInterval(swInterval);
+    document.getElementById('sw-start-btn').textContent = '▶';
+    document.getElementById('sw-start-btn').classList.remove('running');
+    document.getElementById('sw-lap-btn').textContent = 'ラップ';
+  } else {
+    swRunning = true;
+    swStart = Date.now();
+    swInterval = setInterval(swTick, 16);
+    document.getElementById('sw-start-btn').textContent = '⏸';
+    document.getElementById('sw-start-btn').classList.add('running');
+    document.getElementById('sw-lap-btn').textContent = 'ラップ';
+    document.getElementById('sw-lap-btn').disabled = false;
+    document.getElementById('sw-reset-btn').disabled = false;
+    document.getElementById('sw-display').classList.add('running');
+  }
+}
+
+function swTick() {
+  const total = swElapsed + (Date.now() - swStart);
+  renderSw(total);
+}
+
+function swReset() {
+  swRunning = false;
+  clearInterval(swInterval);
+  swElapsed = 0;
+  lapTimes = [];
+  renderSw(0);
+  document.getElementById('sw-display').classList.remove('running');
+  document.getElementById('sw-start-btn').textContent = '▶';
+  document.getElementById('sw-start-btn').classList.remove('running');
+  document.getElementById('sw-lap-btn').textContent = 'ラップ';
+  document.getElementById('sw-lap-btn').disabled = true;
+  document.getElementById('sw-reset-btn').disabled = true;
+  document.getElementById('sw-laps').innerHTML = '';
+}
+
+function lap() {
+  const total = swElapsed + (Date.now() - swStart);
+  const prev = lapTimes.length ? lapTimes[lapTimes.length - 1].total : 0;
+  lapTimes.push({ total, split: total - prev });
+  renderLaps();
+}
+
+function renderSw(ms) {
+  const mins = Math.floor(ms / 60000);
+  const secs = Math.floor((ms % 60000) / 1000);
+  const centis = Math.floor((ms % 1000) / 10);
+  document.getElementById('sw-display').textContent =
+    String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  document.getElementById('sw-ms').textContent = '.' + String(centis).padStart(2, '0');
+}
+
+function renderLaps() {
+  const splits = lapTimes.map(l => l.split);
+  const best = Math.min(...splits);
+  const worst = splits.length > 1 ? Math.max(...splits) : -1;
+  const container = document.getElementById('sw-laps');
+  container.innerHTML = [...lapTimes].reverse().map((l, ri) => {
+    const i = lapTimes.length - ri;
+    let cls = '';
+    if (splits.length > 1) {
+      if (l.split === best) cls = 'best';
+      else if (l.split === worst) cls = 'worst';
+    }
+    return `<div class="lap-item ${cls}">
+      <span class="lap-num">ラップ ${i}</span>
+      <span>${fmtMs(l.split)}</span>
+      <span>${fmtMs(l.total)}</span>
+    </div>`;
+  }).join('');
+}
+
+function fmtMs(ms) {
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const c = Math.floor((ms % 1000) / 10);
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + String(c).padStart(2,'0');
+}
+
+// ---- Timer ----
+let tInterval = null;
+let tRemaining = 0;
+let tTotal = 0;
+let tRunning = false;
+let tStart = 0;
+const CIRCUMFERENCE = 2 * Math.PI * 88;
+
+function tGetInput() {
+  const h = parseInt(document.getElementById('t-hours').value) || 0;
+  const m = parseInt(document.getElementById('t-minutes').value) || 0;
+  const s = parseInt(document.getElementById('t-seconds').value) || 0;
+  return (h * 3600 + m * 60 + s) * 1000;
+}
+
+function tToggle() {
+  if (tRunning) {
+    tRunning = false;
+    tRemaining -= Date.now() - tStart;
+    clearInterval(tInterval);
+    document.getElementById('t-start-btn').textContent = '▶';
+    document.getElementById('t-start-btn').classList.remove('running');
+  } else {
+    if (!tRemaining) {
+      tTotal = tGetInput();
+      if (!tTotal) return;
+      tRemaining = tTotal;
+    }
+    tRunning = true;
+    tStart = Date.now();
+    tInterval = setInterval(tTick, 50);
+    document.getElementById('t-start-btn').textContent = '⏸';
+    document.getElementById('t-start-btn').classList.add('running');
+    document.getElementById('t-reset-btn').disabled = false;
+    document.getElementById('timer-inputs').classList.add('hidden');
+    document.getElementById('timer-ring').classList.remove('hidden');
+  }
+}
+
+function tTick() {
+  const left = Math.max(0, tRemaining - (Date.now() - tStart));
+  renderTimer(left);
+  if (left <= 0) {
+    clearInterval(tInterval);
+    tRunning = false;
+    document.getElementById('t-start-btn').textContent = '▶';
+    document.getElementById('t-start-btn').classList.remove('running');
+    document.getElementById('ring-bar').classList.add('finished');
+    document.getElementById('timer-ring-time').classList.add('finished');
+    if ('vibrate' in navigator) navigator.vibrate([300, 100, 300]);
+  }
+}
+
+function renderTimer(ms) {
+  const secs = Math.ceil(ms / 1000);
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  const txt = h > 0
+    ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('timer-ring-time').textContent = txt;
+  const ratio = tTotal > 0 ? ms / tTotal : 1;
+  document.getElementById('ring-bar').style.strokeDashoffset =
+    CIRCUMFERENCE * (1 - ratio);
+}
+
+function tReset() {
+  tRunning = false;
+  clearInterval(tInterval);
+  tRemaining = 0;
+  tTotal = 0;
+  document.getElementById('t-start-btn').textContent = '▶';
+  document.getElementById('t-start-btn').classList.remove('running');
+  document.getElementById('t-reset-btn').disabled = true;
+  document.getElementById('timer-inputs').classList.remove('hidden');
+  document.getElementById('timer-ring').classList.add('hidden');
+  document.getElementById('ring-bar').classList.remove('finished');
+  document.getElementById('timer-ring-time').classList.remove('finished');
+  document.getElementById('ring-bar').style.strokeDashoffset = 0;
+}
+
+// ---- Mode switch ----
+function switchMode(mode) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0) === (mode === 'stopwatch'));
+  });
+  document.getElementById('stopwatch-view').classList.toggle('hidden', mode !== 'stopwatch');
+  document.getElementById('timer-view').classList.toggle('hidden', mode !== 'timer');
+}
+
+// input clamp
+['t-hours','t-minutes','t-seconds'].forEach(id => {
+  document.getElementById(id).addEventListener('change', function() {
+    const max = id === 't-hours' ? 99 : 59;
+    this.value = Math.max(0, Math.min(max, parseInt(this.value) || 0));
+  });
+});
+</script>
+</body>
+</html>
