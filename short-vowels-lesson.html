@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Short Vowels — English Pronunciation Lesson</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1b2a;overflow:hidden;height:100vh;width:100vw}
+#app{width:100vw;height:100vh;display:flex;flex-direction:column}
+#progress{position:fixed;top:0;left:0;height:5px;background:linear-gradient(90deg,#4fc3f7,#81d4fa);z-index:99;transition:width .3s ease;border-radius:0 3px 3px 0}
+#slides{flex:1;position:relative;overflow:hidden;min-height:0}
+.slide{position:absolute;inset:0;display:none;flex-direction:column}
+.slide.active{display:flex}
+
+/* NAV */
+#nav{height:48px;background:#0a141f;display:flex;align-items:center;justify-content:center;gap:14px;flex-shrink:0;border-top:1px solid rgba(255,255,255,.08)}
+#nav button{background:rgba(255,255,255,.1);border:none;color:#fff;font-size:13px;padding:6px 20px;border-radius:20px;cursor:pointer;transition:background .2s;font-family:inherit;letter-spacing:.3px}
+#nav button:hover{background:rgba(255,255,255,.22)}
+#nav button:disabled{opacity:.25;cursor:default}
+#counter{color:rgba(255,255,255,.45);font-size:12px;min-width:60px;text-align:center}
+
+/* SHARED */
+.s-head{padding:12px 30px;font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px;flex-shrink:0;letter-spacing:.2px}
+.badge{background:rgba(255,255,255,.16);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:600}
+.s-body{flex:1;display:flex;padding:0 26px 12px;gap:22px;min-height:0;overflow:hidden}
+.card{border-radius:14px;padding:14px 18px}
+.label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;opacity:.5;margin-bottom:6px}
+
+/* ── TITLE ── */
+.title-slide{background:linear-gradient(140deg,#0d1b2a 0%,#0f2a44 55%,#091e30 100%);align-items:center;justify-content:center;text-align:center}
+.title-slide h1{font-size:clamp(46px,8.5vw,96px);font-weight:900;color:#fff;line-height:1;letter-spacing:-2px}
+.title-slide h1 em{font-style:normal;background:linear-gradient(90deg,#4fc3f7,#b3e5fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.title-sub{font-size:clamp(14px,1.9vw,21px);color:rgba(255,255,255,.6);margin-top:12px}
+.goal-box{margin-top:24px;background:rgba(79,195,247,.09);border:1.5px solid rgba(79,195,247,.28);border-radius:16px;padding:16px 28px;display:inline-block;text-align:left}
+.goal-box p{color:#b3e5fc;font-size:clamp(13px,1.5vw,17px);line-height:1.75}
+.sym-strip{display:flex;gap:10px;margin-top:26px;justify-content:center;flex-wrap:wrap}
+.sym-strip .sc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 15px;font-size:clamp(16px,2.6vw,28px);color:#81d4fa;font-weight:800}
+
+/* ── OVERVIEW ── */
+.overview-slide{background:#f1f7ff;flex-direction:column}
+.ov-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:11px;width:100%;max-width:960px}
+.ov-card{border-radius:13px;padding:13px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.09);transition:transform .18s}
+.ov-card:hover{transform:translateY(-3px)}
+.ov-sym{font-size:clamp(24px,3.8vw,48px);font-weight:900;line-height:1}
+.ov-disp{font-size:clamp(9px,1vw,13px);font-weight:700;opacity:.7}
+.ov-name{font-size:clamp(7px,.85vw,10px);opacity:.5;line-height:1.3;text-align:center}
+.ov-word{font-size:clamp(9px,1vw,12px);font-style:italic;font-weight:600}
+
+/* ── EXPLAIN ── */
+.explain-slide{background:#fff;flex-direction:column}
+.ex-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;width:240px;flex-shrink:0;padding:4px 0}
+.big-sym{font-size:clamp(68px,11vw,128px);font-weight:900;line-height:1;text-align:center}
+.mouth-wrap{background:#f9f9f9;border-radius:13px;padding:7px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.lip-lbl{font-size:10px;color:#888;text-align:center;line-height:1.6}
+.ex-right{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding:4px 0;min-height:0;gap:7px}
+.desc-card{border-radius:12px;padding:11px 15px}
+.desc-card .label{margin-bottom:5px}
+.desc-card p{font-size:clamp(12px,1.4vw,15px);line-height:1.55;color:#1a2a3a;font-weight:500}
+.howto{list-style:none;margin-top:5px;display:flex;flex-direction:column;gap:3px}
+.howto li{font-size:clamp(11px,1.25vw,13px);padding-left:16px;position:relative;color:#2a3a4a;line-height:1.4}
+.howto li::before{content:'→';position:absolute;left:0;opacity:.4;font-size:11px}
+.tip-box{border-radius:12px;padding:11px 15px;display:flex;gap:9px;align-items:flex-start;background:#fffbec;border-left:4px solid #f5a623}
+.tip-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.tip-text{font-size:clamp(11px,1.3vw,14px);line-height:1.5;font-weight:500;color:#3a2a00}
+.ex-words{display:flex;gap:7px;flex-wrap:wrap}
+.ex-chip{border-radius:10px;padding:8px 11px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:66px;box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.ex-chip .ew{font-size:clamp(13px,1.8vw,19px);font-weight:700}
+.ex-chip .ei{font-size:clamp(9px,.95vw,11px);opacity:.55}
+.ctx{border-radius:9px;padding:8px 13px;font-size:clamp(10px,1.1vw,12px);color:#555}
+
+/* ── DRILL ── */
+.drill-slide{background:#f0fff4;flex-direction:column}
+.dr-left{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:200px;flex-shrink:0}
+.dr-sym{font-size:clamp(58px,9.5vw,108px);font-weight:900;line-height:1;text-align:center}
+.dr-right{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:2px 0;min-height:0}
+.repeat-instr{border-radius:12px;padding:11px 16px;margin-bottom:10px}
+.repeat-instr .ri-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.repeat-instr .ri-flow{display:flex;align-items:center;gap:10px;font-size:clamp(13px,1.6vw,17px);font-weight:600;flex-wrap:wrap}
+.ri-step{border-radius:8px;padding:5px 12px;white-space:nowrap}
+.ri-arrow{font-size:18px;opacity:.35}
+.word-rows{display:flex;flex-direction:column;gap:8px}
+.wr{display:flex;align-items:center;gap:12px;background:#fff;border-radius:11px;padding:10px 16px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.wr-n{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.wr-w{font-size:clamp(16px,2.5vw,28px);font-weight:700;flex:1}
+.wr-p{font-size:clamp(10px,1.2vw,14px);opacity:.45}
+.mp-box{border-radius:12px;padding:12px 16px}
+.mp-box .label{margin-bottom:8px}
+.mp-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.mp-item{text-align:center}
+.mp-sym{font-size:clamp(11px,1.2vw,14px);font-weight:700;opacity:.6;margin-bottom:2px}
+.mp-word{font-size:clamp(17px,2.7vw,30px);font-weight:800}
+.mp-vs{font-size:16px;opacity:.25;font-weight:900}
+.mp-note{font-size:clamp(11px,1.2vw,14px);color:#555;align-self:center;max-width:220px;line-height:1.5}
+
+/* ── STUDENT DRILL ── */
+.stdrill-slide{background:#fffef0;flex-direction:column}
+.sd-instr{background:#fff;border-radius:13px;padding:13px 18px;border-left:5px solid #c09030;flex-shrink:0}
+.sd-instr h2{font-size:clamp(14px,1.7vw,19px);color:#5f4500;margin-bottom:7px}
+.flow-steps{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.fs{display:flex;align-items:flex-start;gap:7px;font-size:clamp(11px,1.25vw,14px);line-height:1.45;flex:1;min-width:160px}
+.fs-n{background:#c09030;color:#fff;border-radius:50%;width:21px;height:21px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.word-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:10px}
+.wg{background:#fff;border-radius:12px;padding:13px 7px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.wg-w{font-size:clamp(18px,2.8vw,34px);font-weight:800}
+.wg-sym{font-size:clamp(10px,1.1vw,13px);font-weight:600;margin-top:3px}
+
+/* ── FEEDBACK ── */
+.fb-slide{background:#f5f0ff;flex-direction:column}
+.fb-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.fb-card{background:#fff;border-radius:13px;padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.fb-card h3{font-size:clamp(12px,1.4vw,15px);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.fb-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.fb-list li{font-size:clamp(11px,1.25vw,14px);line-height:1.45;padding-left:16px;position:relative;color:#2a2a3a}
+.fb-list li::before{content:'•';position:absolute;left:0;font-weight:700}
+.fb-pair{display:inline-block;background:#f0f0ff;border-radius:6px;padding:2px 8px;font-weight:700;font-size:.95em;margin:0 2px}
+
+/* ── QUIZ Q ── */
+.quizq-slide{background:#fffbf2;flex-direction:column}
+.q-grid{display:flex;flex-direction:column;gap:12px;width:100%}
+.q-box{background:#fff;border-radius:13px;padding:15px 20px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.q-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;opacity:.4;margin-bottom:5px}
+.q-text{font-size:clamp(13px,1.6vw,18px);font-weight:600;margin-bottom:11px;line-height:1.4;color:#1a1a2e}
+.q-opts{display:flex;gap:8px;flex-wrap:wrap}
+.q-opt{border-radius:8px;padding:7px 16px;font-size:clamp(12px,1.5vw,16px);font-weight:700;border:2px solid #ddd;background:#f7f7f7;color:#333;cursor:default}
+.think-banner{background:rgba(255,179,0,.12);border:1.5px solid rgba(255,179,0,.35);border-radius:12px;padding:12px 20px;text-align:center;font-size:clamp(13px,1.5vw,17px);color:#7a5500;font-weight:600;flex-shrink:0}
+
+/* ── QUIZ A ── */
+.quiza-slide{background:#f0fff4;flex-direction:column}
+.qa-box{background:#fff;border-radius:13px;padding:15px 20px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.qa-opt{border-radius:8px;padding:7px 16px;font-size:clamp(12px,1.5vw,16px);font-weight:700;border:2px solid #ddd;background:#f7f7f7;color:#999;cursor:default}
+.qa-opt.correct{background:#e8f5e9;border-color:#2e7d52;color:#1a5c35}
+.qa-opt.correct::after{content:' ✓';font-weight:900}
+.qa-hint{font-size:clamp(10px,1.15vw,13px);color:#2e7d52;margin-top:7px;font-weight:500;line-height:1.5}
+
+/* ── SUMMARY ── */
+.summary-slide{background:linear-gradient(140deg,#0d1b2a 0%,#1a3050 100%);flex-direction:column}
+.sum-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:11px;padding:10px 26px;width:100%}
+.sum-card{border-radius:13px;padding:13px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:0 3px 12px rgba(0,0,0,.22);transition:transform .18s}
+.sum-card:hover{transform:translateY(-3px)}
+.sc-sym{font-size:clamp(24px,4vw,52px);font-weight:900;color:#fff}
+.sc-disp{font-size:clamp(9px,1vw,12px);color:rgba(255,255,255,.5);font-weight:600}
+.sc-ws{font-size:clamp(8px,.9vw,11px);color:rgba(255,255,255,.38);font-style:italic;line-height:1.6}
+.sum-foot{text-align:center;color:rgba(255,255,255,.6);font-size:clamp(12px,1.35vw,16px);padding:8px 26px 4px}
+.sum-foot strong{color:#81d4fa}
+.nxt-box{background:rgba(255,255,255,.06);border-radius:12px;padding:11px 22px;margin-top:10px;display:inline-block}
+.nxt-box p{color:rgba(255,255,255,.5);font-size:clamp(11px,1.2vw,14px);line-height:1.6}
+.nxt-box strong{color:#b3e5fc}
+
+/* ── FREE CONVERSATION ── */
+.freeconv-slide{background:linear-gradient(140deg,#1a1200 0%,#2d2000 55%,#1a1200 100%);flex-direction:column}
+.fc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:0 36px 16px;text-align:center}
+.fc-badge{background:rgba(255,200,50,.15);border:1.5px solid rgba(255,200,50,.4);border-radius:20px;padding:5px 16px;font-size:clamp(10px,1.1vw,13px);font-weight:700;color:#ffd740;letter-spacing:1.5px;text-transform:uppercase}
+.fc-topic{font-size:clamp(32px,6vw,72px);font-weight:900;color:#fff;line-height:1.1;max-width:800px}
+.fc-questions{display:flex;flex-direction:column;gap:9px;margin-top:4px;width:100%;max-width:600px}
+.fc-q{background:rgba(255,255,255,.07);border-radius:12px;padding:12px 20px;font-size:clamp(13px,1.6vw,18px);color:rgba(255,255,255,.85);font-weight:500;text-align:left;border-left:4px solid #ffd740}
+.fc-note{font-size:clamp(10px,1.1vw,13px);color:rgba(255,255,255,.35);margin-top:4px;line-height:1.6}
+.fc-teacher{background:rgba(255,200,50,.08);border:1px solid rgba(255,200,50,.2);border-radius:12px;padding:10px 20px;font-size:clamp(10px,1.15vw,13px);color:rgba(255,200,50,.7);width:100%;max-width:600px;text-align:left;line-height:1.7}
+.fc-teacher strong{color:#ffd740}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="progress"></div>
+  <div id="slides"></div>
+  <nav id="nav">
+    <button id="btn-prev" onclick="move(-1)">◀ Prev</button>
+    <span id="counter"></span>
+    <button id="btn-next" onclick="move(1)">Next ▶</button>
+    <button onclick="toggleFS()">⛶ Fullscreen</button>
+  </nav>
+</div>
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+const PH = [
+  {
+    sym:'ɪ', disp:'/ɪ/', color:'#3D7CC9', light:'#EBF3FF', dark:'#1a4a80',
+    name:'Short High Front Vowel',
+    desc:'Lips slightly spread, mouth barely open, tongue high and forward.',
+    howto:['Open your mouth just a little — less than one finger-width','Spread your lips sideways like a gentle smile','Push your tongue up toward the front of the roof of your mouth'],
+    tip:'Think of it as a "relaxed i" — similar to Japanese い, but let your jaw drop just a little more.',
+    approx:'Closest to Japanese い — slightly more open',
+    context:'Common spellings: <b>i</b> (sit, bit), <b>y</b> (city, pretty), <b>ui</b> (build)',
+    ex:[{w:'bit',p:'/bɪt/'},{w:'sit',p:'/sɪt/'},{w:'fish',p:'/fɪʃ/'},{w:'city',p:'/ˈsɪti/'},{w:'build',p:'/bɪld/'}],
+    pair:{s:'/iː/',w1:'bit',w2:'beat',lbl:'SHORT vs. LONG'},
+    mouth:{lipOpenness:.28,lipWidth:.72,tongueHeight:.75,tongueBackness:.25,rounded:false},
+    lipd:'Lips: SPREAD (gentle smile)',tonged:'Tongue: HIGH + FRONT',
+  },
+  {
+    sym:'e', disp:'/e/', color:'#7B5EA7', light:'#F3EEFF', dark:'#4a2880',
+    name:'Short Mid Front Vowel',
+    desc:'Lips spread open, jaw moderately dropped, tongue in the mid-front position.',
+    howto:['Open your mouth about one finger-width','Keep lips spread sideways — no rounding','Tongue stays front, at middle height'],
+    tip:'Very close to Japanese え! Just open your jaw a tiny bit wider than usual.',
+    approx:'Almost identical to Japanese え — slightly wider jaw',
+    context:'Common spellings: <b>e</b> (bed), <b>ea</b> (head, bread), <b>ai</b> (said)',
+    ex:[{w:'bed',p:'/bed/'},{w:'red',p:'/red/'},{w:'set',p:'/set/'},{w:'head',p:'/hed/'},{w:'said',p:'/sed/'}],
+    pair:{s:'/æ/',w1:'bed',w2:'bad',lbl:'MID vs. LOW jaw'},
+    mouth:{lipOpenness:.40,lipWidth:.70,tongueHeight:.55,tongueBackness:.25,rounded:false},
+    lipd:'Lips: SPREAD (medium open)',tonged:'Tongue: MID + FRONT',
+  },
+  {
+    sym:'æ', disp:'/æ/', color:'#D45F45', light:'#FFF0EC', dark:'#803020',
+    name:'Short Low Front Vowel',
+    desc:'Lips very wide and spread, jaw drops significantly — between "a" and "e".',
+    howto:['Drop your jaw wide — two or more finger-widths','Stretch your lips as far sideways as possible','Feel the tension at the corners of your mouth'],
+    tip:'⚠️ No equivalent in Japanese! Your jaw must drop much lower than feels natural. This is the trickiest short vowel.',
+    approx:'No direct equivalent — between ア and エ at the same time',
+    context:'Common spellings: <b>a</b> before most consonants (cat, map, bad)',
+    ex:[{w:'cat',p:'/kæt/'},{w:'bad',p:'/bæd/'},{w:'map',p:'/mæp/'},{w:'laugh',p:'/læf/'},{w:'trap',p:'/træp/'}],
+    pair:{s:'/ʌ/',w1:'cat',w2:'cut',lbl:'FRONT vs. CENTRAL'},
+    mouth:{lipOpenness:.62,lipWidth:.82,tongueHeight:.25,tongueBackness:.20,rounded:false},
+    lipd:'Lips: VERY WIDE + SPREAD',tonged:'Tongue: LOW + FRONT',
+  },
+  {
+    sym:'ʌ', disp:'/ʌ/', color:'#B87D2E', light:'#FFF8EC', dark:'#7a5010',
+    name:'Short Mid Central Vowel',
+    desc:'Lips completely neutral, jaw moderately open, tongue relaxed in the centre — a pure "uh".',
+    howto:['Let your jaw drop naturally — no forcing at all','Keep lips fully neutral: no spreading, no rounding','Relax your tongue in the middle of your mouth'],
+    tip:'The sound you make when you say "huh?" — complete relaxation. No tension anywhere.',
+    approx:'Like a very relaxed ア — tongue stays central, not back',
+    context:'Common spellings: <b>u</b> (cup, run), <b>o</b> (love, some, done), <b>ou</b> (young, enough)',
+    ex:[{w:'cup',p:'/kʌp/'},{w:'run',p:'/rʌn/'},{w:'love',p:'/lʌv/'},{w:'some',p:'/sʌm/'},{w:'enough',p:'/ɪˈnʌf/'}],
+    pair:{s:'/æ/',w1:'cut',w2:'cat',lbl:'CENTRAL vs. FRONT'},
+    mouth:{lipOpenness:.50,lipWidth:.55,tongueHeight:.35,tongueBackness:.45,rounded:false},
+    lipd:'Lips: NEUTRAL (completely relaxed)',tonged:'Tongue: MID + CENTRAL',
+  },
+  {
+    sym:'ɒ', disp:'/ɒ/', color:'#3A8F5C', light:'#EDFFF5', dark:'#1a5c35',
+    name:'Short Low Back Vowel',
+    desc:'Lips rounded and open wide, jaw drops down, tongue low and back — a short open "o".',
+    howto:['Open your mouth wide — like saying "ah" at the dentist','Round your lips into a loose "O" shape','Let your tongue drop low and pull slightly toward the back'],
+    tip:'This is British English\'s short "o". Round lips + wide jaw — both are essential.',
+    approx:'Like ア with rounded lips — or a short, wide version of オ',
+    context:'Common spellings: <b>o</b> (hot, dog, top), <b>a</b> in BrE (wash, want)',
+    ex:[{w:'hot',p:'/hɒt/'},{w:'dog',p:'/dɒg/'},{w:'top',p:'/tɒp/'},{w:'want',p:'/wɒnt/'},{w:'cough',p:'/kɒf/'}],
+    pair:{s:'/ɔː/',w1:'hot',w2:'hall',lbl:'SHORT vs. LONG'},
+    mouth:{lipOpenness:.72,lipWidth:.42,tongueHeight:.15,tongueBackness:.70,rounded:true},
+    lipd:'Lips: ROUNDED + WIDE OPEN',tonged:'Tongue: LOW + BACK',
+  },
+  {
+    sym:'ʊ', disp:'/ʊ/', color:'#B44FAF', light:'#FFF0FF', dark:'#7a2878',
+    name:'Short High Back Vowel',
+    desc:'Lips lightly rounded and slightly protruded, tongue high and back — a short, relaxed "oo".',
+    howto:['Lightly round your lips into a small, loose circle','Keep it gentle — don\'t fully purse your lips','Raise your tongue high and pull it toward the back'],
+    tip:'Japanese ウ has flat lips. For /ʊ/ you MUST round your lips slightly. "book" ≠ Japanese ブ!',
+    approx:'Like ウ — but with lightly rounded, slightly forward lips',
+    context:'Common spellings: <b>oo</b> (book, good), <b>u</b> (put, full), <b>ou</b> (would, could)',
+    ex:[{w:'book',p:'/bʊk/'},{w:'put',p:'/pʊt/'},{w:'good',p:'/gʊd/'},{w:'full',p:'/fʊl/'},{w:'could',p:'/kʊd/'}],
+    pair:{s:'/uː/',w1:'book',w2:'boot',lbl:'SHORT vs. LONG'},
+    mouth:{lipOpenness:.25,lipWidth:.32,tongueHeight:.70,tongueBackness:.75,rounded:true},
+    lipd:'Lips: LIGHTLY ROUNDED',tonged:'Tongue: HIGH + BACK',
+  },
+  {
+    sym:'ə', disp:'/ə/', color:'#2E9999', light:'#E8FFFE', dark:'#1a6666',
+    name:'Schwa（シュワー） — Mid Central Vowel',
+    nameShort:'Schwa（シュワー）',
+    desc:'The most common sound in English! Lips neutral, jaw barely open — a very brief, unstressed "uh".',
+    howto:['Relax everything — lips, tongue, jaw, throat','Let your mouth open just the tiniest amount','Produce this sound only in unstressed syllables (the weak, quiet beats) — never the main stressed syllable'],
+    tip:'🌟 Schwa ONLY appears in unstressed syllables. "about" = ə-BOUT. "sofa" = SO-fə. Stressing it means you\'re using the wrong vowel!',
+    approx:'Like a very brief, mumbled ア — the "uh" of hesitation',
+    context:'Spellings vary: <b>a</b> (about), <b>e</b> (the), <b>o</b> (lesson), <b>u</b> (upon)',
+    ex:[{w:'about',p:'/əˈbaʊt/'},{w:'sofa',p:'/ˈsoʊfə/'},{w:'again',p:'/əˈɡen/'},{w:'teacher',p:'/ˈtiːtʃər/'},{w:'banana',p:'/bəˈnɑːnə/'}],
+    pair:null, schwa:true,
+    mouth:{lipOpenness:.38,lipWidth:.52,tongueHeight:.45,tongueBackness:.50,rounded:false},
+    lipd:'Lips: NEUTRAL (completely relaxed)',tonged:'Tongue: MID + CENTRAL',
+  },
+];
+
+const QUIZ = [
+  {
+    q:'Which symbol represents the vowel sound in <b>"sit"</b>?',
+    opts:['/ɪ/','/iː/','/e/','/æ/'],
+    ans:0,
+    hint:'High front vowel — lips slightly spread, mouth barely open. NOT the long "ee" sound /iː/.'
+  },
+  {
+    q:'Which word contains the /æ/ sound?',
+    opts:['cup','cap','cop','coop'],
+    ans:1,
+    hint:'/æ/ needs a wide-open jaw and very spread lips. "cap" — feel how far your jaw drops!'
+  },
+  {
+    q:'The schwa /ə/ is always found in _____ syllables.',
+    opts:['stressed (the strong beat)','unstressed (the weak beat)','the first','the last'],
+    ans:1,
+    hint:'Schwa is the quiet, weak vowel. It only appears in syllables that are NOT stressed. "about" = ə-BOUT.'
+  },
+  {
+    q:'Which pair correctly shows /ʊ/ vs /uː/?',
+    opts:['bit / beat','hot / hall','book / boot','cup / cap'],
+    ans:2,
+    hint:'"book" = /ʊ/ (short, lightly rounded lips). "boot" = /uː/ (long, fully rounded). Feel the difference!'
+  },
+];
+
+const DRILL_WORDS = [
+  {w:'sit',s:'/ɪ/',c:'#3D7CC9'},{w:'red',s:'/e/',c:'#7B5EA7'},
+  {w:'map',s:'/æ/',c:'#D45F45'},{w:'cup',s:'/ʌ/',c:'#B87D2E'},
+  {w:'hot',s:'/ɒ/',c:'#3A8F5C'},{w:'good',s:'/ʊ/',c:'#B44FAF'},
+  {w:'again',s:'/ə/',c:'#2E9999'},{w:'fish',s:'/ɪ/',c:'#3D7CC9'},
+  {w:'bed',s:'/e/',c:'#7B5EA7'},{w:'cat',s:'/æ/',c:'#D45F45'},
+  {w:'love',s:'/ʌ/',c:'#B87D2E'},{w:'book',s:'/ʊ/',c:'#B44FAF'},
+];
+
+// ═══════════════════════════════════════════
+//  MOUTH SVG
+// ═══════════════════════════════════════════
+function mSVG(m,w=188,h=120){
+  const cx=w/2,fCy=h*.52,mCy=h*.60;
+  const hW=(w*.13)+(w*.38-w*.13)*m.lipWidth;
+  const op=m.lipOpenness*h*.30;
+  const uY=mCy-op/2,lY=mCy+op/2,lx=cx-hW,rx=cx+hW;
+  let uP;
+  if(m.rounded){uP=`M ${lx},${uY} Q ${cx},${uY-hW*.12} ${rx},${uY}`;}
+  else{const bH=hW*.20,dH=hW*.08;uP=`M ${lx},${uY} C ${lx+hW*.28},${uY-bH} ${cx-hW*.14},${uY-dH} ${cx},${uY-dH*.4} C ${cx+hW*.14},${uY-dH} ${rx-hW*.28},${uY-bH} ${rx},${uY}`;}
+  const lC2=hW*.26,lP=`M ${lx},${lY} Q ${cx},${lY+lC2} ${rx},${lY}`;
+  const fP=`${uP} L ${rx},${lY} Q ${cx},${lY+lC2} ${lx},${lY} Z`,LC='#C05060';
+  let th='',tg='';
+  if(m.lipOpenness>=.13){const t=op*.85;th=`<rect x="${lx+2}" y="${uY+1}" width="${hW*2-4}" height="${t}" rx="3" fill="white" opacity=".95"/><line x1="${lx+2}" y1="${uY+t*.45}" x2="${rx-2}" y2="${uY+t*.45}" stroke="#ddd" stroke-width=".5"/>`;}
+  if(m.lipOpenness>.28){const tW=Math.min(hW*1.4,hW*2-6),tY=lY-op*(.18+m.tongueHeight*.18),tRy=op*.28;tg=`<ellipse cx="${cx}" cy="${tY}" rx="${tW/2}" ry="${tRy}" fill="#E08080" opacity=".82"/>`;}
+  const nCy=mCy-h*.25;
+  const ns=`<ellipse cx="${cx-5}" cy="${nCy}" rx="3.5" ry="2.5" fill="#E0AA80" opacity=".55"/><ellipse cx="${cx+5}" cy="${nCy}" rx="3.5" ry="2.5" fill="#E0AA80" opacity=".55"/><path d="M ${cx-5},${nCy-1} Q ${cx},${nCy-6} ${cx+5},${nCy-1}" fill="none" stroke="#E0AA80" stroke-width="1.4" opacity=".35"/>`;
+  const co=m.lipOpenness>.02?`<line x1="${lx}" y1="${uY}" x2="${lx}" y2="${lY}" stroke="${LC}" stroke-width="2" stroke-linecap="round"/><line x1="${rx}" y1="${uY}" x2="${rx}" y2="${lY}" stroke="${LC}" stroke-width="2" stroke-linecap="round"/>`:'';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><ellipse cx="${cx}" cy="${fCy}" rx="${w*.44}" ry="${h*.44}" fill="#FFE4C4" stroke="#F4C89E" stroke-width="2"/>${ns}${th}${tg}<path d="${fP}" fill="${LC}" opacity="${m.lipOpenness<.05?.28:.13}"/>${co}<path d="${uP}" fill="none" stroke="${LC}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="${lP}" fill="none" stroke="${LC}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+// ═══════════════════════════════════════════
+//  BUILDERS
+// ═══════════════════════════════════════════
+
+function titleHTML(){
+  return `<div class="slide title-slide">
+  <div style="max-width:800px;padding:18px">
+    <div style="font-size:clamp(11px,1.3vw,14px);color:#4fc3f7;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:12px">English Pronunciation Lesson</div>
+    <h1><em>Short</em> Vowels（短母音）</h1>
+    <p class="title-sub">Master the 7 essential short vowel sounds of British English</p>
+    <div class="goal-box">
+      <p>🎯 <strong>Today's Goal:</strong> Understand and produce all 7 short vowel（母音）sounds correctly</p>
+      <p style="margin-top:4px">⏱ 45 minutes &nbsp;·&nbsp; 22 slides &nbsp;·&nbsp; Use ◀ ▶ or arrow keys to navigate</p>
+    </div>
+    <div class="sym-strip">${PH.map(p=>`<div class="sc">${p.disp}</div>`).join('')}</div>
+    <p style="color:rgba(255,255,255,.3);font-size:11px;margin-top:18px">Teacher demonstrates each sound — students repeat</p>
+  </div></div>`;
+}
+
+function overviewHTML(){
+  const cards=PH.map(p=>`
+    <div class="ov-card" style="background:${p.light}">
+      <div class="ov-sym" style="color:${p.color}">${p.sym}</div>
+      <div class="ov-disp" style="color:${p.color}">${p.disp}</div>
+      ${mSVG(p.mouth,84,54)}
+      <div class="ov-name" style="color:${p.dark}">${p.name.replace(' Vowel','').replace('Short ','').replace(' — Mid Central','')}</div>
+      <div class="ov-word" style="color:${p.color}">${p.ex[0].w}</div>
+    </div>`).join('');
+  return `<div class="slide" style="background:#f1f7ff;flex-direction:column">
+  <div class="s-head" style="background:#1e3a5f">Today's 7 Short Vowels <span class="badge">Overview</span></div>
+  <div class="s-body" style="flex-direction:column;align-items:center;justify-content:center;gap:12px">
+    <div class="ov-grid" style="max-width:950px;width:100%">${cards}</div>
+    <p style="color:#999;font-size:11px">Each vowel keeps its colour throughout this lesson</p>
+  </div></div>`;
+}
+
+function explainHTML(p,idx){
+  const words=p.ex.map(e=>`
+    <div class="ex-chip" style="background:${p.light};border:1.5px solid ${p.color}22">
+      <div class="ew" style="color:${p.dark}">${e.w}</div>
+      <div class="ei">${e.p}</div>
+    </div>`).join('');
+  return `<div class="slide explain-slide">
+  <div class="s-head" style="background:${p.color}">${p.disp} — ${p.name} <span class="badge">${idx} / 7</span></div>
+  <div class="s-body">
+    <div class="ex-left">
+      <div class="big-sym" style="color:${p.color}">${p.sym}</div>
+      <div class="mouth-wrap">${mSVG(p.mouth,166,106)}</div>
+      <div class="lip-lbl"><span style="color:${p.color};font-weight:700">${p.lipd}</span><br>${p.tonged}</div>
+    </div>
+    <div class="ex-right">
+      <div class="desc-card" style="background:${p.light}">
+        <div class="label">How to say it</div>
+        <p>${p.desc}</p>
+        <ul class="howto">${p.howto.map(h=>`<li>${h}</li>`).join('')}</ul>
+      </div>
+      <div class="tip-box"><div class="tip-icon">💡</div><div class="tip-text">${p.tip}${p.schwa?'<br><strong style="color:#b87800">Schwa is the MOST COMMON sound in English — it appears in almost every sentence!</strong>':''}</div></div>
+      <div>
+        <div class="label">Example words</div>
+        <div class="ex-words">${words}</div>
+      </div>
+      <div class="ctx" style="background:${p.light}"><span style="color:${p.color};font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:1px">Spellings: </span>${p.context}</div>
+    </div>
+  </div></div>`;
+}
+
+function drillHTML(p,idx){
+  const rows=p.ex.slice(0,3).map((e,i)=>`
+    <div class="wr" style="border-left:4px solid ${p.color}">
+      <div class="wr-n" style="background:${p.color}">${i+1}</div>
+      <div class="wr-w" style="color:${p.dark}">${e.w}</div>
+      <div class="wr-p">${e.p}</div>
+    </div>`).join('');
+  const pairSec = p.pair
+    ? `<div class="mp-box" style="background:${p.light};border:1.5px solid ${p.color}22">
+        <div class="label">Minimal Pair — ${p.pair.lbl}</div>
+        <div class="mp-row">
+          <div class="mp-item"><div class="mp-sym">${p.disp}</div><div class="mp-word" style="color:${p.color}">${p.pair.w1}</div></div>
+          <div class="mp-vs">VS</div>
+          <div class="mp-item"><div class="mp-sym">${p.pair.s}</div><div class="mp-word" style="color:#888">${p.pair.w2}</div></div>
+          <div class="mp-note">Teacher says both words. Students listen, then repeat each one.</div>
+        </div>
+      </div>`
+    : `<div class="mp-box" style="background:#e8fffe;border:1.5px solid #2E999930">
+        <div class="label">🌟 Schwa in context — Teacher reads aloud</div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">${['banana','teacher','about','lesson','computer'].map(w=>`<span style="font-size:clamp(14px,1.9vw,22px);font-weight:700;color:#1a6666">${w}</span>`).join('')}</div>
+        <p style="margin-top:6px;font-size:clamp(11px,1.2vw,13px);color:#2a8888">The schwa is always the quiet, unstressed syllable (the weak beat) — never the main stressed beat.</p>
+      </div>`;
+  return `<div class="slide drill-slide">
+  <div class="s-head" style="background:#1e5f3a">Repeat After Me — ${p.disp} <span class="badge" style="background:rgba(255,255,255,.14)">Drill ${idx}</span></div>
+  <div class="s-body">
+    <div class="dr-left">
+      <div class="dr-sym" style="color:${p.color}">${p.sym}</div>
+      <div style="font-size:clamp(11px,1.3vw,15px);color:#555;text-align:center">${p.disp}</div>
+      ${mSVG(p.mouth,154,98)}
+      <div style="font-size:10px;color:#777;text-align:center;line-height:1.6">${p.lipd}<br>${p.tonged}</div>
+    </div>
+    <div class="dr-right">
+      <div>
+        <div class="repeat-instr" style="background:${p.light};border:1.5px solid ${p.color}30">
+          <div class="ri-label" style="color:${p.color}">Drill flow</div>
+          <div class="ri-flow">
+            <div class="ri-step" style="background:${p.color};color:#fff">Teacher says</div>
+            <div class="ri-arrow">→</div>
+            <div class="ri-step" style="background:#e8f5e9;color:#1e5f3a">Whole class repeats</div>
+            <div class="ri-arrow">→</div>
+            <div class="ri-step" style="background:#fff3e0;color:#5f3a00">Individual student</div>
+          </div>
+        </div>
+        <div class="word-rows">${rows}</div>
+      </div>
+      ${pairSec}
+    </div>
+  </div></div>`;
+}
+
+function stdDrillHTML(){
+  const cards=DRILL_WORDS.map(pw=>`
+    <div class="wg">
+      <div class="wg-w" style="color:${pw.c}">${pw.w}</div>
+      <div class="wg-sym" style="color:${pw.c}">${pw.s}</div>
+    </div>`).join('');
+  return `<div class="slide stdrill-slide">
+  <div class="s-head" style="background:#5f4500">Student Drill — Now You Try! <span class="badge" style="background:rgba(255,255,255,.14)">Speaking Practice</span></div>
+  <div class="s-body" style="flex-direction:column;gap:11px">
+    <div class="sd-instr">
+      <h2>🎤 Teacher-led pronunciation drill</h2>
+      <div class="flow-steps">
+        <div class="fs"><span class="fs-n">1</span><span>Teacher points to a word on screen and says it clearly</span></div>
+        <div class="fs"><span class="fs-n">2</span><span>Students repeat as a class — focus on mouth shape</span></div>
+        <div class="fs"><span class="fs-n">3</span><span>Teacher calls on individual students to repeat alone</span></div>
+        <div class="fs"><span class="fs-n">4</span><span>Teacher gives feedback on lip shape, jaw, tongue position</span></div>
+      </div>
+    </div>
+    <div class="word-grid">${cards}</div>
+    <p style="color:#aaa;font-size:11px;text-align:center">Each word shows its vowel symbol — use this for feedback reference</p>
+  </div></div>`;
+}
+
+function feedbackHTML(){
+  return `<div class="slide fb-slide">
+  <div class="s-head" style="background:#3a1e5f">Feedback Guide — Common Student Errors <span class="badge" style="background:rgba(255,255,255,.14)">Teacher Reference</span></div>
+  <div class="s-body" style="flex-direction:column;gap:11px">
+    <div class="fb-grid">
+      <div class="fb-card">
+        <h3 style="color:#D45F45">⚠️ /æ/ — Most common mistakes</h3>
+        <ul class="fb-list">
+          <li>Jaw not open wide enough → remind students: "Drop your jaw lower!"</li>
+          <li>Replacing with /e/ → compare <span class="fb-pair">bad /æ/</span> vs <span class="fb-pair">bed /e/</span></li>
+          <li>Replacing with /ʌ/ → compare <span class="fb-pair">cat /æ/</span> vs <span class="fb-pair">cut /ʌ/</span></li>
+          <li>Tip: Have students put fingers under their chin — they should feel it move down</li>
+        </ul>
+      </div>
+      <div class="fb-card">
+        <h3 style="color:#B44FAF">⚠️ /ʊ/ — Most common mistakes</h3>
+        <ul class="fb-list">
+          <li>Using flat lips like Japanese ウ → remind: "Round your lips slightly"</li>
+          <li>Replacing with /uː/ → compare <span class="fb-pair">book /ʊ/</span> vs <span class="fb-pair">boot /uː/</span></li>
+          <li>Making it too long → it's a SHORT, quick sound</li>
+          <li>Tip: Ask students to make an "oo" shape, then relax it halfway</li>
+        </ul>
+      </div>
+      <div class="fb-card">
+        <h3 style="color:#2E9999">⚠️ /ə/ Schwa（シュワー）— Most common mistakes</h3>
+        <ul class="fb-list">
+          <li>Stressing the schwa — it must be quick and weak (never the main beat)</li>
+          <li>In "about": students often say "AH-bout" → should be "uh-BOUT"</li>
+          <li>In "teacher": students often say "TEACH-ER" with full vowel → "TEACH-ər"</li>
+          <li>Tip: Have students whisper the word — the schwa almost disappears</li>
+        </ul>
+      </div>
+      <div class="fb-card">
+        <h3 style="color:#3D7CC9">✅ Positive feedback phrases</h3>
+        <ul class="fb-list">
+          <li>"Good — I can see your lips are spread wide!"</li>
+          <li>"That's it! Your jaw dropped much lower that time."</li>
+          <li>"Almost — try relaxing your lips a little more for that sound."</li>
+          <li>"Listen to the difference: <em>bit</em> vs <em>beat</em> — can you hear it?"</li>
+          <li>"Your mouth shape was perfect — now try it in the word."</li>
+        </ul>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function quizQHTML(){
+  const qs=QUIZ.map((q,i)=>`
+    <div class="q-box">
+      <div class="q-num">Question ${i+1} of ${QUIZ.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-opts">${q.opts.map(o=>`<div class="q-opt">${o}</div>`).join('')}</div>
+    </div>`).join('');
+  return `<div class="slide quizq-slide">
+  <div class="s-head" style="background:#5f3a1e">Mini Quiz — Questions <span class="badge" style="background:rgba(255,255,255,.14)">Think first!</span></div>
+  <div class="s-body" style="flex-direction:column;justify-content:space-evenly;gap:10px">
+    <div class="think-banner">🤔 Read each question — think about your answer before the next slide!</div>
+    <div class="q-grid">${qs}</div>
+  </div></div>`;
+}
+
+function quizAHTML(){
+  const qs=QUIZ.map((q,i)=>`
+    <div class="qa-box">
+      <div class="q-num">Question ${i+1} — Answer</div>
+      <div class="q-text" style="margin-bottom:8px">${q.q}</div>
+      <div class="q-opts" style="margin-bottom:7px">${q.opts.map((o,ci)=>`<div class="qa-opt${ci===q.ans?' correct':''}">${o}</div>`).join('')}</div>
+      <div class="qa-hint">💡 ${q.hint}</div>
+    </div>`).join('');
+  return `<div class="slide quiza-slide">
+  <div class="s-head" style="background:#1e5f3a">Mini Quiz — Answers <span class="badge" style="background:rgba(255,255,255,.14)">How did you do?</span></div>
+  <div class="s-body" style="flex-direction:column;justify-content:space-evenly;gap:10px">
+    <div class="q-grid">${qs}</div>
+  </div></div>`;
+}
+
+function summaryHTML(){
+  return `<div class="slide summary-slide">
+  <div class="s-head" style="background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.09)">
+    <span style="color:#fff">Summary — Short Vowels（短母音）</span>
+    <span class="badge" style="background:rgba(255,255,255,.1);color:#b3e5fc">Lesson Complete 🎉</span>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <p style="color:rgba(255,255,255,.5);font-size:clamp(12px,1.35vw,16px);margin-bottom:14px">All 7 short vowels — say each one with the correct mouth shape!</p>
+    <div class="sum-grid">${PH.map(p=>`
+      <div class="sum-card" style="background:${p.color}">
+        <div class="sc-sym">${p.sym}</div>
+        <div class="sc-disp">${p.disp}</div>
+        <div class="sc-ws">${p.ex.slice(0,3).map(e=>e.w).join(' · ')}</div>
+      </div>`).join('')}</div>
+    <div class="sum-foot">
+      <p>Key rule: <strong>Short vowels are SHORT and CLEAR</strong> — never let them blur or blend! 🎤</p>
+      <div class="nxt-box">
+        <p>Next lesson: <strong>Long Vowels（長母音）</strong> — /iː/ /ɑː/ /ɔː/ /uː/ /ɜː/</p>
+        <p style="margin-top:3px">You'll see how today's short vowels relate to their longer counterparts.</p>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function freeConvHTML(){
+  return `<div class="slide freeconv-slide">
+  <div class="s-head" style="background:#2d1f00;border-top:2px solid rgba(255,200,50,.25)">
+    <span style="color:#ffd740">💬 Free Conversation</span>
+    <span class="badge" style="background:rgba(255,200,50,.18);color:#ffd740">1–3 min each</span>
+  </div>
+  <div class="fc-body">
+    <div class="fc-badge">Today's Topic</div>
+    <div class="fc-topic">Weekend Plans</div>
+    <div class="fc-questions">
+      <div class="fc-q">🗓 What did you do last weekend?</div>
+      <div class="fc-q">📍 Did you go anywhere or meet anyone?</div>
+      <div class="fc-q">✨ What are you planning to do next weekend?</div>
+    </div>
+    <p class="fc-note">The topic doesn't need to relate to today's pronunciation theme — just have a natural conversation!</p>
+    <div class="fc-teacher">
+      <strong>Teacher guide:</strong> Talk with each student individually for 1–3 minutes.<br>
+      Correct pronunciation naturally — don't interrupt the conversation flow.<br>
+      Use follow-up questions to keep the conversation going.
+    </div>
+  </div></div>`;
+}
+
+// ═══════════════════════════════════════════
+//  BUILD
+// ═══════════════════════════════════════════
+function build(){
+  const c=document.getElementById('slides');
+  let h=titleHTML()+overviewHTML();
+  PH.forEach((p,i)=>{h+=explainHTML(p,i+1);h+=drillHTML(p,i+1);});
+  h+=stdDrillHTML()+feedbackHTML()+quizQHTML()+quizAHTML()+summaryHTML()+freeConvHTML();
+  c.innerHTML=h;
+}
+
+let cur=0,SL=[];
+function updateUI(){
+  SL.forEach((s,i)=>s.classList.toggle('active',i===cur));
+  document.getElementById('counter').textContent=`${cur+1} / ${SL.length}`;
+  document.getElementById('progress').style.width=`${(cur+1)/SL.length*100}%`;
+  document.getElementById('btn-prev').disabled=cur===0;
+  document.getElementById('btn-next').disabled=cur===SL.length-1;
+}
+function move(d){const n=Math.max(0,Math.min(SL.length-1,cur+d));if(n!==cur){cur=n;updateUI();}}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')move(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')move(-1);
+});
+function toggleFS(){
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+build();
+SL=Array.from(document.querySelectorAll('.slide'));
+updateUI();
+</script>
+</body>
+</html>
