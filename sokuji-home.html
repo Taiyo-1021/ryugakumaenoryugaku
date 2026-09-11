@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --muted: #94a3b8;
+    --accent1: #2563eb;
+    --accent2: #16a34a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    min-height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 80px;
+  }
+  .title {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+    color: #f1f5f9;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;
+    line-height: 1.8;
+    margin-bottom: 40px;
+    max-width: 560px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 920px;
+  }
+  a.week-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  a.week-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent1);
+  }
+  .week-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .week-count {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .week-card.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .week-card.disabled .week-count {
+    color: #f87171;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">瞬間英作文トレーニング</div>
+    <div class="sub">週を選んでください。各週50問（1周）、問題7秒 → 解答5秒で自動的に進みます。</div>
+    <div class="grid">
+      <a class="week-card" href="week1-full50-sokuji.html">
+        <span class="week-name">Week 1</span>
+        <span class="week-count">全50問（Day1〜5）</span>
+      </a>
+      <a class="week-card" href="week2-full50-sokuji.html">
+        <span class="week-name">Week 2</span>
+        <span class="week-count">全50問（Day8〜12）</span>
+      </a>
+      <a class="week-card" href="week3-full50-sokuji.html">
+        <span class="week-name">Week 3</span>
+        <span class="week-count">全50問（Day15〜19）</span>
+      </a>
+      <a class="week-card" href="week4-full50-sokuji.html">
+        <span class="week-name">Week 4</span>
+        <span class="week-count">全50問（Day22〜26）</span>
+      </a>
+      <a class="week-card" href="week5-full50-sokuji.html">
+        <span class="week-name">Week 5</span>
+        <span class="week-count">全50問（Day29〜33）</span>
+      </a>
+      <a class="week-card" href="week6-full50-sokuji.html">
+        <span class="week-name">Week 6</span>
+        <span class="week-count">全50問（Day36〜40）</span>
+      </a>
+      <a class="week-card" href="week7-full50-sokuji.html">
+        <span class="week-name">Week 7</span>
+        <span class="week-count">全50問（Day43〜47）</span>
+      </a>
+      <a class="week-card" href="week8-full50-sokuji.html">
+        <span class="week-name">Week 8</span>
+        <span class="week-count">全50問（Day50〜54）</span>
+      </a>
+      <a class="week-card" href="week9-full50-sokuji.html">
+        <span class="week-name">Week 9</span>
+        <span class="week-count">全50問（Day57〜61）</span>
+      </a>
+      <a class="week-card" href="week10-full50-sokuji.html">
+        <span class="week-name">Week 10</span>
+        <span class="week-count">全50問（Day64〜68）</span>
+      </a>
+      <a class="week-card" href="week11-full50-sokuji.html">
+        <span class="week-name">Week 11</span>
+        <span class="week-count">全50問（Day71〜75）</span>
+      </a>
+      <a class="week-card" href="week12-full50-sokuji.html">
+        <span class="week-name">Week 12</span>
+        <span class="week-count">全50問（Day78〜82）</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week9</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week9 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  {
+    "block": 1,
+    "jp": "私の初めての海外旅行はインドでした。",
+    "en": "My first travel abroad was to India."
+  },
+  {
+    "block": 1,
+    "jp": "最初、私はすべてが新しく感じられてワクワクしていました。",
+    "en": "At first, I was excited because everything felt new."
+  },
+  {
+    "block": 1,
+    "jp": "まず、私は自分でホテルを探そうとしました。",
+    "en": "First, I tried to find my hotel by myself."
+  },
+  {
+    "block": 1,
+    "jp": "それから、駅の近くで迷ってしまいました。",
+    "en": "Then, I got lost near the station."
+  },
+  {
+    "block": 1,
+    "jp": "あなたは海外旅行中に迷ったことがありますか？",
+    "en": "Have you ever gotten lost while traveling abroad?"
+  },
+  {
+    "block": 1,
+    "jp": "私の予定は、飛行機が遅れたせいで変わりました。",
+    "en": "My plan changed because my flight got delayed."
+  },
+  {
+    "block": 1,
+    "jp": "そのあと、私は現地の料理を食べて驚きました。",
+    "en": "After that, I tried local food and was surprised."
+  },
+  {
+    "block": 1,
+    "jp": "あなたは今でもその旅行を覚えていますか？",
+    "en": "Do you still remember that trip?"
+  },
+  {
+    "block": 1,
+    "jp": "最後に、私はその経験から大切なことを学びました。",
+    "en": "Finally, I learned something important from that experience."
+  },
+  {
+    "block": 1,
+    "jp": "その旅行は、私にとって忘れられない経験でした。",
+    "en": "That trip was an unforgettable experience for me."
+  },
+  {
+    "block": 2,
+    "jp": "私は1年間、フライドポテトなしで生活しました。",
+    "en": "I lived without French fries for one year."
+  },
+  {
+    "block": 2,
+    "jp": "最初は、それは簡単だと思っていました。",
+    "en": "At first, I thought it would be easy."
+  },
+  {
+    "block": 2,
+    "jp": "そのあと、私はファストフード店の前を通って、自分の弱さに気づきました。",
+    "en": "Then, I walked past a fast-food restaurant and realized how weak I was."
+  },
+  {
+    "block": 2,
+    "jp": "友達がポテトを注文するたびに、断るのは大変でした。",
+    "en": "It was hard to say no every time my friends ordered fries."
+  },
+  {
+    "block": 2,
+    "jp": "あなたが最近挑戦したことは何ですか？",
+    "en": "What challenge have you taken recently?"
+  },
+  {
+    "block": 2,
+    "jp": "私は友達に応援されて、続けようと思いました。",
+    "en": "I was cheered on by my friend, and I wanted to keep going."
+  },
+  {
+    "block": 2,
+    "jp": "正直、私はサラダ生活にワクワクしていませんでした。",
+    "en": "Honestly, I was not excited about my salad life."
+  },
+  {
+    "block": 2,
+    "jp": "結局、私は1年間ポテトを食べずに過ごしました。",
+    "en": "In the end, I survived the year without eating French fries."
+  },
+  {
+    "block": 2,
+    "jp": "あなたは何かを1年間続けたことがありますか？",
+    "en": "Have you ever continued something for one year?"
+  },
+  {
+    "block": 2,
+    "jp": "それ以来、私は少し自分を律する力がつきました。",
+    "en": "Since then, I have become a little more disciplined."
+  },
+  {
+    "block": 3,
+    "jp": "私が忘れられない一日は、京都で迷子になった日です。",
+    "en": "One day I will never forget was the day I got lost in Kyoto."
+  },
+  {
+    "block": 3,
+    "jp": "まず、私は地図を持ってお寺の近くに立っていました。",
+    "en": "First, I was standing near a temple with a map."
+  },
+  {
+    "block": 3,
+    "jp": "そのあと、観光客のグループが私に近づいてきました。",
+    "en": "Later, a group of tourists came up to me."
+  },
+  {
+    "block": 3,
+    "jp": "私は違うと言おうとしましたが、小さな旗を渡されました。",
+    "en": "I was about to say no, but I was handed a small flag."
+  },
+  {
+    "block": 3,
+    "jp": "あなたは誰かに間違えられたことがありますか？",
+    "en": "Have you ever been mistaken for someone else?"
+  },
+  {
+    "block": 3,
+    "jp": "私は歴史についていくつか質問されました。",
+    "en": "I was asked some questions about history."
+  },
+  {
+    "block": 3,
+    "jp": "なぜか、私はすべてを知っている人のように答えました。",
+    "en": "For some reason, I answered like I knew everything."
+  },
+  {
+    "block": 3,
+    "jp": "最後に、本物のガイドが現れました。",
+    "en": "Finally, the real guide appeared."
+  },
+  {
+    "block": 3,
+    "jp": "あなたは今でもその日のことを覚えていますか？",
+    "en": "Do you still remember that day?"
+  },
+  {
+    "block": 3,
+    "jp": "おじいちゃんになる頃には、私はこの話を何度もしているでしょう。",
+    "en": "By the time I become a grandpa, I will have told this story many times."
+  },
+  {
+    "block": 4,
+    "jp": "以前の私は、自分は変わるのが苦手だと思っていました。",
+    "en": "Before, I used to think I was not good at changing."
+  },
+  {
+    "block": 4,
+    "jp": "私はよく大きな計画を立てて、すぐに忘れていました。",
+    "en": "I would often make big plans and forget about them quickly."
+  },
+  {
+    "block": 4,
+    "jp": "ある日、友達から小さな習慣についてアドバイスをもらいました。",
+    "en": "One day, I was given advice about small habits by my friend."
+  },
+  {
+    "block": 4,
+    "jp": "その言葉は、正しかったので少し腹が立ちました。",
+    "en": "That sentence was annoying because it was true."
+  },
+  {
+    "block": 4,
+    "jp": "あなたは昔、自分を変えるのが苦手でしたか？",
+    "en": "Did you use to be bad at changing yourself?"
+  },
+  {
+    "block": 4,
+    "jp": "そのあと、私は10分早く起きることにしました。",
+    "en": "After that, I decided to wake up ten minutes earlier."
+  },
+  {
+    "block": 4,
+    "jp": "最初は、それは小さすぎて意味がないように感じました。",
+    "en": "At first, it felt too small to matter."
+  },
+  {
+    "block": 4,
+    "jp": "今では、成長はたいてい静かなものだと分かっています。",
+    "en": "Now, I understand that growth is usually quiet."
+  },
+  {
+    "block": 4,
+    "jp": "あなたはこれまでに、小さな習慣で変わったことがありますか？",
+    "en": "Have you ever changed because of a small habit?"
+  },
+  {
+    "block": 4,
+    "jp": "私は前より少し忍耐強くなりました。",
+    "en": "I have become a little more patient than before."
+  },
+  {
+    "block": 5,
+    "jp": "私は去年、地域の茶道イベントに参加しました。",
+    "en": "I joined a local tea ceremony event last year."
+  },
+  {
+    "block": 5,
+    "jp": "私は友達に招待されました。",
+    "en": "I was invited by my friend."
+  },
+  {
+    "block": 5,
+    "jp": "まず、私たちは静かな部屋に入りました。",
+    "en": "First, we entered a quiet room."
+  },
+  {
+    "block": 5,
+    "jp": "その部屋は花と掛け軸で飾られていました。",
+    "en": "The room was decorated with flowers and scrolls."
+  },
+  {
+    "block": 5,
+    "jp": "イベントの間、伝統的なお菓子が出されました。",
+    "en": "During the event, traditional sweets were served."
+  },
+  {
+    "block": 5,
+    "jp": "そのあと、私はお茶を点ててみるように言われました。",
+    "en": "After that, I was asked to try making tea."
+  },
+  {
+    "block": 5,
+    "jp": "私は落ち着いて見せようとしましたが、茶碗の向きを間違えました。",
+    "en": "I tried to look calm, but I turned the bowl the wrong way."
+  },
+  {
+    "block": 5,
+    "jp": "あなたは今までに文化イベントで緊張したことがありますか？",
+    "en": "Have you ever felt nervous at a cultural event?"
+  },
+  {
+    "block": 5,
+    "jp": "今では、文化イベントは教科書では学べないことを教えてくれると思います。",
+    "en": "Now, I think cultural events teach us things we cannot learn from textbooks."
+  },
+  {
+    "block": 5,
+    "jp": "私はその経験を通して、日本の伝統により興味を持つようになりました。",
+    "en": "I have become more interested in Japanese traditions because of that experience."
+  }
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week9 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

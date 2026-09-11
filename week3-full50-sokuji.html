@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week3</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week3 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  // ===== 1️⃣ =====
+  {block:1, jp:"数年前の私は、自分の生活をまったく管理できていませんでした。", en:"A few years ago, I couldn't manage my life at all."},
+  {block:1, jp:"ある日、1週間の北海道旅行にサンダルで行ってしまいました。", en:"One morning, I left for a one-week trip to Hokkaido in sandals."},
+  {block:1, jp:"私は、きちんと荷造りをすることができませんでした。", en:"I wasn't able to pack properly."},
+  {block:1, jp:"でも今は、旅行の準備をちゃんとできます。", en:"But now, I can prepare for trips properly."},
+  {block:1, jp:"以前よりも、予定をうまく管理できます。", en:"I can manage my schedule better than before."},
+  {block:1, jp:"仕事では、落ち着いて対応することができます。", en:"At work, I am able to stay calm."},
+  {block:1, jp:"締め切りまでにタスクを終わらせることができます。", en:"I am able to finish tasks before the deadline."},
+  {block:1, jp:"チームとわかりやすくコミュニケーションを取ることができます。", en:"I can communicate clearly with my team."},
+  {block:1, jp:"日常生活では、家を出る前に大事なことを確認できます。", en:"In my daily life, I can check important things before I leave home."},
+  {block:1, jp:"今の自分にできることを見ると、自分の成長を感じられます。", en:"Knowing what I can do now helps me understand how much I've grown."},
+
+  // ===== 2️⃣ =====
+  {block:2, jp:"1年後、私は計画をもっと真剣に考えるべきだと気づきました。", en:"One year later, I realized that I should take planning more seriously."},
+  {block:2, jp:"今では、家を出る前に天気を確認するべきだとわかっています。", en:"Now, I know I should check the weather before I leave home."},
+  {block:2, jp:"私は、朝の寝ぼけた自分の脳を信用しない方がいいです。", en:"I had better not trust my sleepy brain in the morning."},
+  {block:2, jp:"朝早く出発することになっているときは、前日の夜に準備するべきです。", en:"When I'm supposed to leave early, I should prepare the night before."},
+  {block:2, jp:"大事な予定があるときは、きちんと荷造りをするべきです。", en:"When I have an important plan, I should pack properly."},
+  {block:2, jp:"仕事では、注意深く話を聞くべきです。", en:"At work, I should listen carefully."},
+  {block:2, jp:"私は、小さなミスから学ぶべきです。", en:"I should learn from small mistakes."},
+  {block:2, jp:"私たちは、同じ失敗を何度も繰り返さない方がいいです。", en:"We had better not repeat the same mistake again and again."},
+  {block:2, jp:"学校や仕事では、時間を守ることになっています。", en:"At school and work, we are supposed to be on time."},
+  {block:2, jp:"成長するために、私は少しずつ良い習慣を作るべきです。", en:"To grow, I should build better habits little by little."},
+
+  // ===== 3️⃣ =====
+  {block:3, jp:"将来、AI翻訳はおそらくもっと良くなるでしょう。", en:"In the future, AI translation will probably become much better."},
+  {block:3, jp:"英語を話すことは必要なくなると思う人もいるかもしれません。", en:"Some people may think that speaking English will not be necessary."},
+  {block:3, jp:"本物の英語を話せる人は、より価値のある存在になるかもしれません。", en:"People who can speak real English might become more valuable."},
+  {block:3, jp:"AIは完璧なアニメを作るかもしれません。", en:"AI may create perfect animation."},
+  {block:3, jp:"でも、それが人の心を動かすとは限りません。", en:"But it might not always move people's hearts."},
+  {block:3, jp:"技術が進むほど、人間らしさはもっと大切になるかもしれません。", en:"As technology advances, humanity might become more important."},
+  {block:3, jp:"完璧な翻訳だけでは、人の心を動かせないかもしれません。", en:"Perfect translation may not move people's hearts."},
+  {block:3, jp:"その人間らしさは、私たちの最後のフロンティアかもしれません。", en:"That human side may be our last frontier."},
+  {block:3, jp:"私は、日本人学習者がリアルな英語を話せるように手助けしていくつもりです。", en:"I am going to help Japanese learners speak English in a way that feels real."},
+  {block:3, jp:"将来、自然なコミュニケーションは完璧な翻訳よりも大切になるでしょう。", en:"In the future, natural communication will be more important than perfect translation."},
+
+  // ===== 4️⃣ =====
+  {block:4, jp:"私たちは、生活にルールを持たなければなりません。", en:"We must have rules in our lives."},
+  {block:4, jp:"私は毎日、やるべきことを終わらせなければなりません。", en:"I have to finish my tasks every day."},
+  {block:4, jp:"でも、すべてを一人でする必要はありません。", en:"But I don't have to do everything alone."},
+  {block:4, jp:"私たちは、自分の時間を大切にしなければなりません。", en:"We must value our time."},
+  {block:4, jp:"忙しく見せるためだけに、健康を無視してはいけません。", en:"We must not ignore our health just to look busy."},
+  {block:4, jp:"私は、約束を守らなければなりません。", en:"I have to keep my promises."},
+  {block:4, jp:"私たちは、他の人の時間を大切にしなければなりません。", en:"We have to value other people's time."},
+  {block:4, jp:"毎回、完璧にする必要はありません。", en:"We don't have to be perfect every time."},
+  {block:4, jp:"大切でないことに時間を使ってはいけません。", en:"We must not spend time on unimportant things."},
+  {block:4, jp:"よりよく生きるために、私たちは自分のルールを持たなければなりません。", en:"To live well, we must have our own rules."},
+
+  // ===== 5️⃣ =====
+  {block:5, jp:"彼女がどう感じているか聞いてみてもいいと思います。", en:"You could ask how she feels."},
+  {block:5, jp:"でも、急いで関係をはっきりさせるべきではありません。", en:"But you shouldn't rush to make the relationship clear."},
+  {block:5, jp:"早すぎる段階で、深刻に聞こえすぎない方がいいです。", en:"You had better not sound too serious right away."},
+  {block:5, jp:"彼は、自分たちが付き合っているのか判断できませんでした。", en:"He couldn't tell if they were dating."},
+  {block:5, jp:"アメリカでは、はっきりした告白の瞬間がないかもしれません。", en:"In the U.S., there may not be a clear confession moment."},
+  {block:5, jp:"彼は、まず相手の気持ちを確認することができます。", en:"He can check her feelings first."},
+  {block:5, jp:"文化の違いは、誤解を生むかもしれません。", en:"Cultural differences might cause misunderstandings."},
+  {block:5, jp:"彼は、すぐに答えを求める必要はありません。", en:"He doesn't have to ask for an answer right away."},
+  {block:5, jp:"相手を責めるような聞き方をしてはいけません。", en:"You must not ask in a way that sounds blaming."},
+  {block:5, jp:"良いアドバイスは、相手が落ち着いて考える手助けになります。", en:"Good advice helps people think calmly."}
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week3 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

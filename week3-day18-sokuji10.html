@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文 Week3 Day18</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --rec-color: #dc2626;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    z-index: 5;
+  }
+  .progress-top .rec-tag {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 12px;
+    border-radius: 999px;
+    background: var(--rec-color);
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 2px;
+    animation: pulse 1.2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.recording.question { box-shadow: 0 0 0 6px var(--rec-color), 0 0 40px rgba(220,38,38,0.55); }
+  .card.recording.answer   { box-shadow: 0 0 0 6px var(--rec-color), 0 0 40px rgba(220,38,38,0.55); }
+
+  .rec-badge {
+    position: absolute;
+    margin-top: -150px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: var(--rec-color);
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 2px;
+    animation: pulse 1.2s infinite;
+  }
+  .rec-badge .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+  .card.recording .card-text { color: var(--rec-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+  .bar.rec-bar { background: var(--rec-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  .rec-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(220,38,38,0.12);
+    border: 2px solid var(--rec-color);
+    color: #fecaca;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 22px;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    max-width: min(90vw, 560px);
+    text-align: left;
+    line-height: 1.6;
+  }
+  .rec-notice .dot {
+    flex-shrink: 0;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--rec-color);
+    animation: pulse 1.2s infinite;
+  }
+
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+
+  /* Interstitial (recording checkpoint) screen */
+  .inter-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fecaca;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .inter-title.ok { color: #bbf7d0; }
+  .inter-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  .inter-num {
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--rec-color);
+    font-variant-numeric: tabular-nums;
+  }
+  .inter-num.ok { color: var(--a-color); }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week3 Day18「Rules and Balance in Life」<br>全10問 × 10周　問題5秒 → 解答5秒 で自動的に進みます</div>
+    <div class="rec-notice">
+      <span class="dot"></span>
+      <span>1周目は録音してください。準備ができたら録音を開始してから「スタート」を押してください。</span>
+    </div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="rec-badge hidden" id="recBadge"><span class="dot"></span>REC</div>
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Interstitial (recording checkpoint) screen -->
+  <div class="screen hidden" id="interScreen">
+    <div class="inter-title" id="interTitle"></div>
+    <div class="inter-sub" id="interSub"></div>
+    <div class="inter-num" id="interNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">全10周 お疲れさまでした！</div>
+    <div class="start-sub">1周目と10周目の録音をボイスメッセージで提出してください。</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const DATA = [
+  {jp:"私たちは、生活にルールを持たなければなりません。", en:"We must have rules in our lives."},
+  {jp:"私は毎日、やるべきことを終わらせなければなりません。", en:"I have to finish my tasks every day."},
+  {jp:"でも、すべてを一人でする必要はありません。", en:"But I don't have to do everything alone."},
+  {jp:"私たちは、自分の時間を大切にしなければなりません。", en:"We must value our time."},
+  {jp:"忙しく見せるためだけに、健康を無視してはいけません。", en:"We must not ignore our health just to look busy."},
+  {jp:"私は、約束を守らなければなりません。", en:"I have to keep my promises."},
+  {jp:"私たちは、他の人の時間を大切にしなければなりません。", en:"We have to value other people's time."},
+  {jp:"毎回、完璧にする必要はありません。", en:"We don't have to be perfect every time."},
+  {jp:"大切でないことに時間を使ってはいけません。", en:"We must not spend time on unimportant things."},
+  {jp:"よりよく生きるために、私たちは自分のルールを持たなければなりません。", en:"To live well, we must have our own rules."}
+];
+
+const TOTAL_ROUNDS = 10;
+const Q_SEC = 5;
+const A_SEC = 5;
+const INTER_SEC = 5;
+const AFTER_ROUND1_SEC = 4;
+
+let round = 1;
+let qIndex = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const interScreen = document.getElementById("interScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const recBadge = document.getElementById("recBadge");
+const interTitle = document.getElementById("interTitle");
+const interSub = document.getElementById("interSub");
+const interNum = document.getElementById("interNum");
+
+function isRecordingRound(r) {
+  return r === 1 || r === TOTAL_ROUNDS;
+}
+
+function startSession() {
+  round = 1;
+  qIndex = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  interScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  let html = `${round}周目 / ${TOTAL_ROUNDS}周　${qIndex + 1} / 10問`;
+  if (isRecordingRound(round)) html += `<span class="rec-tag">REC</span>`;
+  progressTop.innerHTML = html;
+}
+
+function applyRecordingStyle() {
+  const rec = isRecordingRound(round);
+  card.classList.toggle("recording", rec);
+  recBadge.classList.toggle("hidden", !rec);
+  bar.classList.toggle("rec-bar", rec);
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[qIndex];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  applyRecordingStyle();
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[qIndex];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  applyRecordingStyle();
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  qIndex++;
+  if (qIndex < DATA.length) {
+    showQuestion();
+    return;
+  }
+  // 1周終了
+  qIndex = 0;
+  const finishedRound = round;
+  round++;
+
+  if (round > TOTAL_ROUNDS) {
+    finishSession();
+    return;
+  }
+
+  if (finishedRound === 1) {
+    showInterstitial({
+      ok: true,
+      title: "✅ 1周目の録音はここまでです",
+      sub: "録音を停止してOKです。このまま自動で2周目に進みます。",
+      seconds: AFTER_ROUND1_SEC,
+      next: showQuestion
+    });
+    return;
+  }
+
+  if (round === TOTAL_ROUNDS) {
+    showInterstitial({
+      ok: false,
+      title: "🔴 10周目に入ります",
+      sub: "録音を開始してから、このまま待っていてください。自動で始まります。",
+      seconds: INTER_SEC,
+      next: showQuestion
+    });
+    return;
+  }
+
+  showQuestion();
+}
+
+function showInterstitial({ok, title, sub, seconds, next}) {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  interScreen.classList.remove("hidden");
+  interTitle.textContent = title;
+  interTitle.classList.toggle("ok", ok);
+  interSub.textContent = sub;
+  interNum.classList.toggle("ok", ok);
+
+  let remainingInter = seconds;
+  interNum.textContent = remainingInter;
+  timerInterval = setInterval(() => {
+    remainingInter--;
+    if (remainingInter <= 0) {
+      clearInterval(timerInterval);
+      interScreen.classList.add("hidden");
+      playScreen.classList.remove("hidden");
+      next();
+    } else {
+      interNum.textContent = remainingInter;
+    }
+  }, 1000);
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

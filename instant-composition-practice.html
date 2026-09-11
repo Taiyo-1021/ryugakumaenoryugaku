@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">全100問 ランダム出題<br>問題 7秒 → 回答例 5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">100問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const DATA = [
+  // ---- 比較級 (50問) ----
+  {jp:"この本はあの本より面白い。", en:"This book is more interesting than that one."},
+  {jp:"彼は私より背が高い。", en:"He is taller than me."},
+  {jp:"今日は昨日より寒い。", en:"It's colder today than yesterday."},
+  {jp:"この車はあの車より高い。", en:"This car is more expensive than that one."},
+  {jp:"彼女は前より上手に歌う。", en:"She sings better than before."},
+  {jp:"この問題はあの問題より簡単だ。", en:"This question is easier than that one."},
+  {jp:"東京は大阪より大きい。", en:"Tokyo is bigger than Osaka."},
+  {jp:"彼は思っていたより親切だった。", en:"He was kinder than I thought."},
+  {jp:"このカフェはあのカフェより静かだ。", en:"This cafe is quieter than that one."},
+  {jp:"彼女は兄より賢い。", en:"She is smarter than her brother."},
+  {jp:"この道はあの道より短い。", en:"This road is shorter than that one."},
+  {jp:"今年は去年より暑い。", en:"This year is hotter than last year."},
+  {jp:"彼は私より速く走れる。", en:"He can run faster than me."},
+  {jp:"この店はあの店より安い。", en:"This store is cheaper than that one."},
+  {jp:"彼女は私より早く起きる。", en:"She gets up earlier than me."},
+  {jp:"このスープはあのスープよりおいしい。", en:"This soup is more delicious than that one."},
+  {jp:"彼は以前より忙しい。", en:"He is busier than before."},
+  {jp:"この映画はあの映画より長い。", en:"This movie is longer than that one."},
+  {jp:"彼女は姉より背が低い。", en:"She is shorter than her sister."},
+  {jp:"今日は昨日より忙しい。", en:"I'm busier today than I was yesterday."},
+  {jp:"このバッグはあのバッグより軽い。", en:"This bag is lighter than that one."},
+  {jp:"彼は父より頑固だ。", en:"He is more stubborn than his father."},
+  {jp:"この街はあの街より安全だ。", en:"This town is safer than that one."},
+  {jp:"彼女は誰よりも一生懸命働く。", en:"She works harder than anyone."},
+  {jp:"このホテルはあのホテルより快適だ。", en:"This hotel is more comfortable than that one."},
+  {jp:"彼は見た目より若い。", en:"He is younger than he looks."},
+  {jp:"この仕事はあの仕事より難しい。", en:"This job is more difficult than that one."},
+  {jp:"彼女は私よりずっと上手にピアノを弾く。", en:"She plays the piano much better than me."},
+  {jp:"今日は思ったより涼しい。", en:"It's cooler than I expected today."},
+  {jp:"このアパートはあのアパートより広い。", en:"This apartment is bigger than that one."},
+  {jp:"彼は前より優しい。", en:"He is kinder than before."},
+  {jp:"この道具はあの道具より便利だ。", en:"This tool is more convenient than that one."},
+  {jp:"彼女は私より早く仕事を終えた。", en:"She finished work earlier than me."},
+  {jp:"このレストランはあのレストランより人気がある。", en:"This restaurant is more popular than that one."},
+  {jp:"彼は兄より背が高い。", en:"He is taller than his brother."},
+  {jp:"今回のテストは前回より簡単だった。", en:"This test was easier than the last one."},
+  {jp:"このパソコンはあのパソコンより速い。", en:"This computer is faster than that one."},
+  {jp:"彼女は見かけより強い。", en:"She is stronger than she looks."},
+  {jp:"このドレスはあのドレスより高い。", en:"This dress is more expensive than that one."},
+  {jp:"彼は誰よりも真剣だ。", en:"He is more serious than anyone."},
+  {jp:"今日は昨日ほど寒くない。", en:"Today isn't as cold as yesterday."},
+  {jp:"彼女は姉ほど背が高くない。", en:"She isn't as tall as her sister."},
+  {jp:"このケーキはあのケーキほど甘くない。", en:"This cake isn't as sweet as that one."},
+  {jp:"彼は父ほど厳しくない。", en:"He isn't as strict as his father."},
+  {jp:"練習すればするほど上手になる。", en:"The more you practice, the better you get."},
+  {jp:"早ければ早いほどいい。", en:"The sooner, the better."},
+  {jp:"彼はクラスで一番背が高い。", en:"He is the tallest in his class."},
+  {jp:"これは今まで見た中で一番いい映画だ。", en:"This is the best movie I have ever seen."},
+  {jp:"彼女は家族の中で一番若い。", en:"She is the youngest in her family."},
+  {jp:"これは店で一番人気のある商品だ。", en:"This is the most popular item in the store."},
+
+  // ---- 現在形 (5) ----
+  {jp:"私は毎朝コーヒーを飲む。", en:"I drink coffee every morning."},
+  {jp:"彼は毎週日曜日にサッカーをする。", en:"He plays soccer every Sunday."},
+  {jp:"彼女は英語を話す。", en:"She speaks English."},
+  {jp:"電車は9時に出発する。", en:"The train leaves at nine."},
+  {jp:"私たちはよくここで会う。", en:"We often meet here."},
+
+  // ---- 過去形 (5) ----
+  {jp:"昨日彼女に会った。", en:"I met her yesterday."},
+  {jp:"彼は先週日本に来た。", en:"He came to Japan last week."},
+  {jp:"私たちは去年京都を訪れた。", en:"We visited Kyoto last year."},
+  {jp:"彼女はそのニュースを聞いて驚いた。", en:"She was surprised to hear the news."},
+  {jp:"私は宿題を終えた。", en:"I finished my homework."},
+
+  // ---- 未来形 (5) ----
+  {jp:"明日は雨が降るだろう。", en:"It will rain tomorrow."},
+  {jp:"私は来月引っ越す予定だ。", en:"I am going to move next month."},
+  {jp:"彼は来週日本を訪れる。", en:"He will visit Japan next week."},
+  {jp:"私たちは来年結婚する。", en:"We are going to get married next year."},
+  {jp:"彼女はすぐに戻ってくるだろう。", en:"She will be back soon."},
+
+  // ---- 現在完了形 (5) ----
+  {jp:"私はすでに昼食を食べた。", en:"I have already had lunch."},
+  {jp:"彼はまだ宿題を終えていない。", en:"He hasn't finished his homework yet."},
+  {jp:"私たちは3年間ここに住んでいる。", en:"We have lived here for three years."},
+  {jp:"彼女はその映画を三回見たことがある。", en:"She has seen that movie three times."},
+  {jp:"私はまだ彼に会ったことがない。", en:"I have never met him."},
+
+  // ---- 受動態 (5) ----
+  {jp:"この本は多くの人に読まれている。", en:"This book is read by many people."},
+  {jp:"その窓は昨夜割られた。", en:"The window was broken last night."},
+  {jp:"この製品は日本で作られている。", en:"This product is made in Japan."},
+  {jp:"その会議は延期された。", en:"The meeting was postponed."},
+  {jp:"英語は世界中で話されている。", en:"English is spoken all over the world."},
+
+  // ---- 関係詞 (5) ----
+  {jp:"あそこに立っている男性は私の先生だ。", en:"The man standing over there is my teacher."},
+  {jp:"これは私が去年買った本だ。", en:"This is the book I bought last year."},
+  {jp:"昨日会った女性はとても親切だった。", en:"The woman I met yesterday was very kind."},
+  {jp:"これは彼が作ったケーキだ。", en:"This is the cake he made."},
+  {jp:"東京に住んでいる友達がいる。", en:"I have a friend who lives in Tokyo."},
+
+  // ---- 仮定法・条件節 (5) ----
+  {jp:"もし明日晴れたら、公園に行こう。", en:"If it's sunny tomorrow, let's go to the park."},
+  {jp:"もし時間があれば、手伝ってくれますか。", en:"If you have time, could you help me?"},
+  {jp:"もし彼がお金持ちだったら、家を買うだろう。", en:"If he were rich, he would buy a house."},
+  {jp:"もっと勉強していたら、合格していただろう。", en:"If I had studied more, I would have passed."},
+  {jp:"急がないと、電車に遅れるよ。", en:"If you don't hurry, you will miss the train."},
+
+  // ---- 助動詞 (5) ----
+  {jp:"今夜は雨が降るかもしれない。", en:"It might rain tonight."},
+  {jp:"あなたはもっと野菜を食べるべきだ。", en:"You should eat more vegetables."},
+  {jp:"彼は今忙しいに違いない。", en:"He must be busy now."},
+  {jp:"ここでは写真を撮ってもいい。", en:"You can take pictures here."},
+  {jp:"私たちは今すぐ出発しなければならない。", en:"We have to leave right now."},
+
+  // ---- 動名詞・不定詞 (5) ----
+  {jp:"私は音楽を聴くのが好きだ。", en:"I like listening to music."},
+  {jp:"彼女は医者になりたい。", en:"She wants to become a doctor."},
+  {jp:"私たちは新しいアイデアを試すことに決めた。", en:"We decided to try a new idea."},
+  {jp:"彼はタバコをやめた。", en:"He quit smoking."},
+  {jp:"早起きすることは健康にいい。", en:"Getting up early is good for your health."},
+
+  // ---- 疑問文 (5) ----
+  {jp:"あなたはどこに住んでいますか。", en:"Where do you live?"},
+  {jp:"これはいくらですか。", en:"How much is this?"},
+  {jp:"なぜ彼女は怒っているのですか。", en:"Why is she angry?"},
+  {jp:"会議は何時に始まりますか。", en:"What time does the meeting start?"},
+  {jp:"駅までどうやって行けばいいですか。", en:"How do I get to the station?"}
+];
+
+const QUESTION_SEC = 7;
+const ANSWER_SEC = 5;
+
+let order = [];
+let idx = 0;
+let phase = "question"; // or "answer"
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startSession() {
+  order = shuffle(DATA.map((_, i) => i));
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[order[idx]];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(QUESTION_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[order[idx]];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(ANSWER_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= order.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  // reset bar instantly to full width, then animate down
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  // force reflow
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

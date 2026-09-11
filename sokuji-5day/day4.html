@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文 Day4</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="day-badge" id="dayBadge"></div>
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">累計 <span id="questionCount"></span> 問 ランダム出題<br>問題 7秒 → 回答例 5秒 で自動的に進みます</div>
+    <div class="btn-row">
+      <button class="big-btn" id="startBtn">スタート</button>
+      <a class="ghost-btn" href="index.html">ホームに戻る</a>
+    </div>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub"><span id="questionCount2"></span>問終了しました</div>
+    <div class="btn-row">
+      <button class="big-btn" id="restartBtn">もう一度</button>
+      <a class="big-btn" id="nextDayLink" href="#">次の日へ</a>
+      <a class="ghost-btn" href="index.html">ホームに戻る</a>
+    </div>
+  </div>
+
+<script>const CURRENT_DAY = 4;</script>
+<script src="data.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>

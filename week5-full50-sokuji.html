@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week5</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week5 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  {
+    "block": 1,
+    "jp": "私の故郷は今住んでいる街より小さいです。",
+    "en": "My hometown is smaller than the city I live in now."
+  },
+  {
+    "block": 1,
+    "jp": "この街は前の街より便利です。",
+    "en": "This city is more convenient than my previous one."
+  },
+  {
+    "block": 1,
+    "jp": "あなたの故郷はどんなところですか?",
+    "en": "What is your hometown like?"
+  },
+  {
+    "block": 1,
+    "jp": "私の故郷は自然がもっと多いです。",
+    "en": "My hometown has more nature."
+  },
+  {
+    "block": 1,
+    "jp": "この街は前よりにぎやかです。",
+    "en": "This city is busier than before."
+  },
+  {
+    "block": 1,
+    "jp": "あなたの街は私の街より大きいですか?",
+    "en": "Is your city bigger than mine?"
+  },
+  {
+    "block": 1,
+    "jp": "私の故郷はもっと静かでした。",
+    "en": "My hometown was quieter."
+  },
+  {
+    "block": 1,
+    "jp": "この街にはお店がもっとあります。",
+    "en": "There are more shops in this city."
+  },
+  {
+    "block": 1,
+    "jp": "あなたはどちらの街が好きですか?",
+    "en": "Which city do you like better?"
+  },
+  {
+    "block": 1,
+    "jp": "私は故郷の方が好きです。",
+    "en": "I like my hometown better."
+  },
+  {
+    "block": 2,
+    "jp": "彼は私より背が高いです。",
+    "en": "He is taller than I am."
+  },
+  {
+    "block": 2,
+    "jp": "私は料理が彼より上手です。",
+    "en": "I am better at cooking than he is."
+  },
+  {
+    "block": 2,
+    "jp": "あなたは友達より早く歩きますか?",
+    "en": "Do you walk faster than your friend?"
+  },
+  {
+    "block": 2,
+    "jp": "彼女は私より丁寧です。",
+    "en": "She is more careful than I am."
+  },
+  {
+    "block": 2,
+    "jp": "私の友達は勉強するのが私より早いです。",
+    "en": "My friend learns faster than I do."
+  },
+  {
+    "block": 2,
+    "jp": "私は彼よりゲームが上手ではありません。",
+    "en": "I am not better at games than he is."
+  },
+  {
+    "block": 2,
+    "jp": "彼は私より少し静かです。",
+    "en": "He is a little quieter than I am."
+  },
+  {
+    "block": 2,
+    "jp": "あなたは誰よりも優しいです。",
+    "en": "You are kinder than everyone else."
+  },
+  {
+    "block": 2,
+    "jp": "私は彼より運動が苦手です。",
+    "en": "I am worse at sports than he is."
+  },
+  {
+    "block": 2,
+    "jp": "彼らは私たちより忙しかったです。",
+    "en": "They were busier than we were."
+  },
+  {
+    "block": 3,
+    "jp": "昔、私は宿題がもっとありました。",
+    "en": "I had more homework before."
+  },
+  {
+    "block": 3,
+    "jp": "今は自由な時間がもっとあります。",
+    "en": "I have more free time now."
+  },
+  {
+    "block": 3,
+    "jp": "あなたは前より忙しいですか?",
+    "en": "Are you busier than before?"
+  },
+  {
+    "block": 3,
+    "jp": "今より昔の方が自信がありませんでした。",
+    "en": "I was less confident before."
+  },
+  {
+    "block": 3,
+    "jp": "彼は今、友達がもっといます。",
+    "en": "He has more friends now."
+  },
+  {
+    "block": 3,
+    "jp": "私は前より時間をうまく使えます。",
+    "en": "I can use my time more efficiently than before."
+  },
+  {
+    "block": 3,
+    "jp": "昔、彼女はあまり喋りませんでした。",
+    "en": "She didn't talk much before."
+  },
+  {
+    "block": 3,
+    "jp": "今、彼女はもっと社交的です。",
+    "en": "She is more social now."
+  },
+  {
+    "block": 3,
+    "jp": "昔と今、どっちが楽しいですか?",
+    "en": "Which is more fun, before or now?"
+  },
+  {
+    "block": 3,
+    "jp": "今の学校生活の方が良いです。",
+    "en": "My school life now is better."
+  },
+  {
+    "block": 4,
+    "jp": "今週で一番良かった日は、静かな日でした。",
+    "en": "The best day this week was a quiet day."
+  },
+  {
+    "block": 4,
+    "jp": "それは今週で一番穏やかな日でした。",
+    "en": "It was the most peaceful day this week."
+  },
+  {
+    "block": 4,
+    "jp": "夕焼けが一番きれいでした。",
+    "en": "The sunset was the most beautiful."
+  },
+  {
+    "block": 4,
+    "jp": "その日は今週で一番リラックスできました。",
+    "en": "That day was the most relaxing day this week."
+  },
+  {
+    "block": 4,
+    "jp": "何も起きなかったことが一番良かったです。",
+    "en": "Nothing happening was the best part."
+  },
+  {
+    "block": 4,
+    "jp": "小さな幸せに気づけたことが一番大切でした。",
+    "en": "Noticing small happy moments was the most important thing."
+  },
+  {
+    "block": 4,
+    "jp": "その日は今週で一番ゆっくりできた日でした。",
+    "en": "It was the day when I could slow down the most this week."
+  },
+  {
+    "block": 4,
+    "jp": "その日一番よかったところは、気持ちが落ち着いたことです。",
+    "en": "The best part of the day was that I felt calm."
+  },
+  {
+    "block": 4,
+    "jp": "今週で一番心地よい時間を過ごせました。",
+    "en": "I had the most comfortable time this week."
+  },
+  {
+    "block": 4,
+    "jp": "小さなことに幸せを感じられる日が、一番良い日です。",
+    "en": "The best day is a day when you can feel happy about small things."
+  },
+  {
+    "block": 5,
+    "jp": "以前より、自分に正直になりました。",
+    "en": "I have become more honest with myself than before."
+  },
+  {
+    "block": 5,
+    "jp": "私は昔より失敗を恐れなくなりました。",
+    "en": "I am less afraid of failing than before."
+  },
+  {
+    "block": 5,
+    "jp": "あなたは前より落ち着いて話せますか？",
+    "en": "Can you speak more calmly than before?"
+  },
+  {
+    "block": 5,
+    "jp": "私は前より人の意見を受け入れられます。",
+    "en": "I can accept other people's opinions more than before."
+  },
+  {
+    "block": 5,
+    "jp": "強がることは、成長することより簡単です。",
+    "en": "Pretending to be strong is easier than growing."
+  },
+  {
+    "block": 5,
+    "jp": "本当の自信は、見せかけの強さより大切です。",
+    "en": "Real confidence is more important than fake strength."
+  },
+  {
+    "block": 5,
+    "jp": "あなたは来年、もっと強くなりたいですか？",
+    "en": "Do you want to become stronger next year?"
+  },
+  {
+    "block": 5,
+    "jp": "弱さを認めることは、隠すことより難しいです。",
+    "en": "Accepting weakness is harder than hiding it."
+  },
+  {
+    "block": 5,
+    "jp": "私は前より自分の弱さと向き合えるようになりました。",
+    "en": "I can face my weakness more honestly than before."
+  },
+  {
+    "block": 5,
+    "jp": "人は自分を受け入れると、より自由になれます。",
+    "en": "People can become freer when they accept themselves."
+  }
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week5 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

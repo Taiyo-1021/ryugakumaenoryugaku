@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week11</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week11 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  {
+    "block": 1,
+    "jp": "留学は価値のある経験になりうると思います。",
+    "en": "I think studying abroad can be valuable."
+  },
+  {
+    "block": 1,
+    "jp": "留学は、学生にマイノリティになる経験をさせます。",
+    "en": "Studying abroad lets students experience being a minority."
+  },
+  {
+    "block": 1,
+    "jp": "自分の国では、多くの人が多数派でいる安心感に気づきません。",
+    "en": "In their own country, many people do not notice the comfort of being in the majority."
+  },
+  {
+    "block": 1,
+    "jp": "彼らは、何を言うべきか、どう振る舞うべきかを知っています。",
+    "en": "They know what to say and how to behave."
+  },
+  {
+    "block": 1,
+    "jp": "しかし、別の国では、簡単なことさえ難しくなることがあります。",
+    "en": "However, in another country, even simple things can become difficult."
+  },
+  {
+    "block": 1,
+    "jp": "たとえば、自分をうまく表現できないとき、学生は戸惑うかもしれません。",
+    "en": "For example, students may feel lost when they cannot express themselves well."
+  },
+  {
+    "block": 1,
+    "jp": "この経験は、共感を教えてくれます。",
+    "en": "This experience can teach empathy."
+  },
+  {
+    "block": 1,
+    "jp": "学生は、声を聞いてもらえない人の気持ちを理解し始めます。",
+    "en": "Students begin to understand people who feel unheard."
+  },
+  {
+    "block": 1,
+    "jp": "もっと多くの学生が、英語だけでなく心も準備する機会を持てたらいいのに。",
+    "en": "I wish more students had the chance to prepare not only their English, but also their minds."
+  },
+  {
+    "block": 1,
+    "jp": "留学は、ただ別の国を見ることだけでしょうか？",
+    "en": "Is studying abroad just about seeing another country?"
+  },
+  {
+    "block": 2,
+    "jp": "アルバイトは学生に役立ちます。",
+    "en": "Part-time jobs are useful for students."
+  },
+  {
+    "block": 2,
+    "jp": "お金は働いて得るものです。",
+    "en": "Money is earned through work."
+  },
+  {
+    "block": 2,
+    "jp": "学生は丁寧な話し方を学べます。",
+    "en": "Students can learn how to speak politely."
+  },
+  {
+    "block": 2,
+    "jp": "疲れていても責任を持つべきです。",
+    "en": "They should stay responsible even when they are tired."
+  },
+  {
+    "block": 2,
+    "jp": "学生はより自立できるかもしれません。",
+    "en": "Students may become more independent."
+  },
+  {
+    "block": 2,
+    "jp": "この経験がなければ、仕事の価値に気づかないかもしれません。",
+    "en": "Without this experience, they may not notice the value of work."
+  },
+  {
+    "block": 2,
+    "jp": "一方で、働きすぎるべきではありません。",
+    "en": "On the other hand, they should not work too much."
+  },
+  {
+    "block": 2,
+    "jp": "そうでなければ、疲れすぎるかもしれません。",
+    "en": "Otherwise, they may become too tired."
+  },
+  {
+    "block": 2,
+    "jp": "学生はアルバイトをするべきだと思いますか？",
+    "en": "Do you think students should have part-time jobs?"
+  },
+  {
+    "block": 2,
+    "jp": "アルバイトで大切なことは何ですか？",
+    "en": "What is important in a part-time job?"
+  },
+  {
+    "block": 3,
+    "jp": "制服は役に立つことがあります。",
+    "en": "School uniforms can be useful."
+  },
+  {
+    "block": 3,
+    "jp": "制服は見た目のプレッシャーを減らしてくれます。",
+    "en": "School uniforms reduce pressure about appearance."
+  },
+  {
+    "block": 3,
+    "jp": "生徒は毎朝、服について心配しなくてすみます。",
+    "en": "Students do not have to worry about clothes every morning."
+  },
+  {
+    "block": 3,
+    "jp": "制服は学校生活をより公平にすることがあります。",
+    "en": "Uniforms can make school life fairer."
+  },
+  {
+    "block": 3,
+    "jp": "多くの学校では、生徒は制服を着ることを求められています。",
+    "en": "In many schools, students are required to wear uniforms."
+  },
+  {
+    "block": 3,
+    "jp": "私服は学校で認められていません。",
+    "en": "Casual clothes are not allowed at school."
+  },
+  {
+    "block": 3,
+    "jp": "制服は一体感の象徴だと見なされることがあります。",
+    "en": "Uniforms are often seen as a symbol of unity."
+  },
+  {
+    "block": 3,
+    "jp": "一方で、制服は私服ほど自由ではありません。",
+    "en": "On the other hand, uniforms are not as flexible as casual clothes."
+  },
+  {
+    "block": 3,
+    "jp": "制服は個性を消すためのものだと思いますか？",
+    "en": "Do you think uniforms are for erasing personality?"
+  },
+  {
+    "block": 3,
+    "jp": "生徒に少し自由が与えられるなら、制服は良いと思います。",
+    "en": "I think uniforms are good as long as students are given some freedom."
+  },
+  {
+    "block": 4,
+    "jp": "今の自分には、都会の生活のほうが合っています。",
+    "en": "City life suits me better right now."
+  },
+  {
+    "block": 4,
+    "jp": "都会では、人や機会の近くにいられます。",
+    "en": "In the city, I can stay close to people and opportunities."
+  },
+  {
+    "block": 4,
+    "jp": "たとえば、都会には仕事が多いです。",
+    "en": "For example, cities have more jobs."
+  },
+  {
+    "block": 4,
+    "jp": "都会は田舎より便利です。",
+    "en": "The city is more convenient than the countryside."
+  },
+  {
+    "block": 4,
+    "jp": "一方で、田舎はより静かでストレスが少ないです。",
+    "en": "On the other hand, the countryside is quieter and less stressful."
+  },
+  {
+    "block": 4,
+    "jp": "田舎では、時間がもっとゆっくり流れているように感じることがあります。",
+    "en": "In the countryside, it can feel as if time moved more slowly."
+  },
+  {
+    "block": 4,
+    "jp": "もし田舎に住んだら、もっと落ち着けるかもしれません。",
+    "en": "If I lived in the countryside, I might feel calmer."
+  },
+  {
+    "block": 4,
+    "jp": "でも、都会のエネルギーが恋しくなるかもしれません。",
+    "en": "But I might miss the energy of the city."
+  },
+  {
+    "block": 4,
+    "jp": "あなたは都会と田舎のどちらを好みますか？",
+    "en": "Which do you prefer, city life or countryside life?"
+  },
+  {
+    "block": 4,
+    "jp": "もっと静かな生活を求めるなら、田舎を選ぶかもしれません。",
+    "en": "If I wanted a quieter life, I might choose the countryside."
+  },
+  {
+    "block": 5,
+    "jp": "スポーツは人格形成に役立つと思います。",
+    "en": "I think sports can help people build character."
+  },
+  {
+    "block": 5,
+    "jp": "スポーツは、プレッシャーの中で自分がどんな人間なのかを見せてくれます。",
+    "en": "Sports show us who we are under pressure."
+  },
+  {
+    "block": 5,
+    "jp": "スポーツでは、努力や態度がはっきり表れます。",
+    "en": "In sports, effort and attitude appear clearly."
+  },
+  {
+    "block": 5,
+    "jp": "サッカー選手は仲間のために走らなければなりません。",
+    "en": "Soccer players have to run for each other."
+  },
+  {
+    "block": 5,
+    "jp": "私は何年もサッカーを続けてきました。",
+    "en": "I have been playing soccer for years."
+  },
+  {
+    "block": 5,
+    "jp": "地道な練習は、技術以上のものを変えます。",
+    "en": "Steady practice changes more than skills."
+  },
+  {
+    "block": 5,
+    "jp": "スポーツは、失敗への向き合い方を教えてくれます。",
+    "en": "Sports teach us how to handle failure."
+  },
+  {
+    "block": 5,
+    "jp": "一方で、スポーツは成長するための唯一の方法ではありません。",
+    "en": "On the other hand, sports are not the only way to grow."
+  },
+  {
+    "block": 5,
+    "jp": "大切なのは、自分に合った挑戦を見つけられるかどうかです。",
+    "en": "What matters is whether we can find a challenge that suits us."
+  },
+  {
+    "block": 5,
+    "jp": "スポーツは全員に必要だと思いますか？",
+    "en": "Do you think sports are necessary for everyone?"
+  }
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week11 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

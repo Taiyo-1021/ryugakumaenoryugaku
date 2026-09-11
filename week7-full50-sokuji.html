@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week7</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week7 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  {
+    "block": 1,
+    "jp": "私は英語を勉強しています。なぜなら将来必要だからです。",
+    "en": "I study English because I will need it in the future."
+  },
+  {
+    "block": 1,
+    "jp": "あなたはなぜ英語を勉強しているのですか?",
+    "en": "Why do you study English?"
+  },
+  {
+    "block": 1,
+    "jp": "英語は世界中で使われているので、重要です。",
+    "en": "English is important because it is used all over the world."
+  },
+  {
+    "block": 1,
+    "jp": "私は旅行したいので、英語を勉強しています。",
+    "en": "I study English because I want to travel."
+  },
+  {
+    "block": 1,
+    "jp": "失敗しても、私は学び続けます。なぜなら成長したいからです。",
+    "en": "Even if I make mistakes, I keep learning because I want to grow."
+  },
+  {
+    "block": 1,
+    "jp": "英語が好きなので、毎日少し練習しています。",
+    "en": "I like English, so I practice a little every day."
+  },
+  {
+    "block": 1,
+    "jp": "英語は便利だから、勉強する価値があります。",
+    "en": "English is useful, so it is worth studying."
+  },
+  {
+    "block": 1,
+    "jp": "私は将来の夢のために英語を勉強しています。",
+    "en": "I study English for my future dream."
+  },
+  {
+    "block": 1,
+    "jp": "英語で話せると楽しいので、続けています。",
+    "en": "It's fun to speak English, so I keep studying it."
+  },
+  {
+    "block": 1,
+    "jp": "私は英語で自分の考えを言えるようになりたいです。",
+    "en": "I want to be able to express my thoughts in English."
+  },
+  {
+    "block": 2,
+    "jp": "私はこの街が便利なので好きです。",
+    "en": "I like this city because it is convenient."
+  },
+  {
+    "block": 2,
+    "jp": "この街はお店が多いので、生活が楽です。",
+    "en": "This city has many shops, so life is easy here."
+  },
+  {
+    "block": 2,
+    "jp": "この街は安全だから、安心して暮らせます。",
+    "en": "This city is safe, so I can live here with peace of mind."
+  },
+  {
+    "block": 2,
+    "jp": "人が親切なので、ここに住むのが好きです。",
+    "en": "The people are kind, so I like living here."
+  },
+  {
+    "block": 2,
+    "jp": "この街は交通が便利なので、車がいりません。",
+    "en": "Transportation is convenient in this city, so I don't need a car."
+  },
+  {
+    "block": 2,
+    "jp": "あなたはなぜ自分の街が好きなのですか?",
+    "en": "Why do you like your city?"
+  },
+  {
+    "block": 2,
+    "jp": "この街は自然も多いので、私はリラックスできます。",
+    "en": "This city has a lot of nature, so I can relax."
+  },
+  {
+    "block": 2,
+    "jp": "駅が近いので、通学が楽です。",
+    "en": "The station is close, so going to school is easy."
+  },
+  {
+    "block": 2,
+    "jp": "私はこの街が好きです。なぜなら人が温かいからです。",
+    "en": "I like this city because the people are warm and friendly."
+  },
+  {
+    "block": 2,
+    "jp": "この街は住みやすいので、私は長く住みたいです。",
+    "en": "This city is comfortable to live in, so I want to live here for a long time."
+  },
+  {
+    "block": 3,
+    "jp": "私は彼が努力しているのを知っているので、彼を尊敬しています。",
+    "en": "I respect him because I know he works hard."
+  },
+  {
+    "block": 3,
+    "jp": "彼は人に親切なので、人気があります。",
+    "en": "He is kind to people, so he is popular."
+  },
+  {
+    "block": 3,
+    "jp": "なぜあなたはその友達を尊敬していますか?",
+    "en": "Why do you respect that friend?"
+  },
+  {
+    "block": 3,
+    "jp": "彼はいつも私を助けてくれます。",
+    "en": "He always helps me."
+  },
+  {
+    "block": 3,
+    "jp": "彼の態度のおかげで、私は前向きになれます。",
+    "en": "Because of his attitude, I can stay positive."
+  },
+  {
+    "block": 3,
+    "jp": "彼女は失敗しても諦めません。",
+    "en": "She doesn't give up even when she fails."
+  },
+  {
+    "block": 3,
+    "jp": "私の母は周りの人から信頼されています。",
+    "en": "People around my mother trust her."
+  },
+  {
+    "block": 3,
+    "jp": "私は彼の努力を尊敬しています。",
+    "en": "I respect his effort."
+  },
+  {
+    "block": 3,
+    "jp": "誰を一番尊敬していますか?",
+    "en": "Who do you respect the most?"
+  },
+  {
+    "block": 3,
+    "jp": "その理由を教えてください。",
+    "en": "Can you tell me why?"
+  },
+  {
+    "block": 4,
+    "jp": "私は健康のために運動します。",
+    "en": "I exercise for my health."
+  },
+  {
+    "block": 4,
+    "jp": "運動すると、ストレスが減ります。",
+    "en": "When I exercise, my stress decreases."
+  },
+  {
+    "block": 4,
+    "jp": "なぜあなたは運動が大切だと思いますか?",
+    "en": "Why do you think exercise is important?"
+  },
+  {
+    "block": 4,
+    "jp": "新鮮な空気のために、私は外を歩きます。",
+    "en": "I walk outside for the fresh air."
+  },
+  {
+    "block": 4,
+    "jp": "運動しないと、私はすぐ疲れます。",
+    "en": "If I don't exercise, I get tired easily."
+  },
+  {
+    "block": 4,
+    "jp": "私は友達と一緒に運動するのが好きです。",
+    "en": "I like exercising with my friends."
+  },
+  {
+    "block": 4,
+    "jp": "運動すると、気分が前向きになります。",
+    "en": "When I exercise, I feel more positive."
+  },
+  {
+    "block": 4,
+    "jp": "仕事の後に、私はよく散歩します。",
+    "en": "I often go for a walk after work."
+  },
+  {
+    "block": 4,
+    "jp": "あなたはどれくらいの頻度で運動しますか?",
+    "en": "How often do you exercise?"
+  },
+  {
+    "block": 4,
+    "jp": "私は心と体のために運動が必要だと思います。",
+    "en": "I think exercise is necessary for both my mind and body."
+  },
+  {
+    "block": 5,
+    "jp": "私は人を助けることが大切だと思います。",
+    "en": "I think helping others is important."
+  },
+  {
+    "block": 5,
+    "jp": "親切は人を幸せにするので、私は大事だと思います。",
+    "en": "I think kindness is important because it makes people happy."
+  },
+  {
+    "block": 5,
+    "jp": "私たちは皆、時々助けが必要です。",
+    "en": "We all need help sometimes."
+  },
+  {
+    "block": 5,
+    "jp": "私は友達を助けたので、とても嬉しかったです。",
+    "en": "I helped my friend, so I felt very happy."
+  },
+  {
+    "block": 5,
+    "jp": "人を助けると、自分の気分も良くなります。",
+    "en": "When I help others, I also feel good."
+  },
+  {
+    "block": 5,
+    "jp": "その経験のおかげで、私は考え方が変わりました。",
+    "en": "Because of that experience, my way of thinking changed."
+  },
+  {
+    "block": 5,
+    "jp": "私は思いやりが大切だと思います。",
+    "en": "I think compassion is important."
+  },
+  {
+    "block": 5,
+    "jp": "人を助けると、社会はもっと良くなります。",
+    "en": "If people help each other, society will become better."
+  },
+  {
+    "block": 5,
+    "jp": "なぜあなたは人を助けることが大切だと思いますか?",
+    "en": "Why do you think helping others is important?"
+  },
+  {
+    "block": 5,
+    "jp": "私はこれからも人を助けたいです。",
+    "en": "I want to keep helping people from now on."
+  }
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week7 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

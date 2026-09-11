@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week8</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week8 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  {
+    "block": 1,
+    "jp": "私に影響を与えてくれる人は英語の先生です。",
+    "en": "The person who inspires me is my English teacher."
+  },
+  {
+    "block": 1,
+    "jp": "彼は文法を役に立つものだと感じさせてくれる先生です。",
+    "en": "He is a teacher who makes grammar feel useful."
+  },
+  {
+    "block": 1,
+    "jp": "あなたが一番尊敬している先生は誰ですか？",
+    "en": "Who is the teacher who you respect the most?"
+  },
+  {
+    "block": 1,
+    "jp": "彼は私が大切なことを学んだ先生です。",
+    "en": "He is the teacher who I learned an important lesson from."
+  },
+  {
+    "block": 1,
+    "jp": "私は彼から、英語は完璧さではないと学びました。",
+    "en": "I learned from him that English is not about being perfect."
+  },
+  {
+    "block": 1,
+    "jp": "彼はミスを怖がる生徒にたくさん教えてきました。",
+    "en": "He has taught many students who are afraid of mistakes."
+  },
+  {
+    "block": 1,
+    "jp": "あなたは今までに英語でスピーチをしたことがありますか？",
+    "en": "Have you ever given a speech in English?"
+  },
+  {
+    "block": 1,
+    "jp": "彼は私が今でも覚えている話をしてくれました。",
+    "en": "He told me a story that I still remember."
+  },
+  {
+    "block": 1,
+    "jp": "私は小さなミスをすることを前ほど怖がらなくなりました。",
+    "en": "I have become less afraid of making small mistakes."
+  },
+  {
+    "block": 1,
+    "jp": "だからこそ、彼は私が一番尊敬している先生です。",
+    "en": "That's why he is the teacher who I respect the most."
+  },
+  {
+    "block": 2,
+    "jp": "私が不思議と好きな場所があります。",
+    "en": "There is a place which I strangely love."
+  },
+  {
+    "block": 2,
+    "jp": "暗渠とは、道路の下に隠された昔の川や水路です。",
+    "en": "An ankyo is an old river or waterway which has been hidden under a road."
+  },
+  {
+    "block": 2,
+    "jp": "それは、多くの人が気づかずに歩いている場所です。",
+    "en": "It is a place which many people walk over without noticing."
+  },
+  {
+    "block": 2,
+    "jp": "あなたが好きな静かな場所はありますか？",
+    "en": "Is there a quiet place that you love?"
+  },
+  {
+    "block": 2,
+    "jp": "それは街が残したパズルのように感じます。",
+    "en": "It feels like a puzzle that the city has left behind."
+  },
+  {
+    "block": 2,
+    "jp": "私は以前、隠れた川沿いを歩いたことがあります。",
+    "en": "I have walked along hidden rivers before."
+  },
+  {
+    "block": 2,
+    "jp": "先月、駅の近くで暗渠を見つけました。",
+    "en": "I found an ankyo near my station last month."
+  },
+  {
+    "block": 2,
+    "jp": "あなたは今までに暗渠を歩いたことがありますか？",
+    "en": "Have you ever walked along an ankyo?"
+  },
+  {
+    "block": 2,
+    "jp": "そこは、街が古い記憶を足元にしまっている場所です。",
+    "en": "It is a place where the city keeps its old memories under our feet."
+  },
+  {
+    "block": 2,
+    "jp": "私には、暗渠を見つけてとてもワクワクした瞬間がありました。",
+    "en": "I had a moment when I found an ankyo and got really excited."
+  },
+  {
+    "block": 3,
+    "jp": "私が英語学習で毎日使っているものは、スマホの写真フォルダです。",
+    "en": "What I use every day for English is the photo gallery on my phone."
+  },
+  {
+    "block": 3,
+    "jp": "それは英語アプリではありませんが、そこが役に立つ理由です。",
+    "en": "It is not an English app, but that is what makes it useful."
+  },
+  {
+    "block": 3,
+    "jp": "私はそれを何か月も使い続けています。",
+    "en": "I have used it for months."
+  },
+  {
+    "block": 3,
+    "jp": "私はランダムな写真を1枚選びます。",
+    "en": "I choose one random photo."
+  },
+  {
+    "block": 3,
+    "jp": "私はそのとき何が起きていたのかを説明します。",
+    "en": "I explain what was happening at that time."
+  },
+  {
+    "block": 3,
+    "jp": "あなたがこの方法について好きなところは何ですか？",
+    "en": "What do you like about this method?"
+  },
+  {
+    "block": 3,
+    "jp": "この方法の好きなところは、話題が尽きないことです。",
+    "en": "What I like about this method is that I never run out of topics."
+  },
+  {
+    "block": 3,
+    "jp": "私は何年も小さな思い出をスマホに残してきました。",
+    "en": "I have kept small memories on my phone for years."
+  },
+  {
+    "block": 3,
+    "jp": "あなたはどのくらいの期間、写真を英語練習に使っていますか？",
+    "en": "How long have you used photos for English practice?"
+  },
+  {
+    "block": 3,
+    "jp": "それが、この習慣について私が好きなところです。",
+    "en": "That is what I love about this habit."
+  },
+  {
+    "block": 4,
+    "jp": "私には、何でもない日を違って見せてくれる友達がいます。",
+    "en": "I have a friend who makes ordinary days look different."
+  },
+  {
+    "block": 4,
+    "jp": "彼は、隠れた物語を見つけるような人です。",
+    "en": "He is a person who finds hidden stories."
+  },
+  {
+    "block": 4,
+    "jp": "それが、彼と歩くと気持ちが軽くなる理由です。",
+    "en": "That is the reason why walking with him makes me feel lighter."
+  },
+  {
+    "block": 4,
+    "jp": "私が行き詰まっているとき、彼は真面目な説教をしません。",
+    "en": "When I feel stuck, he does not give me a serious lecture."
+  },
+  {
+    "block": 4,
+    "jp": "あなたが友達に助けられた理由は何ですか？",
+    "en": "What is the reason why your friend helped you?"
+  },
+  {
+    "block": 4,
+    "jp": "彼は、小さな川がどうやって道路の下に消えたのかを見せてくれました。",
+    "en": "He showed me how a small river disappeared under the road."
+  },
+  {
+    "block": 4,
+    "jp": "私はもうその川の名前を忘れてしまいました。",
+    "en": "I have already forgotten the name of the river."
+  },
+  {
+    "block": 4,
+    "jp": "あなたはもう宿題を終えましたか？",
+    "en": "Have you finished your homework yet?"
+  },
+  {
+    "block": 4,
+    "jp": "彼は私に、見方を変えれば悪い日も変わると気づかせてくれました。",
+    "en": "He has helped me realize that a bad day can change if I look at it differently."
+  },
+  {
+    "block": 4,
+    "jp": "だからこそ、彼は本人が思っている以上に私を助けてくれている友達です。",
+    "en": "That is why he is a friend who helps me more than he thinks."
+  },
+  {
+    "block": 5,
+    "jp": "私が好きだと思う本は、とても読みやすいです。",
+    "en": "A book that I think I like is very easy to read."
+  },
+  {
+    "block": 5,
+    "jp": "私には、本についてよく話す友達がいます。",
+    "en": "I have a friend who often talks about books."
+  },
+  {
+    "block": 5,
+    "jp": "これは、私が今必要だと思っている本です。",
+    "en": "This is a book that I think I need now."
+  },
+  {
+    "block": 5,
+    "jp": "面白いと思っていた本は、実は少し悲しい話でした。",
+    "en": "The book that I thought would be funny was actually a little sad."
+  },
+  {
+    "block": 5,
+    "jp": "その本を読む前、私は読書は退屈だと思っていました。",
+    "en": "Before I read the book, I had thought reading was boring."
+  },
+  {
+    "block": 5,
+    "jp": "あなたは今までに、同じ本を何度も読んだことがありますか？",
+    "en": "Have you ever read the same book many times?"
+  },
+  {
+    "block": 5,
+    "jp": "どんな本を読んでも、私は新しい表現を探します。",
+    "en": "Whatever book I read, I look for new expressions."
+  },
+  {
+    "block": 5,
+    "jp": "どこで読んでも、好きな本は私を落ち着かせてくれます。",
+    "en": "Wherever I read, my favorite book makes me feel calm."
+  },
+  {
+    "block": 5,
+    "jp": "なぜその本が好きなのか、私はうまく説明できません。",
+    "en": "I cannot explain well why I like the book."
+  },
+  {
+    "block": 5,
+    "jp": "その本は、私が気づいていなかった気持ちを教えてくれました。",
+    "en": "The book showed me what I had not noticed about my feelings."
+  }
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week8 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week1</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week1 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  {
+    "block": 1,
+    "jp": "私はたいてい7時に起きます。",
+    "en": "I usually wake up at seven in the morning."
+  },
+  {
+    "block": 1,
+    "jp": "顔を洗ってベッドを整えます。",
+    "en": "I wash my face and make my bed."
+  },
+  {
+    "block": 1,
+    "jp": "家族と朝ごはんを食べます。",
+    "en": "I eat breakfast with my family."
+  },
+  {
+    "block": 1,
+    "jp": "朝食のあと、歯を磨きます。",
+    "en": "I brush my teeth after breakfast."
+  },
+  {
+    "block": 1,
+    "jp": "時々音楽を聴きながら準備します。",
+    "en": "I sometimes listen to music while I get ready."
+  },
+  {
+    "block": 1,
+    "jp": "音楽は私をリラックスさせてくれます。",
+    "en": "Music makes me feel relaxed."
+  },
+  {
+    "block": 1,
+    "jp": "8時ごろに家を出ます。",
+    "en": "I leave home around eight o'clock."
+  },
+  {
+    "block": 1,
+    "jp": "電車で学校に行きます。",
+    "en": "I take the train to school."
+  },
+  {
+    "block": 1,
+    "jp": "朝は忙しいです。",
+    "en": "My mornings are busy."
+  },
+  {
+    "block": 1,
+    "jp": "でも元気に1日を始めるのが好きです。",
+    "en": "But I like starting each day with energy."
+  },
+  {
+    "block": 2,
+    "jp": "私はたいてい8時半に学校に着きます。",
+    "en": "I usually arrive at school around eight thirty."
+  },
+  {
+    "block": 2,
+    "jp": "まず友達にあいさつします。",
+    "en": "First, I greet my friends."
+  },
+  {
+    "block": 2,
+    "jp": "授業が始まる前に少し話します。",
+    "en": "I talk with them a little before class starts."
+  },
+  {
+    "block": 2,
+    "jp": "英語の授業が好きです。",
+    "en": "I like English class."
+  },
+  {
+    "block": 2,
+    "jp": "新しい単語やフレーズを学びます。",
+    "en": "I learn new words and phrases."
+  },
+  {
+    "block": 2,
+    "jp": "休み時間にバスケットボールをします。",
+    "en": "I play basketball during break time."
+  },
+  {
+    "block": 2,
+    "jp": "昼食をカフェテリアで食べます。",
+    "en": "I eat lunch in the cafeteria."
+  },
+  {
+    "block": 2,
+    "jp": "映画や音楽の話をします。",
+    "en": "We talk about movies or music."
+  },
+  {
+    "block": 2,
+    "jp": "授業は3時半に終わります。",
+    "en": "Classes finish at three thirty."
+  },
+  {
+    "block": 2,
+    "jp": "毎日新しいことを学べてうれしいです。",
+    "en": "I feel happy because I learn something new every day."
+  },
+  {
+    "block": 3,
+    "jp": "私は午後3時半に学校が終わります。",
+    "en": "My classes finish at three thirty in the afternoon."
+  },
+  {
+    "block": 3,
+    "jp": "授業のあと、図書館に残って宿題をします。",
+    "en": "After classes, I stay in the library and do my homework."
+  },
+  {
+    "block": 3,
+    "jp": "天気が良ければ友達とバスケをします。",
+    "en": "I play basketball with my friends if the weather is nice."
+  },
+  {
+    "block": 3,
+    "jp": "6時ごろ家に帰ります。",
+    "en": "I go home around six o'clock."
+  },
+  {
+    "block": 3,
+    "jp": "夕食の前にシャワーを浴びます。",
+    "en": "I take a shower before dinner."
+  },
+  {
+    "block": 3,
+    "jp": "家族と夕食を食べます。",
+    "en": "I eat dinner with my family."
+  },
+  {
+    "block": 3,
+    "jp": "今日の出来事を話します。",
+    "en": "We talk about what happened during the day."
+  },
+  {
+    "block": 3,
+    "jp": "夕食のあと英語を勉強します。",
+    "en": "I study English after dinner."
+  },
+  {
+    "block": 3,
+    "jp": "話す力を伸ばしたいです。",
+    "en": "I want to improve my speaking."
+  },
+  {
+    "block": 3,
+    "jp": "寝る前に音楽を聞いてリラックスします。",
+    "en": "I listen to music before going to bed to relax."
+  },
+  {
+    "block": 4,
+    "jp": "私は週末はだいたい9時ごろに起きます。",
+    "en": "I usually wake up at around nine a.m. on weekends."
+  },
+  {
+    "block": 4,
+    "jp": "起きたあと、朝ごはんを食べてYouTubeを見ます。",
+    "en": "After I get up, I eat breakfast and watch some videos on YouTube."
+  },
+  {
+    "block": 4,
+    "jp": "そのあと、買い物に行ったり友達とカフェで会ったりします。",
+    "en": "Then I sometimes go shopping or meet my friends at a café."
+  },
+  {
+    "block": 4,
+    "jp": "午後は家で英語を勉強したり本を読んだりします。",
+    "en": "In the afternoon, I often study English or read a book at home."
+  },
+  {
+    "block": 4,
+    "jp": "天気が良ければ公園を散歩します。",
+    "en": "If the weather is nice, I go for a walk in the park."
+  },
+  {
+    "block": 4,
+    "jp": "それはリラックスできるからです。",
+    "en": "Because it makes me feel relaxed."
+  },
+  {
+    "block": 4,
+    "jp": "夜は家族と一緒に夕食を食べます。",
+    "en": "In the evening, I have dinner with my family."
+  },
+  {
+    "block": 4,
+    "jp": "映画を見ることもあります。",
+    "en": "We sometimes watch a movie."
+  },
+  {
+    "block": 4,
+    "jp": "寝る前に来週の予定を確認します。",
+    "en": "Before I go to bed, I check my schedule for the next week."
+  },
+  {
+    "block": 4,
+    "jp": "音楽を聴いてから寝ます。",
+    "en": "I listen to music before I go to sleep."
+  },
+  {
+    "block": 5,
+    "jp": "私はいつも早く起きます。",
+    "en": "I usually wake up early."
+  },
+  {
+    "block": 5,
+    "jp": "朝起きたらまずコップ一杯の水を飲みます。",
+    "en": "After I get up, I drink a glass of water."
+  },
+  {
+    "block": 5,
+    "jp": "そのあと、数分間ストレッチをします。",
+    "en": "Then I stretch for a few minutes."
+  },
+  {
+    "block": 5,
+    "jp": "朝食には卵とヨーグルトを食べます。",
+    "en": "I eat eggs and yogurt for breakfast."
+  },
+  {
+    "block": 5,
+    "jp": "日中はできるだけ水を飲むようにしています。",
+    "en": "During the day, I try to drink enough water."
+  },
+  {
+    "block": 5,
+    "jp": "疲れたときは短い休憩を取ります。",
+    "en": "I take short breaks when I feel tired."
+  },
+  {
+    "block": 5,
+    "jp": "夜は散歩に行くこともあります。",
+    "en": "In the evening, I sometimes go for a walk."
+  },
+  {
+    "block": 5,
+    "jp": "寝る前に音楽を聴いてリラックスします。",
+    "en": "Before I go to bed, I listen to music to relax."
+  },
+  {
+    "block": 5,
+    "jp": "携帯電話は見ないようにしています。",
+    "en": "I try not to look at my phone."
+  },
+  {
+    "block": 5,
+    "jp": "本を読んでから寝ます。",
+    "en": "I read a book before I go to sleep."
+  }
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week1 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

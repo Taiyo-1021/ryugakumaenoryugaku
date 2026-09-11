@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week6</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --a-color: #16a34a;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 20px 20px;
+  }
+  .hidden { display: none !important; }
+
+  .progress-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .block-badge {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: rgba(37,99,235,0.18);
+    border: 1px solid rgba(96,165,250,0.4);
+    color: #93c5fd;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  .card {
+    width: min(90vw, 820px);
+    min-height: 40vh;
+    border-radius: 24px;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: box-shadow 0.3s ease;
+  }
+  .card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+  .card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+  .card-text {
+    width: 100%;
+    min-width: 0;
+    font-size: clamp(20px, 4.2vw, 42px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  .card.question .card-text { color: var(--q-color); }
+  .card.answer .card-text { color: var(--a-color); }
+
+  .bar-wrap {
+    width: min(90vw, 820px);
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    margin-top: 28px;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    background: var(--q-color);
+    border-radius: 6px;
+    transform-origin: left;
+  }
+  .bar.answer-bar { background: var(--a-color); }
+
+  .timer-num {
+    margin-top: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #e2e8f0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .start-title {
+    font-size: 30px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .start-sub {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 36px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  button.big-btn {
+    font-size: 22px;
+    font-weight: 700;
+    padding: 18px 48px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+  }
+  button.big-btn:active { transform: scale(0.97); }
+
+  .done-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-top" id="progressTop"></div>
+  <div class="block-badge hidden" id="blockBadge"></div>
+
+  <!-- Start screen -->
+  <div class="screen" id="startScreen">
+    <div class="start-title">瞬間英作文トレーニング</div>
+    <div class="start-sub">Week6 総復習　全50問　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </div>
+
+  <!-- Play screen -->
+  <div class="screen hidden" id="playScreen">
+    <div class="card question" id="card">
+      <div class="card-text" id="cardText"></div>
+    </div>
+    <div class="bar-wrap"><div class="bar" id="bar"></div></div>
+    <div class="timer-num" id="timerNum"></div>
+  </div>
+
+  <!-- Done screen -->
+  <div class="screen hidden" id="doneScreen">
+    <div class="done-title">お疲れさまでした！</div>
+    <div class="start-sub">全50問終了しました</div>
+    <button class="big-btn" id="restartBtn">もう一度</button>
+  </div>
+
+<script>
+const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
+
+const DATA = [
+  // ===== 1️⃣ (Day36) =====
+  {block:1, jp:"もし自由時間があれば、何をしますか？", en:"What will you do if you have free time?"},
+  {block:1, jp:"もし天気が良ければ、散歩に行きます。", en:"If the weather is nice, I will go for a walk."},
+  {block:1, jp:"もし疲れていたら、家で休む予定です。", en:"If I'm tired, I'm going to rest at home."},
+  {block:1, jp:"もし時間があれば、動画を見ます。", en:"If I have time, I will watch videos."},
+  {block:1, jp:"もし将来もっと時間があれば、新しい趣味を始めます。", en:"If I have more time in the future, I will start a new hobby."},
+  {block:1, jp:"もし丸一日休みがあったら、どこに行きますか？", en:"Where would you go if you had a full day off?"},
+  {block:1, jp:"もし雨なら、家にいる予定です。", en:"If it rains, I'm going to stay home."},
+  {block:1, jp:"もしもっとお金があったら、旅行に行くでしょう。", en:"If I had more money, I would go on a trip."},
+  {block:1, jp:"私は自由時間を大切にしています。なぜなら、リラックスできるからです。", en:"I value my free time because I can relax."},
+  {block:1, jp:"もしもっとやる気があれば、新しいことに挑戦するでしょう。", en:"If I had more motivation, I would try something new."},
+
+  // ===== 2️⃣ (Day37) =====
+  {block:2, jp:"もし私がお金持ちなら、家族を助けます。", en:"If I were rich, I would help my family."},
+  {block:2, jp:"もしお金があれば、奨学金を作ります。", en:"If I had money, I would create a scholarship."},
+  {block:2, jp:"もしあなたがお金持ちなら、何をしますか？", en:"What would you do if you were rich?"},
+  {block:2, jp:"もし学生がお金に困っていたら、私は助けたいです。", en:"If students had money problems, I would help them."},
+  {block:2, jp:"もし奨学金を作れたら、学生を支えられます。", en:"If I could create a scholarship, I could support students."},
+  {block:2, jp:"もし時間があれば、もっと勉強します。", en:"If I have time, I will study more."},
+  {block:2, jp:"もしお金を貯めたら、将来のために使います。", en:"If I save money, I will use it for my future."},
+  {block:2, jp:"もし私が有名なら、学校を作るでしょう。", en:"If I were famous, I would build a school."},
+  {block:2, jp:"私は人を助けたいです。なぜなら、教育は大切だからです。", en:"I want to help people because education is important."},
+  {block:2, jp:"もし私がお金持ちなら、お金を意味のあることに使います。", en:"If I were rich, I would use my money for something meaningful."},
+
+  // ===== 3️⃣ (Day38) =====
+  {block:3, jp:"もしどこでも旅行できるなら、どこに行きたいですか？", en:"Where would you go if you could travel anywhere?"},
+  {block:3, jp:"もしどこでも旅行できるなら、長い徒歩の旅をしたいです。", en:"If I could travel anywhere, I would take a long walking trip."},
+  {block:3, jp:"もし1か月休みがあれば、一人で旅をするでしょう。", en:"If I had one month off, I would travel alone."},
+  {block:3, jp:"もし大きな悩みにぶつかったら、私は旅に出るかもしれません。", en:"If I faced a big problem, I might go on a trip."},
+  {block:3, jp:"もしその道を歩き切れたら、とても誇りに思うでしょう。", en:"If I finished the route, I would feel very proud."},
+  {block:3, jp:"もし時間がもっとあれば、ゆっくり旅行します。", en:"If I had more time, I would travel slowly."},
+  {block:3, jp:"もし将来チャンスがあれば、長い旅を計画するつもりです。", en:"If I have the chance in the future, I'm going to plan a long trip."},
+  {block:3, jp:"あなたは旅行中に何をしてみたいですか？", en:"What would you like to do during the trip?"},
+  {block:3, jp:"私は一人で旅行したいです。なぜなら、自分と向き合えるからです。", en:"I want to travel alone because I can face myself."},
+  {block:3, jp:"旅行は大切です。なぜなら、人生を新しい見方で見られるからです。", en:"Traveling is important because it can help me see life in a new way."},
+
+  // ===== 4️⃣ (Day39) =====
+  {block:4, jp:"もし未来の自分に会えたら、最初に何を聞きますか？", en:"What would you ask first if you met your future self?"},
+  {block:4, jp:"もし未来の自分に会えたら、たくさん質問をします。", en:"If I met my future self, I would ask many questions."},
+  {block:4, jp:"もし彼がアドバイスをくれたら、私はそれに従うつもりです。", en:"If he gave me advice, I would follow it."},
+  {block:4, jp:"もし彼が「大丈夫」と言ってくれたら、私は安心します。", en:"If he told me, \"You will be fine,\" I would feel relieved."},
+  {block:4, jp:"もし未来の自分が今の私を見たら、何と言うと思いますか？", en:"What do you think your future self would say if he saw you now?"},
+  {block:4, jp:"私は自分の仕事と生活について聞きたいです。", en:"I want to ask about my job and lifestyle."},
+  {block:4, jp:"もし一つだけ質問できるなら、「私を誇りに思いますか？」と聞きます。", en:"If I could ask only one question, I would ask, \"Are you proud of me?\""},
+  {block:4, jp:"彼は、心配しすぎるなと言うかもしれません。", en:"He might tell me not to worry too much."},
+  {block:4, jp:"私は未来の自分が誇りに思うように生きたいです。", en:"I want to live in a way that my future self will be proud of."},
+  {block:4, jp:"私は努力を続けます。なぜなら、未来は毎日作るものだからです。", en:"I will keep making an effort because the future is something I build every day."},
+
+  // ===== 5️⃣ (Day40) =====
+  {block:5, jp:"もし明日雨なら、家にいます。", en:"If it rains tomorrow, I will stay home."},
+  {block:5, jp:"もし雨が強ければ、予定をキャンセルします。", en:"If the rain is heavy, I will cancel my plans."},
+  {block:5, jp:"明日雨なら、あなたはどうしますか?", en:"What will you do if it rains tomorrow?"},
+  {block:5, jp:"雨なら、私は家で英語を勉強するつもりです。", en:"If it rains, I'm going to study English at home."},
+  {block:5, jp:"もし雨が止んだら、散歩に行きます。", en:"If the rain stops, I will go for a walk."},
+  {block:5, jp:"もし晴れていたら、友達に会います。", en:"If it were sunny, I would meet my friends."},
+  {block:5, jp:"雨の日は、リラックスできるかもしれません。", en:"I might be able to relax on rainy days."},
+  {block:5, jp:"もし1日中雨なら、家でタスクを終わらせます。", en:"If it rains all day, I will finish my tasks at home."},
+  {block:5, jp:"もし天気が良ければ、出かけたいです。", en:"If the weather is good, I want to go out."},
+  {block:5, jp:"雨の日は、ゆっくり休めるので好きです。", en:"I like rainy days because I can relax."}
+];
+
+const Q_SEC = 7;
+const A_SEC = 5;
+
+let idx = 0;
+let phase = "question";
+let timerInterval = null;
+let remaining = 0;
+
+const startScreen = document.getElementById("startScreen");
+const playScreen = document.getElementById("playScreen");
+const doneScreen = document.getElementById("doneScreen");
+const card = document.getElementById("card");
+const cardText = document.getElementById("cardText");
+const bar = document.getElementById("bar");
+const timerNum = document.getElementById("timerNum");
+const progressTop = document.getElementById("progressTop");
+const blockBadge = document.getElementById("blockBadge");
+
+function startSession() {
+  idx = 0;
+  startScreen.classList.add("hidden");
+  doneScreen.classList.add("hidden");
+  playScreen.classList.remove("hidden");
+  blockBadge.classList.remove("hidden");
+  showQuestion();
+}
+
+function updateTopProgress() {
+  progressTop.textContent = `${idx + 1} / ${DATA.length}`;
+  const block = DATA[idx].block;
+  blockBadge.textContent = `Week6 ${BLOCK_EMOJI[block - 1]}`;
+}
+
+function showQuestion() {
+  phase = "question";
+  updateTopProgress();
+  const item = DATA[idx];
+  card.classList.remove("answer");
+  card.classList.add("question");
+  cardText.textContent = item.jp;
+  bar.classList.remove("answer-bar");
+  runTimer(Q_SEC, showAnswer);
+}
+
+function showAnswer() {
+  phase = "answer";
+  const item = DATA[idx];
+  card.classList.remove("question");
+  card.classList.add("answer");
+  cardText.textContent = item.en;
+  bar.classList.add("answer-bar");
+  runTimer(A_SEC, nextItem);
+}
+
+function nextItem() {
+  idx++;
+  if (idx >= DATA.length) {
+    finishSession();
+    return;
+  }
+  showQuestion();
+}
+
+function finishSession() {
+  clearInterval(timerInterval);
+  playScreen.classList.add("hidden");
+  doneScreen.classList.remove("hidden");
+  progressTop.textContent = "";
+  blockBadge.classList.add("hidden");
+}
+
+function runTimer(seconds, onComplete) {
+  clearInterval(timerInterval);
+  remaining = seconds;
+  timerNum.textContent = remaining;
+
+  bar.style.transition = "none";
+  bar.style.width = "100%";
+  void bar.offsetWidth;
+  bar.style.transition = `width ${seconds}s linear`;
+  bar.style.width = "0%";
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      onComplete();
+    } else {
+      timerNum.textContent = remaining;
+    }
+  }, 1000);
+}
+
+document.getElementById("startBtn").addEventListener("click", startSession);
+document.getElementById("restartBtn").addEventListener("click", startSession);
+</script>
+</body>
+</html>

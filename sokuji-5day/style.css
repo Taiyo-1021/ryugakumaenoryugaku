@@ -1,0 +1,202 @@
+:root {
+  --q-color: #2563eb;
+  --a-color: #16a34a;
+  --bg: #0f172a;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --muted: #94a3b8;
+}
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+}
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.hidden { display: none !important; }
+
+.progress-top {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  text-align: center;
+  padding: 14px;
+  color: var(--muted);
+  font-size: 16px;
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: rgba(37,99,235,0.15);
+  color: #93c5fd;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin-bottom: 18px;
+}
+
+.card {
+  width: min(90vw, 820px);
+  min-height: 40vh;
+  border-radius: 24px;
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  transition: box-shadow 0.3s ease;
+}
+.card.question { box-shadow: 0 0 0 6px var(--q-color), 0 20px 60px rgba(0,0,0,0.35); }
+.card.answer   { box-shadow: 0 0 0 6px var(--a-color), 0 20px 60px rgba(0,0,0,0.35); }
+
+.card-text {
+  width: 100%;
+  min-width: 0;
+  font-size: clamp(20px, 4.2vw, 42px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.card.question .card-text { color: var(--q-color); }
+.card.answer .card-text { color: var(--a-color); }
+
+.bar-wrap {
+  width: min(90vw, 820px);
+  height: 10px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  margin-top: 28px;
+  overflow: hidden;
+}
+.bar {
+  height: 100%;
+  width: 100%;
+  background: var(--q-color);
+  border-radius: 6px;
+  transform-origin: left;
+}
+.bar.answer-bar { background: var(--a-color); }
+
+.timer-num {
+  margin-top: 16px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.start-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.start-sub {
+  color: var(--muted);
+  font-size: 16px;
+  margin-bottom: 36px;
+  text-align: center;
+  line-height: 1.8;
+}
+button.big-btn, a.big-btn {
+  display: inline-block;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 18px 48px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #16a34a);
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(37,99,235,0.4);
+}
+button.big-btn:active, a.big-btn:active { transform: scale(0.97); }
+
+.btn-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+a.ghost-btn {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.25);
+  color: #e2e8f0;
+  text-decoration: none;
+}
+
+.done-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 24px;
+}
+
+/* ---- Home page ---- */
+.home-wrap {
+  width: min(90vw, 720px);
+  text-align: center;
+}
+.home-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+}
+.home-sub {
+  color: var(--muted);
+  font-size: 16px;
+  margin-bottom: 36px;
+  line-height: 1.8;
+}
+.day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.day-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 20px 28px;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.day-card:hover { transform: translateY(-2px); border-color: #2563eb; }
+.day-card .day-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+.day-card .day-count {
+  font-size: 15px;
+  color: var(--muted);
+}
+.day-card .day-arrow {
+  font-size: 20px;
+  color: #60a5fa;
+}
