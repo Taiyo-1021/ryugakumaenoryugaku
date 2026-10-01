@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>瞬間英作文トレーニング Week1</title>
+<title>瞬間英作文トレーニング Week1 Day5</title>
 <style>
   :root {
     --q-color: #2563eb;
@@ -120,7 +120,7 @@
   .start-sub {
     color: var(--muted);
     font-size: 16px;
-    margin-bottom: 36px;
+    margin-bottom: 24px;
     text-align: center;
     line-height: 1.8;
   }
@@ -136,6 +136,23 @@
     box-shadow: 0 10px 30px rgba(37,99,235,0.4);
   }
   button.big-btn:active { transform: scale(0.97); }
+
+  .btn-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  a.ghost-btn {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px 32px;
+    border-radius: 999px;
+    border: 2px solid rgba(255,255,255,0.25);
+    color: #e2e8f0;
+    text-decoration: none;
+  }
 
   .done-title {
     font-size: 34px;
@@ -153,8 +170,11 @@
   <!-- Start screen -->
   <div class="screen" id="startScreen">
     <div class="start-title">瞬間英作文トレーニング</div>
-    <div class="start-sub">Week1 総復習　1日10問 × 5周　問題7秒 → 解答5秒 で自動的に進みます</div>
-    <button class="big-btn" id="startBtn">スタート</button>
+    <div class="start-sub">Week1 Day5　全10問 × 5周　問題7秒 → 解答5秒 で自動的に進みます</div>
+    <div class="btn-row">
+      <button class="big-btn" id="startBtn">スタート</button>
+      <a class="ghost-btn" href="week1-home.html">Week1 一覧に戻る</a>
+    </div>
   </div>
 
   <!-- Play screen -->
@@ -169,278 +189,61 @@
   <!-- Done screen -->
   <div class="screen hidden" id="doneScreen">
     <div class="done-title">お疲れさまでした！</div>
-    <div class="start-sub">5日分、各10問 × 5周が終了しました</div>
-    <button class="big-btn" id="restartBtn">もう一度</button>
+    <div class="start-sub">10問 × 5周が終了しました</div>
+    <div class="btn-row">
+      <button class="big-btn" id="restartBtn">もう一度</button>
+      <a class="ghost-btn" href="week1-home.html">Week1 一覧に戻る</a>
+    </div>
   </div>
 
 <script>
-const FLAT_DATA = [
+const DATA = [
   {
-    "block": 1,
-    "jp": "私はたいてい7時に起きます。",
-    "en": "I usually wake up at seven in the morning."
-  },
-  {
-    "block": 1,
-    "jp": "顔を洗ってベッドを整えます。",
-    "en": "I wash my face and make my bed."
-  },
-  {
-    "block": 1,
-    "jp": "家族と朝ごはんを食べます。",
-    "en": "I eat breakfast with my family."
-  },
-  {
-    "block": 1,
-    "jp": "朝食のあと、歯を磨きます。",
-    "en": "I brush my teeth after breakfast."
-  },
-  {
-    "block": 1,
-    "jp": "時々音楽を聴きながら準備します。",
-    "en": "I sometimes listen to music while I get ready."
-  },
-  {
-    "block": 1,
-    "jp": "音楽は私をリラックスさせてくれます。",
-    "en": "Music makes me feel relaxed."
-  },
-  {
-    "block": 1,
-    "jp": "8時ごろに家を出ます。",
-    "en": "I leave home around eight o'clock."
-  },
-  {
-    "block": 1,
-    "jp": "電車で学校に行きます。",
-    "en": "I take the train to school."
-  },
-  {
-    "block": 1,
-    "jp": "朝は忙しいです。",
-    "en": "My mornings are busy."
-  },
-  {
-    "block": 1,
-    "jp": "でも元気に1日を始めるのが好きです。",
-    "en": "But I like starting each day with energy."
-  },
-  {
-    "block": 2,
-    "jp": "私はたいてい8時半に学校に着きます。",
-    "en": "I usually arrive at school around eight thirty."
-  },
-  {
-    "block": 2,
-    "jp": "まず友達にあいさつします。",
-    "en": "First, I greet my friends."
-  },
-  {
-    "block": 2,
-    "jp": "授業が始まる前に少し話します。",
-    "en": "I talk with them a little before class starts."
-  },
-  {
-    "block": 2,
-    "jp": "英語の授業が好きです。",
-    "en": "I like English class."
-  },
-  {
-    "block": 2,
-    "jp": "新しい単語やフレーズを学びます。",
-    "en": "I learn new words and phrases."
-  },
-  {
-    "block": 2,
-    "jp": "休み時間にバスケットボールをします。",
-    "en": "I play basketball during break time."
-  },
-  {
-    "block": 2,
-    "jp": "昼食をカフェテリアで食べます。",
-    "en": "I eat lunch in the cafeteria."
-  },
-  {
-    "block": 2,
-    "jp": "映画や音楽の話をします。",
-    "en": "We talk about movies or music."
-  },
-  {
-    "block": 2,
-    "jp": "授業は3時半に終わります。",
-    "en": "Classes finish at three thirty."
-  },
-  {
-    "block": 2,
-    "jp": "毎日新しいことを学べてうれしいです。",
-    "en": "I feel happy because I learn something new every day."
-  },
-  {
-    "block": 3,
-    "jp": "私は午後3時半に学校が終わります。",
-    "en": "My classes finish at three thirty in the afternoon."
-  },
-  {
-    "block": 3,
-    "jp": "授業のあと、図書館に残って宿題をします。",
-    "en": "After classes, I stay in the library and do my homework."
-  },
-  {
-    "block": 3,
-    "jp": "天気が良ければ友達とバスケをします。",
-    "en": "I play basketball with my friends if the weather is nice."
-  },
-  {
-    "block": 3,
-    "jp": "6時ごろ家に帰ります。",
-    "en": "I go home around six o'clock."
-  },
-  {
-    "block": 3,
-    "jp": "夕食の前にシャワーを浴びます。",
-    "en": "I take a shower before dinner."
-  },
-  {
-    "block": 3,
-    "jp": "家族と夕食を食べます。",
-    "en": "I eat dinner with my family."
-  },
-  {
-    "block": 3,
-    "jp": "今日の出来事を話します。",
-    "en": "We talk about what happened during the day."
-  },
-  {
-    "block": 3,
-    "jp": "夕食のあと英語を勉強します。",
-    "en": "I study English after dinner."
-  },
-  {
-    "block": 3,
-    "jp": "話す力を伸ばしたいです。",
-    "en": "I want to improve my speaking."
-  },
-  {
-    "block": 3,
-    "jp": "寝る前に音楽を聞いてリラックスします。",
-    "en": "I listen to music before going to bed to relax."
-  },
-  {
-    "block": 4,
-    "jp": "私は週末はだいたい9時ごろに起きます。",
-    "en": "I usually wake up at around nine a.m. on weekends."
-  },
-  {
-    "block": 4,
-    "jp": "起きたあと、朝ごはんを食べてYouTubeを見ます。",
-    "en": "After I get up, I eat breakfast and watch some videos on YouTube."
-  },
-  {
-    "block": 4,
-    "jp": "そのあと、買い物に行ったり友達とカフェで会ったりします。",
-    "en": "Then I sometimes go shopping or meet my friends at a café."
-  },
-  {
-    "block": 4,
-    "jp": "午後は家で英語を勉強したり本を読んだりします。",
-    "en": "In the afternoon, I often study English or read a book at home."
-  },
-  {
-    "block": 4,
-    "jp": "天気が良ければ公園を散歩します。",
-    "en": "If the weather is nice, I go for a walk in the park."
-  },
-  {
-    "block": 4,
-    "jp": "それはリラックスできるからです。",
-    "en": "Because it makes me feel relaxed."
-  },
-  {
-    "block": 4,
-    "jp": "夜は家族と一緒に夕食を食べます。",
-    "en": "In the evening, I have dinner with my family."
-  },
-  {
-    "block": 4,
-    "jp": "映画を見ることもあります。",
-    "en": "We sometimes watch a movie."
-  },
-  {
-    "block": 4,
-    "jp": "寝る前に来週の予定を確認します。",
-    "en": "Before I go to bed, I check my schedule for the next week."
-  },
-  {
-    "block": 4,
-    "jp": "音楽を聴いてから寝ます。",
-    "en": "I listen to music before I go to sleep."
-  },
-  {
-    "block": 5,
     "jp": "私はいつも早く起きます。",
     "en": "I usually wake up early."
   },
   {
-    "block": 5,
     "jp": "朝起きたらまずコップ一杯の水を飲みます。",
     "en": "After I get up, I drink a glass of water."
   },
   {
-    "block": 5,
     "jp": "そのあと、数分間ストレッチをします。",
     "en": "Then I stretch for a few minutes."
   },
   {
-    "block": 5,
     "jp": "朝食には卵とヨーグルトを食べます。",
     "en": "I eat eggs and yogurt for breakfast."
   },
   {
-    "block": 5,
     "jp": "日中はできるだけ水を飲むようにしています。",
     "en": "During the day, I try to drink enough water."
   },
   {
-    "block": 5,
     "jp": "疲れたときは短い休憩を取ります。",
     "en": "I take short breaks when I feel tired."
   },
   {
-    "block": 5,
     "jp": "夜は散歩に行くこともあります。",
     "en": "In the evening, I sometimes go for a walk."
   },
   {
-    "block": 5,
     "jp": "寝る前に音楽を聴いてリラックスします。",
     "en": "Before I go to bed, I listen to music to relax."
   },
   {
-    "block": 5,
     "jp": "携帯電話は見ないようにしています。",
     "en": "I try not to look at my phone."
   },
   {
-    "block": 5,
     "jp": "本を読んでから寝ます。",
     "en": "I read a book before I go to sleep."
   }
 ];
 
-const TOTAL_DAYS = 5;
-const ROUNDS_PER_DAY = 5;
-const QUESTIONS_PER_DAY = 10;
-
-// Group the flat 50-item list into 5 days of 10 questions each.
-const DAYS = [];
-for (let d = 0; d < TOTAL_DAYS; d++) {
-  DAYS.push(FLAT_DATA.slice(d * QUESTIONS_PER_DAY, (d + 1) * QUESTIONS_PER_DAY));
-}
-
+const ROUNDS = 5;
 const Q_SEC = 7;
 const A_SEC = 5;
 
-let dayIdx = 0;
 let round = 1;
 let qIdx = 0;
 let phase = "question";
@@ -458,7 +261,6 @@ const progressTop = document.getElementById("progressTop");
 const blockBadge = document.getElementById("blockBadge");
 
 function startSession() {
-  dayIdx = 0;
   round = 1;
   qIdx = 0;
   startScreen.classList.add("hidden");
@@ -469,14 +271,14 @@ function startSession() {
 }
 
 function updateTopProgress() {
-  progressTop.textContent = `${round}周目 / ${ROUNDS_PER_DAY}周　${qIdx + 1} / ${QUESTIONS_PER_DAY}問`;
-  blockBadge.textContent = `Day ${dayIdx + 1} / ${TOTAL_DAYS}`;
+  progressTop.textContent = `${round}周目 / ${ROUNDS}周　${qIdx + 1} / ${DATA.length}問`;
+  blockBadge.textContent = `Week1 Day5`;
 }
 
 function showQuestion() {
   phase = "question";
   updateTopProgress();
-  const item = DAYS[dayIdx][qIdx];
+  const item = DATA[qIdx];
   card.classList.remove("answer");
   card.classList.add("question");
   cardText.textContent = item.jp;
@@ -486,7 +288,7 @@ function showQuestion() {
 
 function showAnswer() {
   phase = "answer";
-  const item = DAYS[dayIdx][qIdx];
+  const item = DATA[qIdx];
   card.classList.remove("question");
   card.classList.add("answer");
   cardText.textContent = item.en;
@@ -496,21 +298,13 @@ function showAnswer() {
 
 function nextItem() {
   qIdx++;
-  if (qIdx < QUESTIONS_PER_DAY) {
+  if (qIdx < DATA.length) {
     showQuestion();
     return;
   }
-  // この周の10問が終了
   qIdx = 0;
   round++;
-  if (round <= ROUNDS_PER_DAY) {
-    showQuestion();
-    return;
-  }
-  // 5周終了、次の日へ
-  round = 1;
-  dayIdx++;
-  if (dayIdx >= TOTAL_DAYS) {
+  if (round > ROUNDS) {
     finishSession();
     return;
   }

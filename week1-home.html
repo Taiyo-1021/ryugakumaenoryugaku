@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瞬間英作文トレーニング Week1</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --muted: #94a3b8;
+    --accent1: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    min-height: 100%;
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 80px;
+  }
+  .title {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+    color: #f1f5f9;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;
+    line-height: 1.8;
+    margin-bottom: 40px;
+    max-width: 520px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 720px;
+  }
+  a.day-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  a.day-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent1);
+  }
+  .day-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .day-count {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .back-link {
+    margin-top: 40px;
+    color: var(--muted);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .back-link:hover { color: #e2e8f0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">瞬間英作文トレーニング Week1</div>
+    <div class="sub">日を選んでください。各日10問 × 5周、問題7秒 → 解答5秒で自動的に進みます。</div>
+    <div class="grid">
+      <a class="day-card" href="week1-day1.html">
+        <span class="day-name">Day 1</span>
+        <span class="day-count">10問 × 5周</span>
+      </a>
+      <a class="day-card" href="week1-day2.html">
+        <span class="day-name">Day 2</span>
+        <span class="day-count">10問 × 5周</span>
+      </a>
+      <a class="day-card" href="week1-day3.html">
+        <span class="day-name">Day 3</span>
+        <span class="day-count">10問 × 5周</span>
+      </a>
+      <a class="day-card" href="week1-day4.html">
+        <span class="day-name">Day 4</span>
+        <span class="day-count">10問 × 5周</span>
+      </a>
+      <a class="day-card" href="week1-day5.html">
+        <span class="day-name">Day 5</span>
+        <span class="day-count">10問 × 5周</span>
+      </a>
+    </div>
+    <a class="back-link" href="sokuji-home.html">← Week一覧に戻る</a>
+  </div>
+</body>
+</html>
