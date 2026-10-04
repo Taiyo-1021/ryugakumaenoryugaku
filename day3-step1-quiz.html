@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>STEP1 復習テスト</title>
+<style>
+  :root{
+    --blue:#2563eb;
+    --blue-dark:#1d4ed8;
+    --green:#16a34a;
+    --red:#dc2626;
+    --gray:#6b7280;
+    --bg:#f3f4f6;
+    --card:#ffffff;
+    --text:#1f2937;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding:20px 16px 40px;
+    display:flex;
+    flex-direction:column;
+  }
+  .card{
+    background:var(--card);
+    border-radius:16px;
+    padding:24px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  }
+  h1{
+    font-size:1.4rem;
+    margin:0 0 8px;
+  }
+  h2{
+    font-size:1.1rem;
+    margin:0 0 12px;
+  }
+  p{
+    line-height:1.6;
+  }
+  .muted{color:var(--gray);font-size:0.9rem;}
+
+  /* start screen */
+  #start-screen ul{
+    padding-left:1.2em;
+    line-height:1.8;
+    color:var(--text);
+  }
+  .big-btn{
+    width:100%;
+    padding:16px;
+    font-size:1.1rem;
+    font-weight:bold;
+    border:none;
+    border-radius:12px;
+    background:var(--blue);
+    color:#fff;
+    cursor:pointer;
+    margin-top:20px;
+    transition:background 0.15s;
+  }
+  .big-btn:active{background:var(--blue-dark);}
+  .big-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+
+  /* progress */
+  .progress-wrap{
+    margin-bottom:16px;
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .progress-bar-bg{
+    width:100%;
+    height:8px;
+    background:#e5e7eb;
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .progress-bar-fill{
+    height:100%;
+    background:var(--blue);
+    transition:width 0.2s;
+  }
+  .timer-bar-bg{
+    width:100%;
+    height:5px;
+    background:#e5e7eb;
+    border-radius:3px;
+    overflow:hidden;
+    margin-top:8px;
+  }
+  .timer-bar-fill{
+    height:100%;
+    background:var(--green);
+    transition:width 1s linear;
+  }
+  .section-tag{
+    display:inline-block;
+    font-size:0.75rem;
+    font-weight:bold;
+    padding:3px 10px;
+    border-radius:999px;
+    margin-bottom:10px;
+    color:#fff;
+  }
+  .tag-pattern{background:#7c3aed;}
+  .tag-chunk{background:#16a34a;}
+  .day-tag{
+    display:inline-block;
+    font-size:0.7rem;
+    font-weight:bold;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:6px;
+    background:#e5e7eb;
+    color:var(--gray);
+  }
+
+  .question-text{
+    font-size:1.15rem;
+    line-height:1.7;
+    margin:0 0 20px;
+    white-space:pre-wrap;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .option-btn{
+    text-align:left;
+    padding:16px;
+    font-size:1rem;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    background:#fff;
+    cursor:pointer;
+    transition:border-color 0.15s, background 0.15s;
+    line-height:1.5;
+  }
+  .option-btn:active{background:#f3f4f6;}
+  .option-btn.selected-correct{
+    border-color:var(--green);
+    background:#f0fdf4;
+  }
+  .option-btn.selected-wrong{
+    border-color:var(--red);
+    background:#fef2f2;
+  }
+  .option-btn.reveal-correct{
+    border-color:var(--green);
+    background:#f0fdf4;
+  }
+  .option-btn:disabled{cursor:default;}
+
+  .feedback-box{
+    margin-top:18px;
+    padding:14px 16px;
+    border-radius:12px;
+    font-size:0.95rem;
+    line-height:1.6;
+  }
+  .feedback-correct{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+  .feedback-wrong{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+
+  /* result screen */
+  .score-circle{
+    text-align:center;
+    margin:10px 0 24px;
+  }
+  .score-num{
+    font-size:2.6rem;
+    font-weight:bold;
+    color:var(--blue);
+  }
+  .score-sub{
+    color:var(--gray);
+    font-size:0.95rem;
+  }
+  .result-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:16px;
+  }
+  .result-item-correct{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:#f0fdf4;
+    border-radius:10px;
+    font-size:0.9rem;
+    color:#166534;
+  }
+  .result-item-correct .mark{font-weight:bold;font-size:1.1rem;}
+  .result-item-wrong{
+    padding:14px 16px;
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    border-radius:12px;
+  }
+  .result-item-wrong .q-num{
+    font-weight:bold;
+    color:var(--red);
+    margin-bottom:6px;
+    font-size:0.9rem;
+  }
+  .result-item-wrong .q-text{
+    margin:0 0 10px;
+    font-size:0.98rem;
+    line-height:1.6;
+    white-space:pre-wrap;
+  }
+  .answer-row{
+    font-size:0.9rem;
+    margin:4px 0;
+  }
+  .answer-row .label{
+    color:var(--gray);
+    margin-right:4px;
+  }
+  .your-answer{color:var(--red);font-weight:bold;}
+  .correct-answer{color:var(--green);font-weight:bold;}
+  .explain-box{
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px dashed #fecaca;
+    font-size:0.88rem;
+    color:#7f1d1d;
+    line-height:1.6;
+  }
+  .retry-btn{
+    margin-top:24px;
+  }
+  .copy-btn{
+    background:var(--green);
+    margin-top:16px;
+  }
+  .copy-btn:active{
+    background:#128a45;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const QUESTIONS = [
+  // ---- チャンク問題（10問：Day1 5問 ＋ Day2 5問） ----
+  { id:1, day:1, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I usually wake up ___ 7 o'clock in the morning.\"",
+    options:["at", "in", "on"], correct:0,
+    explanation:"時刻の前の前置詞はat。" },
+  { id:2, day:1, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I always eat breakfast ___ my family.\"",
+    options:["with", "by", "at"], correct:0,
+    explanation:"「〜と一緒に」はwith。" },
+  { id:3, day:1, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I look busy in the morning, but I ___ great.\"",
+    options:["feel", "feeling", "am feel"], correct:0,
+    explanation:"「〜に感じる」はfeel＋形容詞。be動詞とfeelは並べない。" },
+  { id:4, day:1, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I sometimes listen ___ music while I get ready.\"",
+    options:["to", "at", "for"], correct:0,
+    explanation:"「〜を聴く」はlisten to。" },
+  { id:5, day:1, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"My mornings are busy, but I like ___ each day with energy.\"",
+    options:["starting", "start", "started"], correct:0,
+    explanation:"likeの後ろは動名詞（-ing）。like starting（始めることが好き）。" },
+  { id:6, day:2, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I usually arrive ___ school around 8:30.\"",
+    options:["at", "to", "on"], correct:0,
+    explanation:"arriveは自動詞。建物など地点に着くときはarrive at。" },
+  { id:7, day:2, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"First, I ___ my friends.\"",
+    options:["greet", "greet to", "greeting"], correct:0,
+    explanation:"greetは他動詞なので、すぐ後ろにO（my friends）を置く。" },
+  { id:8, day:2, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I always try to ___ carefully.\"",
+    options:["listen", "listening", "listened"], correct:0,
+    explanation:"try toの後ろは動詞の原形。" },
+  { id:9, day:2, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"I like English because I ___ talk to foreigners.\"",
+    options:["can", "can to", "am can"], correct:0,
+    explanation:"canの後ろは動詞の原形。to・be動詞は入れない。" },
+  { id:10, day:2, type:"chunk",
+    question:"空欄に入る正しい形はどれ？（チャンク表より）\n\"During break time, I sometimes ___ basketball.\"",
+    options:["play", "playing", "plays"], correct:0,
+    explanation:"主語Iの後ろは動詞の原形（現在形）。スポーツにtheはつけない。" },
+
+  // ---- 文型判定問題（10問：Day1 5問 ＋ Day2 5問） ----
+  { id:11, day:1, type:"pattern",
+    question:"この文は第何文型？\n\"I wake up at 7 o'clock.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:0,
+    explanation:"Oがない第1文型。at 7 o'clockは時間を表すM。" },
+  { id:12, day:1, type:"pattern",
+    question:"この文は第何文型？\n\"My mornings are busy.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:1,
+    explanation:"My mornings＝busyがイコールになる第2文型。" },
+  { id:13, day:1, type:"pattern",
+    question:"この文は第何文型？\n\"I look busy in the morning.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:1,
+    explanation:"I＝busyがイコール。lookは連結動詞なので第2文型。" },
+  { id:14, day:1, type:"pattern",
+    question:"この文は第何文型？\n\"I am a morning person.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:1,
+    explanation:"I＝a morning person。Cが名詞の第2文型。" },
+  { id:15, day:1, type:"pattern",
+    question:"この文は第何文型？\n\"I leave home around 8 o'clock.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:0,
+    explanation:"homeは「家を出る」の行き先を表すM（副詞）。O・Cがない第1文型。" },
+  { id:16, day:2, type:"pattern",
+    question:"この文は第何文型？\n\"I greet my friends.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:2,
+    explanation:"greetは他動詞。my friendsがOになる第3文型。" },
+  { id:17, day:2, type:"pattern",
+    question:"この文は第何文型？\n\"I arrive at school around 8:30.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:0,
+    explanation:"arriveは自動詞。at school / around 8:30はMなので第1文型。" },
+  { id:18, day:2, type:"pattern",
+    question:"この文は第何文型？\n\"English class is fun.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:1,
+    explanation:"English class＝funがイコールになる第2文型。" },
+  { id:19, day:2, type:"pattern",
+    question:"この文は第何文型？\n\"I learn many new words.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:2,
+    explanation:"many new wordsがOになる第3文型（I≠many new words）。" },
+  { id:20, day:2, type:"pattern",
+    question:"この文は第何文型？\n\"We talk about music or movies.\"",
+    options:["第1文型（SV）", "第2文型（SVC）", "第3文型（SVO）"], correct:0,
+    explanation:"talkは自動詞。about music or moviesはMなので第1文型。" },
+];
+
+const TYPE_LABEL = { chunk:"チャンク", pattern:"文型" };
+const TYPE_TAGCLASS = { chunk:"tag-chunk", pattern:"tag-pattern" };
+
+const DAYS = Array.from(new Set(QUESTIONS.map(q => q.day))).sort((a,b)=>a-b);
+const DAY_LABEL = DAYS.map(d => "Day" + d).join("・");
+const CHUNK_COUNT = QUESTIONS.filter(q => q.type === "chunk").length;
+const PATTERN_COUNT = QUESTIONS.filter(q => q.type === "pattern").length;
+
+const TIME_PER_Q = 40; // seconds, visual only
+
+let state = {
+  screen: "start", // start | quiz | result
+  quizOrder: [],
+  current: 0,
+  answers: [], // { selected, isCorrect }
+  locked: false,
+  timeLeft: TIME_PER_Q,
+  timerId: null,
+};
+
+const app = document.getElementById("app");
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(q){
+  const idxs = shuffle(q.options.map((_, i) => i));
+  return { ...q, options: idxs.map(i => q.options[i]), correct: idxs.indexOf(q.correct) };
+}
+
+function buildQuizOrder(){
+  const chunkQs = shuffle(QUESTIONS.filter(q => q.type === "chunk"));
+  const patternQs = shuffle(QUESTIONS.filter(q => q.type === "pattern"));
+  return [...chunkQs, ...patternQs].map(shuffleOptions);
+}
+
+function render(){
+  if(state.screen === "start") renderStart();
+  else if(state.screen === "quiz") renderQuiz();
+  else renderResult();
+}
+
+function renderStart(){
+  app.innerHTML = `
+    <div class="card" id="start-screen">
+      <h1>${DAY_LABEL} STEP1 復習テスト</h1>
+      <p class="muted">教材に取り組んだ翌日に受けるテストです。${DAYS.length===1 ? "前日分" : "直近2日分"}（${DAY_LABEL}）のチャンク・文型が身についているか確認します。</p>
+      <ul>
+        <li>チャンク問題 ${CHUNK_COUNT}問 → 文型判定問題 ${PATTERN_COUNT}問 の順（合計${QUESTIONS.length}問・約10分）</li>
+        <li>1問ずつ進み、選んだらすぐ次に進みます</li>
+        <li>前の問題には戻れません</li>
+        <li>終了後、間違えた問題だけ解説つきで確認できます</li>
+      </ul>
+      <button class="big-btn" id="start-btn">テストを始める</button>
+    </div>
+  `;
+  document.getElementById("start-btn").onclick = () => {
+    state.screen = "quiz";
+    state.quizOrder = buildQuizOrder();
+    state.current = 0;
+    state.answers = [];
+    startQuestion();
+  };
+}
+
+function startQuestion(){
+  state.locked = false;
+  state.timeLeft = TIME_PER_Q;
+  clearInterval(state.timerId);
+  render();
+  state.timerId = setInterval(()=>{
+    state.timeLeft--;
+    updateTimerBar();
+    if(state.timeLeft <= 0){
+      clearInterval(state.timerId);
+    }
+  }, 1000);
+}
+
+function updateTimerBar(){
+  const fill = document.getElementById("timer-bar-fill");
+  const label = document.getElementById("timer-label");
+  if(!fill) return;
+  const pct = Math.max(0, (state.timeLeft / TIME_PER_Q) * 100);
+  fill.style.width = pct + "%";
+  if(label) label.textContent = Math.max(0, state.timeLeft) + "秒";
+}
+
+function renderQuiz(){
+  const q = state.quizOrder[state.current];
+  const total = state.quizOrder.length;
+  const idx = state.current + 1;
+
+  app.innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span>問題 ${idx} / ${total}</span>
+        <span id="timer-label">${state.timeLeft}秒</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width:${(state.current/total)*100}%"></div>
+      </div>
+      <div class="timer-bar-bg">
+        <div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="section-tag ${TYPE_TAGCLASS[q.type]}">${TYPE_LABEL[q.type]}</span>
+      <p class="question-text">${escapeHtml(q.question)}</p>
+      <div class="options" id="options"></div>
+      <div id="feedback-area"></div>
+      <button class="big-btn" id="next-btn" style="display:none;">次へ</button>
+    </div>
+  `;
+
+  const optionsWrap = document.getElementById("options");
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = opt;
+    btn.onclick = () => selectOption(i);
+    optionsWrap.appendChild(btn);
+  });
+}
+
+function selectOption(i){
+  if(state.locked) return;
+  state.locked = true;
+  clearInterval(state.timerId);
+
+  const q = state.quizOrder[state.current];
+  const isCorrect = i === q.correct;
+  state.answers[state.current] = { selected: i, isCorrect };
+
+  const optionBtns = document.querySelectorAll("#options .option-btn");
+  optionBtns.forEach((btn, idx) => {
+    btn.disabled = true;
+    if(idx === i && isCorrect) btn.classList.add("selected-correct");
+    else if(idx === i && !isCorrect) btn.classList.add("selected-wrong");
+    else if(idx === q.correct) btn.classList.add("reveal-correct");
+  });
+
+  const feedbackArea = document.getElementById("feedback-area");
+  feedbackArea.innerHTML = `
+    <div class="feedback-box ${isCorrect ? "feedback-correct" : "feedback-wrong"}">
+      ${isCorrect ? "○ 正解！" : "× 不正解"}　${escapeHtml(q.explanation)}
+    </div>
+  `;
+
+  const nextBtn = document.getElementById("next-btn");
+  nextBtn.style.display = "block";
+  nextBtn.textContent = (state.current === state.quizOrder.length - 1) ? "結果を見る" : "次へ";
+  nextBtn.onclick = goNext;
+}
+
+function goNext(){
+  if(state.current === state.quizOrder.length - 1){
+    state.screen = "result";
+    render();
+  } else {
+    state.current++;
+    startQuestion();
+  }
+}
+
+function renderResult(){
+  const total = state.quizOrder.length;
+  const correctCount = state.answers.filter(a => a && a.isCorrect).length;
+  const scorePct = Math.round((correctCount/total)*100);
+
+  const wrongItems = [];
+  const correctItems = [];
+  const wrongPhrases = [];
+
+  state.quizOrder.forEach((q, i) => {
+    const a = state.answers[i];
+    if(a && a.isCorrect){
+      correctItems.push(`
+        <div class="result-item-correct">
+          <span class="mark">○</span>
+          <span>${escapeHtml(shorten(q.question))}</span>
+        </div>
+      `);
+    } else {
+      wrongPhrases.push(q.options[q.correct]);
+      const yourAnswerText = a ? q.options[a.selected] : "(未回答)";
+      wrongItems.push(`
+        <div class="result-item-wrong">
+          <div class="q-num">${TYPE_LABEL[q.type]}<span class="day-tag">Day${q.day}</span></div>
+          <p class="q-text">${escapeHtml(q.question)}</p>
+          <div class="answer-row"><span class="label">あなたの回答：</span><span class="your-answer">${escapeHtml(yourAnswerText)}</span></div>
+          <div class="answer-row"><span class="label">正解：</span><span class="correct-answer">${escapeHtml(q.options[q.correct])}</span></div>
+          <div class="explain-box">${escapeHtml(q.explanation)}</div>
+        </div>
+      `);
+    }
+  });
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>結果</h1>
+      <div class="score-circle">
+        <div class="score-num">${correctCount} / ${total}</div>
+        <div class="score-sub">正答率 ${scorePct}点</div>
+      </div>
+      <button class="big-btn copy-btn" id="copy-result-btn">結果をコピーする</button>
+
+      ${wrongItems.length > 0 ? `
+        <h2>間違えた問題（${wrongItems.length}問）</h2>
+        <div class="result-list">${wrongItems.join("")}</div>
+      ` : `<p>全問正解です！素晴らしいです。</p>`}
+
+      ${correctItems.length > 0 ? `
+        <h2 style="margin-top:24px;">正解した問題（${correctItems.length}問）</h2>
+        <div class="result-list">${correctItems.join("")}</div>
+      ` : ``}
+
+      <button class="big-btn retry-btn" id="retry-btn">もう一度挑戦する</button>
+    </div>
+  `;
+
+  document.getElementById("retry-btn").onclick = () => {
+    state = { screen:"start", quizOrder:[], current:0, answers:[], locked:false, timeLeft:TIME_PER_Q, timerId:null };
+    render();
+  };
+
+  document.getElementById("copy-result-btn").onclick = (e) => {
+    let text = `${DAY_LABEL} STEP1復習テスト結果\n${correctCount} / ${total}（正答率${scorePct}点）`;
+    if(wrongPhrases.length > 0){
+      text += `\n\n復習が必要な項目：\n` + wrongPhrases.map(p => "・" + p).join("\n");
+    }
+    copyTextToClipboard(text, e.currentTarget);
+  };
+}
+
+function shorten(text){
+  const oneLine = text.replace(/\n/g, " ");
+  return oneLine.length > 40 ? oneLine.slice(0,40) + "…" : oneLine;
+}
+
+function copyTextToClipboard(text, btn){
+  function fallbackCopy(){
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+  const original = btn.textContent;
+  btn.textContent = "コピーしました！";
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.disabled = false;
+  }, 2000);
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+render();
+</script>
+</body>
+</html>
