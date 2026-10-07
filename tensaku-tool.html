@@ -198,9 +198,9 @@
     <pre class="out" id="recordOut"></pre>
     <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー</button></div>
 
-    <div class="subhead">生徒用の文字FB</div>
+    <div class="subhead">生徒用FB（Notionに貼る）</div>
     <pre class="out" id="fbOut"></pre>
-    <div class="btns"><button class="btn sub" id="copyFbBtn" type="button">生徒用FBをコピー</button></div>
+    <div class="btns"><button class="btn sub" id="copyFbBtn" type="button">Notion用にコピー</button></div>
     <div class="msg" id="outMsg"></div>
   </div>
 </div>
@@ -554,38 +554,45 @@ ${state.p2notta.trim() || "（未入力）"}`);
 - 講師メモは空欄（要確認の場合のみ「要確認」）。
 
 ## 【B】
-次の形で書く。
+生徒が読むNotionページ用の文章を、Markdownで書く（コードブロックには入れない）。次の形にする。
 
-【${state.week} 確認テスト フィードバック】
+## ${state.week} 確認テストのフィードバック
+**点数**　文型 ○/24 ｜ 瞬間英作文 ○/20（すぐ言えた ○/10・正しく言えた ○/10）｜ 発音 ○/17
 
-■ 今週の重点
-1. （弱点の名前）
-　症状：（生徒の実際の英文や答えを「」で引用し、Partと問番号も書く）
-　原因：（どのルールが身についていないか）
-　対策：（次の1週間で何をどれくらいやるか）
-2. （同じ形）
+### 今週の重点はこの2つ
+1. （弱点を生徒に分かる言葉で短く。例：often などの位置）
+2. （同じ）
 
-■ 良かった点
-・（どの問題で、何ができていたかを1〜2つ）
+### ① （1つ目の弱点）
+- ✕ （生徒の実際の英文や答え。Partと問番号も）
+- ◯ （正しい英文）
+- なぜ：（ルールを1文で）
+- 今週やること：（何を・どれくらい。1文で）
 
-■ Partごとのフィードバック
-Part 1（○ / 24点）：間違えた問題と、そこから分かること・見分け方
-Part 2（瞬発力 ○ / 10、正確性 ○ / 10、合計 ○ / 20点）：間違えた問ごとに「あなたの英文 → 正しい文（理由）」
-Part 3（○ / 17点）：崩れていた単語と音、直し方
-Part 4：「元の文 → 直した文（理由）」と、もっと自然な言い方
+### ② （2つ目の弱点）
+（同じ形）
 
-■ 次週の補助教材
-瞬間英作文：あり／なし　発音：あり／なし
-（Part 2が${SUPPORT_LINE.part2}点以下なら瞬間英作文あり、Part 3が${SUPPORT_LINE.part3}点以下なら発音あり。ありの場合は、どの弱点を直すための練習かを一言書く）
+### よかったところ
+- （どの問題で、何ができていたか。1〜2つ）
 
-■ 講師より
+### そのほかの間違い
+- （重点以外の間違いを1行ずつ。「✕ … → ◯ …」の形。Part 4の直しもここに入れる。もっと自然な言い方は「もっと自然に：…」と書く）
+
+### 次週の補助教材
+- 瞬間英作文：あり／なし
+- 発音：あり／なし
+（Part 2が${SUPPORT_LINE.part2}点以下なら瞬間英作文あり、Part 3が${SUPPORT_LINE.part3}点以下なら発音あり。ありの場合は、どの弱点を直すための練習かを一言足す）
+
+### 講師より
 （空欄のままにする）
 
-■ 模範解答
-（今週の情報にあるPart 1・Part 2・Part 3 2️⃣の正解をそのまま載せる）
+### 模範解答
+（今週の情報にあるPart 1・Part 2・Part 3 2️⃣の正解を、Partごとに箇条書きで載せる）
 
 書き方のルール：
-- 弱点は必ず「症状→原因→対策」で書く。症状には生徒の実際の英文を引用する。
+- 1行は短く。説明は1文まで。専門用語（症状・原因・対策など）は使わない。
+- 弱点は必ず生徒の実際の英文を「✕」で見せ、すぐ下に「◯」を置く。
+- 「そのほかの間違い」は間違えたものだけ。正解した問題は書かない。
 - Part 1・Part 3の点数は上の値をそのまま使う。Part 2の正確性は【A】で出した値を数える。
 - 中高生にも分かるやさしい日本語で書く。「不合格」「ダメ」など合否を感じさせる言葉は使わない。
 - 渡された情報にないことを推測で書かない。`);
@@ -780,7 +787,7 @@ $("copyPromptBtn").addEventListener("click", () => {
     missing.length ? `コピーしました。ただし未入力があります：${missing.join("、")}` : "コピーしました。AIに貼って、Part 4の写真を添付して送ってください。");
 });
 $("copyRecordBtn").addEventListener("click", () => copyText($("recordOut").textContent, "outMsg", "記録シート用をコピーしました。記録シートの一番下の行に貼ってください。"));
-$("copyFbBtn").addEventListener("click", () => copyText($("fbOut").textContent, "outMsg", "生徒用FBをコピーしました。「講師より」を書き足してから送ってください。"));
+$("copyFbBtn").addEventListener("click", () => copyText($("fbOut").textContent, "outMsg", "コピーしました。生徒のNotionページに貼り、「講師より」を書き足してから、Slackでページのリンクを送ってください。"));
 $("resetBtn").addEventListener("click", () => {
   if (!confirm("この生徒の入力をすべて消します。よろしいですか？")) return;
   const week = state.week, teacher = state.teacher;
