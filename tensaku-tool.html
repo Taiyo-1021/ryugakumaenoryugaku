@@ -200,7 +200,18 @@
 
     <div class="subhead">生徒用FB（Notionに貼る）</div>
     <pre class="out" id="fbOut"></pre>
-    <div class="btns"><button class="btn sub" id="copyFbBtn" type="button">Notion用にコピー</button></div>
+    <div class="btns">
+      <button class="btn" id="notionBtn" type="button">Notionにページを作成</button>
+      <button class="btn sub" id="copyFbBtn" type="button">Notion用にコピー（手で貼る場合）</button>
+    </div>
+    <div class="msg" id="notionMsg"></div>
+    <details style="margin-top:12px">
+      <summary class="hint" style="cursor:pointer">Notion連携の設定（最初に1回だけ）</summary>
+      <div class="row3" style="grid-template-columns:2fr 1fr;margin-top:8px">
+        <div><label class="field" for="relayUrl">中継のURL</label><input type="text" id="relayUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+        <div><label class="field" for="relayPass">合言葉</label><input type="text" id="relayPass"></div>
+      </div>
+    </details>
     <div class="msg" id="outMsg"></div>
   </div>
 </div>
@@ -282,6 +293,8 @@ const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", 
 // 状態と保存
 // ============================================================
 const STORE_KEY = "tensaku-tool-v1";
+const RELAY_KEY = "tensaku-tool-relay";
+let lastSummary = {};
 let state = loadState();
 
 function blankState() {
@@ -679,6 +692,13 @@ function renderResults() {
   const p2total = acc === null ? null : speed + acc;
   const support2 = p2total === null ? "AIの返事待ち" : (p2total <= SUPPORT_LINE.part2 ? "瞬間英作文：あり" : "瞬間英作文：なし");
   const support3 = !p3.complete ? `未入力：${p3.missing.join("、")}` : (p3.total <= SUPPORT_LINE.part3 ? "発音：あり" : "発音：なし");
+  lastSummary = {
+    part1: p1 && !p1.error ? p1.score : null,
+    part2: p2total,
+    part3: p3.complete ? p3.total : null,
+    support2: p2total === null ? "" : (p2total <= SUPPORT_LINE.part2 ? "あり" : "なし"),
+    support3: !p3.complete ? "" : (p3.total <= SUPPORT_LINE.part3 ? "あり" : "なし")
+  };
   $("summary").innerHTML =
     `<div class="stat"><div class="k">Part 1</div><div class="v">${p1 && !p1.error ? `${p1.score} / ${p1.max}` : "―"}</div><div class="j">判定には使わない</div></div>` +
     `<div class="stat"><div class="k">Part 2（瞬発力 ${speedDone ? speed : "入力途中"} ＋ 正確性 ${acc === null ? "―" : acc}）</div><div class="v">${p2total === null ? "―" : `${p2total} / 20`}</div><div class="j">${support2}</div></div>` +
@@ -787,6 +807,65 @@ $("copyPromptBtn").addEventListener("click", () => {
     missing.length ? `コピーしました。ただし未入力があります：${missing.join("、")}` : "コピーしました。AIに貼って、Part 4の写真を添付して送ってください。");
 });
 $("copyRecordBtn").addEventListener("click", () => copyText($("recordOut").textContent, "outMsg", "記録シート用をコピーしました。記録シートの一番下の行に貼ってください。"));
+// ============================================================
+// Notionにページを作成（中継のApps Script経由）
+// ============================================================
+function loadRelay() {
+  try { return JSON.parse(localStorage.getItem(RELAY_KEY) || "{}"); } catch (e) { return {}; }
+}
+function saveRelay() {
+  try { localStorage.setItem(RELAY_KEY, JSON.stringify({ url: $("relayUrl").value.trim(), pass: $("relayPass").value })); } catch (e) { /* 無視 */ }
+}
+(function initRelay() {
+  const r = loadRelay();
+  $("relayUrl").value = r.url || "";
+  $("relayPass").value = r.pass || "";
+  $("relayUrl").addEventListener("input", saveRelay);
+  $("relayPass").addEventListener("input", saveRelay);
+})();
+
+function focusFromFb(fb) {
+  const lines = fb.split("\n");
+  const start = lines.findIndex(l => l.includes("今週の重点"));
+  if (start < 0) return "";
+  const items = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    const m = lines[i].match(/^\s*\d+[.．]\s*(.+)$/);
+    if (m) items.push(m[1].trim());
+    else if (items.length && lines[i].trim()) break;
+  }
+  return items.join("／");
+}
+
+$("notionBtn").addEventListener("click", async () => {
+  const fb = $("fbOut").textContent.trim();
+  const relay = loadRelay();
+  if (!fb) { showMsg("notionMsg", "生徒用FBがまだありません。先にAIの返事を貼ってください。", "err"); return; }
+  if (!relay.url || !relay.pass) { showMsg("notionMsg", "下の「Notion連携の設定」に、中継のURLと合言葉を入れてください。", "err"); return; }
+  if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
+  const payload = Object.assign({
+    pass: relay.pass,
+    title: `${state.week} ${state.student}`,
+    week: state.week, student: state.student, teacher: state.teacher,
+    focus: focusFromFb(fb), markdown: fb
+  }, lastSummary);
+  $("notionBtn").disabled = true;
+  showMsg("notionMsg", "Notionにページを作っています…", "warn");
+  try {
+    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    const el = $("notionMsg");
+    el.className = "msg show ok";
+    el.innerHTML = `作成しました：<a href="${esc(json.url)}" target="_blank" rel="noopener">${esc(json.url)}</a> <button class="btn sub" type="button" id="copyNotionUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>Notionで「講師より」を書き足してから、Slackでリンクを送ってください。`;
+    $("copyNotionUrl").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(json.url));
+  } catch (e) {
+    showMsg("notionMsg", "作成できませんでした：" + e.message, "err");
+  } finally {
+    $("notionBtn").disabled = false;
+  }
+});
+
 $("copyFbBtn").addEventListener("click", () => copyText($("fbOut").textContent, "outMsg", "コピーしました。生徒のNotionページに貼り、「講師より」を書き足してから、Slackでページのリンクを送ってください。"));
 $("resetBtn").addEventListener("click", () => {
   if (!confirm("この生徒の入力をすべて消します。よろしいですか？")) return;
