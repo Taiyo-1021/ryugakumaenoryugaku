@@ -155,7 +155,7 @@
   <!-- 3. Part 3 -->
   <div class="card">
     <h2><span class="step">3</span>Part 3：発音チェック</h2>
-    <p class="hint">1️⃣ 音読は5観点を 2＝ほぼできている／1＝数か所気になる／0＝全体的にできていない で選びます。崩れていたチェック箇所には印をつけ、聞こえ方をカタカナで書きます。2️⃣ 発音記号は1語ずつ判定します。</p>
+    <p class="hint">1️⃣ 音読は5観点を 2＝ほぼできている／1＝数か所気になる／0＝全体的にできていない で選びます。崩れていたチェック箇所には印をつけ、聞こえ方をカタカナで書きます。2️⃣ 発音記号は最初から「正解」になっているので、つまずいた語だけ変えてください。</p>
     <div class="subhead">1️⃣ 音読：5観点</div>
     <div class="tbl-scroll"><table id="p3viewpoints"></table></div>
     <div class="subhead">1️⃣ 音読：崩れていたチェック箇所</div>
@@ -432,8 +432,8 @@ function renderPart3() {
     const s = state.p3ipa[i] || {};
     html += `<tr><td>${esc(x.ipa)}</td><td>${esc(x.word)}</td><td>` +
       `<select class="small" data-p3i="${i}">` +
-      ["", "正解", "音が日本語", "記号が読めない"].map(o =>
-        `<option value="${o}" ${s.v === o ? "selected" : ""}>${o || "選ぶ"}</option>`).join("") +
+      ["正解", "音が日本語", "記号が読めない"].map(o =>
+        `<option value="${o}" ${(s.v || "正解") === o ? "selected" : ""}>${o}</option>`).join("") +
       `</select></td><td><input type="text" class="small" data-p3inote="${i}" value="${esc(s.note || "")}" placeholder="例：カット"></td></tr>`;
   });
   $("p3ipa").innerHTML = html;
@@ -441,19 +441,20 @@ function renderPart3() {
 
 function part3Score() {
   const w = W();
-  let view = 0, viewDone = 0;
-  w.part3viewpoints.forEach((_, i) => {
-    if (typeof state.p3view[i] === "number") { view += state.p3view[i]; viewDone++; }
+  let view = 0;
+  const missing = [];
+  w.part3viewpoints.forEach((name, i) => {
+    if (typeof state.p3view[i] === "number") view += state.p3view[i];
+    else missing.push(name);
   });
-  let ipa = 0, ipaDone = 0;
+  let ipa = 0;
   w.part3ipa.forEach((_, i) => {
-    const v = (state.p3ipa[i] || {}).v;
-    if (v) { ipaDone++; if (v === "正解") ipa++; }
+    if (((state.p3ipa[i] || {}).v || "正解") === "正解") ipa++;
   });
   return {
     view, ipa, total: view + ipa,
     max: w.part3viewpoints.length * 2 + w.part3ipa.length,
-    complete: viewDone === w.part3viewpoints.length && ipaDone === w.part3ipa.length
+    complete: missing.length === 0, missing
   };
 }
 
@@ -635,8 +636,9 @@ function part3Rows() {
   });
   w.part3ipa.forEach((x, i) => {
     const s = state.p3ipa[i] || {};
-    const type = s.v === "正解" ? "正解" : s.v === "記号が読めない" ? "記号が読めない" : s.v ? x.type : "";
-    rows.push([state.week, state.student, state.teacher, "3", `記号：${x.ipa}`, s.note || s.v || "", x.word, "", s.v ? (s.v === "正解" ? "1" : "0") : "", type, ""]);
+    const v = s.v || "正解";
+    const type = v === "正解" ? "正解" : v === "記号が読めない" ? "記号が読めない" : x.type;
+    rows.push([state.week, state.student, state.teacher, "3", `記号：${x.ipa}`, s.note || v, x.word, "", v === "正解" ? "1" : "0", type, ""]);
   });
   return rows;
 }
@@ -669,7 +671,7 @@ function renderResults() {
   // 点数と補助教材
   const p2total = acc === null ? null : speed + acc;
   const support2 = p2total === null ? "AIの返事待ち" : (p2total <= SUPPORT_LINE.part2 ? "瞬間英作文：あり" : "瞬間英作文：なし");
-  const support3 = !p3.complete ? "入力が途中です" : (p3.total <= SUPPORT_LINE.part3 ? "発音：あり" : "発音：なし");
+  const support3 = !p3.complete ? `未入力：${p3.missing.join("、")}` : (p3.total <= SUPPORT_LINE.part3 ? "発音：あり" : "発音：なし");
   $("summary").innerHTML =
     `<div class="stat"><div class="k">Part 1</div><div class="v">${p1 && !p1.error ? `${p1.score} / ${p1.max}` : "―"}</div><div class="j">判定には使わない</div></div>` +
     `<div class="stat"><div class="k">Part 2（瞬発力 ${speedDone ? speed : "入力途中"} ＋ 正確性 ${acc === null ? "―" : acc}）</div><div class="v">${p2total === null ? "―" : `${p2total} / 20`}</div><div class="j">${support2}</div></div>` +
@@ -773,7 +775,7 @@ $("copyPromptBtn").addEventListener("click", () => {
   if (!state.student) missing.push("生徒名");
   if (!W().part2.every((_, i) => state.p2speed[i] === 0 || state.p2speed[i] === 1)) missing.push("Part 2の瞬発力");
   if (!state.p2notta.trim()) missing.push("Nottaの文字起こし");
-  if (!part3Score().complete) missing.push("Part 3の採点");
+  if (!part3Score().complete) missing.push("Part 3の音読（" + part3Score().missing.join("、") + "）");
   copyText(buildPrompt(), "copyMsg",
     missing.length ? `コピーしました。ただし未入力があります：${missing.join("、")}` : "コピーしました。AIに貼って、Part 4の写真を添付して送ってください。");
 });
