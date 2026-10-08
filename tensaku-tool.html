@@ -699,7 +699,9 @@ function renderResults() {
   // 点数と補助教材
   const p2total = acc === null ? null : speed + acc;
   const support2 = p2total === null ? "AIの返事待ち" : (p2total <= SUPPORT_LINE.part2 ? "瞬間英作文：あり" : "瞬間英作文：なし");
-  const support3 = !p3.complete ? `未入力：${p3.missing.join("、")}` : (p3.total <= SUPPORT_LINE.part3 ? "発音：あり" : "発音：なし");
+  // 音読の5観点がそろうまでは点数を出さない（発音記号の初期値「正解」だけで点数が見えてしまうため）
+  const p3started = p3.missing.length < W().part3viewpoints.length;
+  const support3 = !p3.complete ? (p3started ? `音読があと${p3.missing.length}項目` : "音読の採点待ち") : (p3.total <= SUPPORT_LINE.part3 ? "発音：あり" : "発音：なし");
   lastSummary = {
     part1: p1 && !p1.error ? p1.score : null,
     part2: p2total,
@@ -710,7 +712,7 @@ function renderResults() {
   $("summary").innerHTML =
     `<div class="stat"><div class="k">Part 1</div><div class="v">${p1 && !p1.error ? `${p1.score} / ${p1.max}` : "―"}</div><div class="j">判定には使わない</div></div>` +
     `<div class="stat"><div class="k">Part 2（瞬発力 ${speedDone ? speed : "入力途中"} ＋ 正確性 ${acc === null ? "―" : acc}）</div><div class="v">${p2total === null ? "―" : `${p2total} / 20`}</div><div class="j">${support2}</div></div>` +
-    `<div class="stat"><div class="k">Part 3</div><div class="v">${p3.total} / ${p3.max}</div><div class="j">${support3}</div></div>`;
+    `<div class="stat"><div class="k">Part 3</div><div class="v">${p3.complete ? `${p3.total} / ${p3.max}` : "―"}</div><div class="j">${support3}</div></div>`;
 
   // 記録シート用（Part 1・3はツール、Part 2・4はAI）
   // 記録シート用の行は、AIの返事を読み取れてから出す（それまでは入力途中で、Part 3の初期値などが混ざるため）
