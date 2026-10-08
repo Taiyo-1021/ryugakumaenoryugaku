@@ -137,8 +137,15 @@
   <!-- 1. Part 1 -->
   <div class="card">
     <h2><span class="step">1</span>Part 1：文型チェック</h2>
-    <p class="hint">フォームの回答シートで、この生徒の行を選んでコピーし、下に貼ってください（タイムスタンプの列から最後の列まで）。</p>
-    <textarea id="p1paste" placeholder="回答シートの行をここに貼る"></textarea>
+    <p class="hint">フォームに回答した生徒を選ぶと、点数と弱点タイプが出ます。生徒名も自動で入ります。</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="p1student" style="max-width:280px"><option value="">（回答を読み込んでいます…）</option></select>
+      <button class="btn sub" id="p1reload" type="button">回答を読み込み直す</button>
+    </div>
+    <details style="margin-top:10px">
+      <summary class="hint" style="cursor:pointer">読み込めないとき：回答シートの行を手で貼る</summary>
+      <textarea id="p1paste" placeholder="回答シートの行をここに貼る（タイムスタンプの列から最後の列まで）" style="margin-top:6px"></textarea>
+    </details>
     <div class="msg" id="p1msg"></div>
     <div class="tbl-scroll" id="p1result"></div>
   </div>
@@ -222,6 +229,7 @@
 // ============================================================
 const WEEKS = {
   "Week1": {
+    part1SheetId: "1mHVQM1BFiqFX8sG2ObcbrvKvE8Q2H1Ed52fmsXVWFr4", // Part 1のフォームの回答シート
     focus: "文型（第1〜5文型）／頻度副詞／時間表現／接続詞",
     part1: [
       { q: "Birds fly in the sky.", type: 1, split: "A", wrong: { B: "M（修飾語）の見分け", C: "M（修飾語）の見分け" } },
@@ -753,6 +761,45 @@ function renderAll() {
 $("week").addEventListener("change", e => { state.week = e.target.value; saveState(); renderAll(); });
 $("student").addEventListener("input", e => { state.student = e.target.value.trim(); saveState(); renderPart1(); renderResults(); });
 $("teacher").addEventListener("input", e => { state.teacher = e.target.value.trim(); saveState(); renderResults(); });
+// Part 1：回答シートを中継から読み込む
+let p1Students = [];
+async function loadPart1() {
+  const relay = loadRelay();
+  const sel = $("p1student");
+  const sheetId = W().part1SheetId;
+  if (!relay.url || !relay.pass) {
+    sel.innerHTML = '<option value="">（先に手順6の「Notion連携の設定」を入れてください）</option>';
+    return;
+  }
+  if (!sheetId) { sel.innerHTML = '<option value="">（この週の回答シートが未設定です）</option>'; return; }
+  sel.innerHTML = '<option value="">（回答を読み込んでいます…）</option>';
+  try {
+    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "part1", sheetId }) });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    p1Students = json.students || [];
+    sel.innerHTML = '<option value="">生徒を選ぶ（' + p1Students.length + '人が回答済み）</option>' +
+      p1Students.map((s, i) => `<option value="${i}" ${s.name === state.student ? "selected" : ""}>${esc(s.name)}</option>`).join("");
+  } catch (e) {
+    sel.innerHTML = '<option value="">（読み込めませんでした）</option>';
+    showMsg("p1msg", "回答シートを読み込めませんでした：" + e.message + "　下の「手で貼る」も使えます。", "err");
+  }
+}
+$("p1student").addEventListener("change", e => {
+  const s = p1Students[Number(e.target.value)];
+  if (!s) return;
+  state.p1paste = s.row.join("\t");
+  state.student = s.name;
+  $("p1paste").value = state.p1paste;
+  $("student").value = s.name;
+  saveState(); renderPart1(); renderResults();
+});
+$("p1reload").addEventListener("click", () => { hideMsg("p1msg"); loadPart1(); });
+$("week").addEventListener("change", loadPart1);
+$("relayUrl").addEventListener("change", loadPart1);
+$("relayPass").addEventListener("change", loadPart1);
+loadPart1();
+
 $("p1paste").addEventListener("input", e => { state.p1paste = e.target.value; saveState(); renderPart1(); renderResults(); });
 $("p2notta").addEventListener("input", e => { state.p2notta = e.target.value; saveState(); });
 $("aiReply").addEventListener("input", e => { state.aiReply = e.target.value; saveState(); renderResults(); });
