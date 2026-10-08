@@ -3,6 +3,7 @@
 // 添削ツール（tensaku-tool.html）の「記録してNotionを作成」から呼ばれ、
 // 1. 記録シートに、その生徒のその週の行を書き込む（同じ生徒・週の古い行は置き換える）
 // 2. Notionの「確認テストFB」データベースに生徒のFBページを作る
+// また action: "part1" のときは、Part 1（グーグルフォーム）の回答シートを読んで返す
 // Notionの鍵はここ（スクリプトプロパティ）にだけ置き、ツールには書かない。
 //
 // スクリプトプロパティ（プロジェクトの設定 → スクリプト プロパティ）：
@@ -20,6 +21,7 @@ function doPost(e) {
     if (!body.pass || body.pass !== conf.getProperty('PASSCODE')) {
       return reply({ error: '合言葉が違います。' });
     }
+    if (body.action === 'part1') return reply(readPart1(body.sheetId));
 
     // 1. 記録シート
     const saved = saveRows(conf.getProperty('SHEET_ID'), body.week, body.student, body.rows || []);
@@ -58,6 +60,27 @@ function doPost(e) {
   } catch (err) {
     return reply({ error: String(err && err.message ? err.message : err) });
   }
+}
+
+// Part 1の回答シートを読む。読めるのは「フォームにつながった、名前に『確認テスト』を含むシート」だけ
+function readPart1(sheetId) {
+  if (!sheetId) return { error: 'この週の回答シートが設定されていません。' };
+  const ss = SpreadsheetApp.openById(sheetId);
+  if (!ss.getFormUrl() || ss.getName().indexOf('確認テスト') < 0) {
+    return { error: '確認テストの回答シートではないため読み込めません。' };
+  }
+  const values = ss.getSheets()[0].getDataRange().getDisplayValues();
+  const header = values.shift() || [];
+  // 同じ名前で複数回答があれば、最後の回答を使う
+  const byName = {};
+  values.forEach(function (r) {
+    const name = String(r[1] || '').trim();
+    if (name) byName[name] = r;
+  });
+  return {
+    header: header,
+    students: Object.keys(byName).map(function (name) { return { name: name, row: byName[name] }; })
+  };
 }
 
 // 記録シートのA〜K列だけを読み書きする（M列から右の集計の数式には触らない）
