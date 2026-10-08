@@ -1,13 +1,15 @@
-// 確認テストFB → Notion 中継（Google Apps Script）
+// 確認テストFB → 記録シート・Notion 中継（Google Apps Script）
 //
-// 添削ツール（tensaku-tool.html）の「Notionにページを作成」から呼ばれ、
-// Notionの「確認テストFB」データベースに生徒のFBページを作る。
+// 添削ツール（tensaku-tool.html）の「記録してNotionを作成」から呼ばれ、
+// 1. 記録シートに、その生徒のその週の行を書き込む（同じ生徒・週の古い行は置き換える）
+// 2. Notionの「確認テストFB」データベースに生徒のFBページを作る
 // Notionの鍵はここ（スクリプトプロパティ）にだけ置き、ツールには書かない。
 //
 // スクリプトプロパティ（プロジェクトの設定 → スクリプト プロパティ）：
 //   NOTION_TOKEN : Notionの連携（インテグレーション）のシークレット
 //   NOTION_DB_ID : 確認テストFBデータベースのID
 //   PASSCODE     : 講師だけが知る合言葉（ツールの設定欄に入れるものと同じ）
+//   SHEET_ID     : 記録シート（Googleスプレッドシート）のID
 
 const NOTION_VERSION = '2022-06-28';
 
@@ -19,6 +21,10 @@ function doPost(e) {
       return reply({ error: '合言葉が違います。' });
     }
 
+    // 1. 記録シート
+    const saved = saveRows(conf.getProperty('SHEET_ID'), body.week, body.student, body.rows || []);
+
+    // 2. Notion
     const props = {
       'タイトル': { title: [plain(body.title || '')] },
       '生徒': { rich_text: [plain(body.student || '')] },
@@ -33,19 +39,58 @@ function doPost(e) {
     if (body.support3) props['補助教材：発音'] = { select: { name: body.support3 } };
 
     const blocks = markdownToBlocks(body.markdown || '');
-    const created = notion('post', 'pages', {
+    let created;
+    try {
+      created = notion('post', 'pages', {
       parent: { database_id: conf.getProperty('NOTION_DB_ID') },
       icon: { type: 'emoji', emoji: '📝' },
       properties: props,
       children: blocks.slice(0, 100)
-    });
+      });
+    } catch (err) {
+      return reply({ error: '記録シートには' + saved + '行を記録しましたが、Notionのページは作れませんでした（' + err.message + '）' });
+    }
     // 1回に送れるブロックは100個までなので、残りは追記する
     for (let i = 100; i < blocks.length; i += 100) {
       notion('patch', 'blocks/' + created.id + '/children', { children: blocks.slice(i, i + 100) });
     }
-    return reply({ url: created.url });
+    return reply({ url: created.url, rows: saved });
   } catch (err) {
     return reply({ error: String(err && err.message ? err.message : err) });
+  }
+}
+
+// 記録シートのA〜K列だけを読み書きする（M列から右の集計の数式には触らない）
+function saveRows(sheetId, week, student, rows) {
+  if (!sheetId || !rows.length) return 0;
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sheet = SpreadsheetApp.openById(sheetId).getSheets()[0];
+    const width = 11;
+    const lastRow = Math.max(sheet.getLastRow(), 1);
+    const current = lastRow > 1 ? sheet.getRange(2, 1, lastRow - 1, width).getValues() : [];
+    // 空の行と、同じ週・同じ生徒の古い行を除く
+    const kept = current.filter(function (r) {
+      const empty = r.every(function (c) { return c === '' || c === null; });
+      return !empty && !(String(r[0]) === String(week) && String(r[1]) === String(student));
+    });
+    const incoming = rows.map(function (r) {
+      const row = r.slice(0, width);
+      while (row.length < width) row.push('');
+      return row.map(function (c, i) {
+        const v = c === null || c === undefined ? '' : String(c);
+        if (v === '') return '';
+        if ((i === 3 || i === 7 || i === 8) && !isNaN(Number(v))) return Number(v); // Part・瞬発力・点数は数値
+        return /^[=+\-@]/.test(v) ? "'" + v : v; // 数式として読まれないように
+      });
+    });
+    const all = kept.concat(incoming);
+    if (current.length) sheet.getRange(2, 1, current.length, width).clearContent();
+    if (all.length) sheet.getRange(2, 1, all.length, width).setValues(all);
+    return incoming.length;
+  } finally {
+    lock.releaseLock();
   }
 }
 

@@ -196,12 +196,12 @@
 
     <div class="subhead">記録シートに貼る行（全Part）</div>
     <pre class="out" id="recordOut"></pre>
-    <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー</button></div>
+    <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー（手で貼る場合）</button></div>
 
     <div class="subhead">生徒用FB（Notionに貼る）</div>
     <pre class="out" id="fbOut"></pre>
     <div class="btns">
-      <button class="btn" id="notionBtn" type="button">Notionにページを作成</button>
+      <button class="btn" id="notionBtn" type="button">記録してNotionを作成</button>
       <button class="btn sub" id="copyFbBtn" type="button">Notion用にコピー（手で貼る場合）</button>
     </div>
     <div class="msg" id="notionMsg"></div>
@@ -847,17 +847,18 @@ $("notionBtn").addEventListener("click", async () => {
     pass: relay.pass,
     title: `${state.week} ${state.student}`,
     week: state.week, student: state.student, teacher: state.teacher,
-    focus: focusFromFb(fb), markdown: fb
+    focus: focusFromFb(fb), markdown: fb,
+    rows: $("recordOut").textContent.split("\n").filter(l => l.trim()).map(l => l.split("\t"))
   }, lastSummary);
   $("notionBtn").disabled = true;
-  showMsg("notionMsg", "Notionにページを作っています…", "warn");
+  showMsg("notionMsg", "記録シートに書き込み、Notionにページを作っています…", "warn");
   try {
     const res = await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) });
     const json = await res.json();
     if (json.error) throw new Error(json.error);
     const el = $("notionMsg");
     el.className = "msg show ok";
-    el.innerHTML = `作成しました：<a href="${esc(json.url)}" target="_blank" rel="noopener">${esc(json.url)}</a> <button class="btn sub" type="button" id="copyNotionUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>Notionで「講師より」を書き足してから、Slackでリンクを送ってください。`;
+    el.innerHTML = `記録シートに${json.rows || 0}行を記録し、Notionのページを作りました：<a href="${esc(json.url)}" target="_blank" rel="noopener">${esc(json.url)}</a> <button class="btn sub" type="button" id="copyNotionUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>Notionで「講師より」を書き足してから、Slackでリンクを送ってください。`;
     $("copyNotionUrl").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(json.url));
   } catch (e) {
     showMsg("notionMsg", "作成できませんでした：" + e.message, "err");
