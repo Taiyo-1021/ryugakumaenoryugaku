@@ -1,9 +1,13 @@
 // 確認テストFB → 記録シート・Notion 中継（Google Apps Script）
 //
-// 添削ツール（tensaku-tool.html）の「記録してNotionを作成」から呼ばれ、
-// 1. 記録シートに、その生徒のその週の行を書き込む（同じ生徒・週の古い行は置き換える）
-// 2. Notionの「確認テストFB」データベースに生徒のFBページを作る
-// また action: "part1" のときは、Part 1（グーグルフォーム）の回答シートを読んで返す
+// 添削ツール（tensaku-tool.html）から呼ばれる。
+//   （actionなし）「記録してNotionに下書きを作成」
+//       1. 記録シートに、その生徒のその週の行を書き込む（同じ生徒・週の古い行は置き換える）
+//       2. Notionの「確認テストFB」データベースに下書きページを作る（講師だけが見られる場所）
+//   action: "publish"  レッスン後の「生徒に公開」
+//       講師が直した下書きを、その生徒専用のページ（Web公開する場所）の中へコピーする
+//   action: "drafts"   その週に下書きがある生徒の一覧を返す
+//   action: "part1"    Part 1（グーグルフォーム）の回答シートを読んで返す
 // Notionの鍵はここ（スクリプトプロパティ）にだけ置き、ツールには書かない。
 //
 // スクリプトプロパティ（プロジェクトの設定 → スクリプト プロパティ）：
@@ -22,6 +26,12 @@ function doPost(e) {
       return reply({ error: '合言葉が違います。' });
     }
     if (body.action === 'part1') return reply(readPart1(body.sheetId));
+    if (body.action === 'drafts') return reply(listDrafts(conf.getProperty('NOTION_DB_ID'), body.week));
+    if (body.action === 'publish') {
+      const lock = LockService.getScriptLock();
+      lock.waitLock(30000);
+      try { return reply(publish(conf, body.week, body.student)); } finally { lock.releaseLock(); }
+    }
 
     // 1. 記録シート
     const saved = saveRows(conf.getProperty('SHEET_ID'), body.week, body.student, body.rows || []);
@@ -42,6 +52,10 @@ function doPost(e) {
 
     let created;
     try {
+      // 同じ週・同じ生徒の古い下書きは消して（ゴミ箱へ）、作り直す
+      findDrafts(conf.getProperty('NOTION_DB_ID'), body.week, body.student).forEach(function (p) {
+        notion('patch', 'pages/' + p.id, { archived: true });
+      });
       created = notion('post', 'pages', {
         parent: { database_id: conf.getProperty('NOTION_DB_ID') },
         icon: { type: 'emoji', emoji: '📝' },
@@ -113,19 +127,164 @@ function saveRows(sheetId, week, student, rows) {
 }
 
 function notion(method, path, payload) {
-  const res = UrlFetchApp.fetch('https://api.notion.com/v1/' + path, {
+  const opt = {
     method: method,
-    contentType: 'application/json',
     headers: {
       Authorization: 'Bearer ' + PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN'),
       'Notion-Version': NOTION_VERSION
     },
-    payload: JSON.stringify(payload),
     muteHttpExceptions: true
-  });
+  };
+  if (payload !== undefined) {
+    opt.contentType = 'application/json';
+    opt.payload = JSON.stringify(payload);
+  }
+  const res = UrlFetchApp.fetch('https://api.notion.com/v1/' + path, opt);
   const json = JSON.parse(res.getContentText());
   if (res.getResponseCode() >= 300) throw new Error('Notion：' + (json.message || res.getResponseCode()));
   return json;
+}
+
+// ============================================================
+// 下書きと、生徒に公開
+// ============================================================
+function findDrafts(dbId, week, student) {
+  if (!week || !student) return [];
+  const res = notion('post', 'databases/' + dbId + '/query', {
+    filter: { and: [{ property: '週', select: { equals: week } }, { property: '生徒', rich_text: { equals: student } }] },
+    sorts: [{ timestamp: 'created_time', direction: 'descending' }]
+  });
+  return res.results;
+}
+
+function listDrafts(dbId, week) {
+  const names = [];
+  let cursor;
+  do {
+    const q = { filter: { property: '週', select: { equals: week || '' } }, page_size: 100 };
+    if (cursor) q.start_cursor = cursor;
+    const res = notion('post', 'databases/' + dbId + '/query', q);
+    res.results.forEach(function (p) {
+      const name = ((p.properties['生徒'] || {}).rich_text || []).map(function (t) { return t.plain_text; }).join('');
+      if (name && names.indexOf(name) < 0) names.push(name);
+    });
+    cursor = res.has_more ? res.next_cursor : null;
+  } while (cursor);
+  return { students: names };
+}
+
+// ページがまだ使えるか（ゴミ箱に入っていないか）
+function alivePage(id) {
+  if (!id) return null;
+  try {
+    const p = notion('get', 'pages/' + id);
+    return p.archived || p.in_trash ? null : p;
+  } catch (e) {
+    return null;
+  }
+}
+
+// 生徒専用ページを置く場所（データベースの1行。ここ自体は公開しない）
+function studentRoot(conf) {
+  const page = alivePage(conf.getProperty('STUDENT_ROOT_ID'));
+  if (page) return page.id;
+  const created = notion('post', 'pages', {
+    parent: { database_id: conf.getProperty('NOTION_DB_ID') },
+    icon: { type: 'emoji', emoji: '📚' },
+    properties: { 'タイトル': { title: [plain('（触らない）生徒専用ページの置き場')] } }
+  });
+  conf.setProperty('STUDENT_ROOT_ID', created.id);
+  return created.id;
+}
+
+// 生徒専用ページ（この単位でWeb公開する）。なければ作る
+function studentPage(conf, student) {
+  const key = 'STUDENT_PAGE_' + student;
+  const page = alivePage(conf.getProperty(key));
+  if (page) return { id: page.id, url: page.url, isNew: false };
+  const created = notion('post', 'pages', {
+    parent: { page_id: studentRoot(conf) },
+    icon: { type: 'emoji', emoji: '🎓' },
+    properties: { title: { title: [plain(student + 'さんのフィードバック')] } }
+  });
+  conf.setProperty(key, created.id);
+  return { id: created.id, url: created.url, isNew: true };
+}
+
+function listChildren(id) {
+  const out = [];
+  let cursor;
+  do {
+    const res = notion('get', 'blocks/' + id + '/children?page_size=100' + (cursor ? '&start_cursor=' + cursor : ''));
+    Array.prototype.push.apply(out, res.results);
+    cursor = res.has_more ? res.next_cursor : null;
+  } while (cursor);
+  return out;
+}
+
+const COPY_TYPES = ['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item',
+  'to_do', 'toggle', 'quote', 'callout', 'divider', 'table', 'code', 'bookmark', 'embed', 'equation', 'image', 'video'];
+
+function cleanRich(arr) {
+  return (arr || []).map(function (t) {
+    const o = { type: t.type, annotations: t.annotations };
+    if (t.type === 'text') o.text = { content: t.text.content, link: t.text.link };
+    else if (t.type === 'mention') o.mention = t.mention;
+    else if (t.type === 'equation') o.equation = t.equation;
+    return o;
+  });
+}
+
+// 下書きのブロックを、作り直せる形で読み出す（講師がNotionで直した内容もそのまま）
+function readBlocks(id, skipped) {
+  const out = [];
+  listChildren(id).forEach(function (b) {
+    const type = b.type;
+    const data = b[type];
+    // Notionにアップロードされた画像などは、リンクの期限が切れるのでコピーしない
+    if (COPY_TYPES.indexOf(type) < 0 || (data && data.type === 'file')) { skipped.n++; return; }
+    const copy = JSON.parse(JSON.stringify(data));
+    if (copy.rich_text) copy.rich_text = cleanRich(copy.rich_text);
+    if (copy.caption) copy.caption = cleanRich(copy.caption);
+    if (copy.icon && copy.icon.type !== 'emoji') delete copy.icon;
+    const block = { type: type };
+    block[type] = copy;
+    if (type === 'table') {
+      copy.children = listChildren(b.id).map(function (r) {
+        return { type: 'table_row', table_row: { cells: r.table_row.cells.map(cleanRich) } };
+      });
+    } else if (b.has_children) {
+      block._children = readBlocks(b.id, skipped);
+    }
+    out.push(block);
+  });
+  return out;
+}
+
+function publish(conf, week, student) {
+  const drafts = findDrafts(conf.getProperty('NOTION_DB_ID'), week, student);
+  if (!drafts.length) return { error: week + ' ' + student + 'さんの下書きがNotionにありません。先に「記録してNotionに下書きを作成」を押してください。' };
+  const skipped = { n: 0 };
+  const blocks = readBlocks(drafts[0].id, skipped);
+  const sp = studentPage(conf, student);
+  const title = week + ' 確認テストのフィードバック';
+  // 同じ週のページがすでにあれば、中身だけ入れ替える（生徒に送ったリンクを変えない）
+  const existing = listChildren(sp.id).filter(function (b) {
+    return b.type === 'child_page' && b.child_page.title === title;
+  })[0];
+  let target;
+  if (existing) {
+    listChildren(existing.id).forEach(function (b) { notion('delete', 'blocks/' + b.id); });
+    target = notion('get', 'pages/' + existing.id);
+  } else {
+    target = notion('post', 'pages', {
+      parent: { page_id: sp.id },
+      icon: { type: 'emoji', emoji: '📝' },
+      properties: { title: { title: [plain(title)] } }
+    });
+  }
+  appendBlocks(target.id, blocks);
+  return { url: target.url, studentUrl: sp.url, newStudent: sp.isNew, updated: !!existing, skipped: skipped.n };
 }
 
 function reply(obj) {

@@ -121,7 +121,7 @@
 <body>
 <div class="wrap">
   <h1>確認テスト 添削ツール</h1>
-  <p class="lead">上から順に入力し、「AI用にコピー」でAIに渡します。AIの返事を貼り戻すと、記録シート用の行と生徒用FBができます。入力内容はこのブラウザに一時保存されます。</p>
+  <p class="lead">上から順に入力し、「AI用にコピー」でAIに渡します。AIの返事を貼り戻したら、Notionに下書きを作ります。講師はNotionで下書きを直し、レッスン後に手順7で生徒に公開します。入力内容は生徒ごとにこのブラウザに保存されます。</p>
 
   <!-- 0. 基本情報 -->
   <div class="card">
@@ -131,7 +131,9 @@
       <div><label class="field" for="student">生徒名</label><input type="text" id="student" placeholder="例：田中"></div>
       <div><label class="field" for="teacher">担当講師</label><input type="text" id="teacher" placeholder="例：佐藤"></div>
     </div>
-    <div class="btns"><button class="btn sub" id="resetBtn" type="button">この生徒の入力をすべて消す</button></div>
+    <div style="margin-top:12px"><label class="field" for="draftSel">下書き（このブラウザに生徒ごとに保存されます）</label>
+      <select id="draftSel" style="max-width:420px"></select></div>
+    <div class="btns"><button class="btn sub" id="resetBtn" type="button">この生徒の下書きを消す</button></div>
   </div>
 
   <!-- 1. Part 1 -->
@@ -208,7 +210,7 @@
     <div class="subhead">生徒用ページ（Notionに作る内容）</div>
     <pre class="out" id="fbOut"></pre>
     <div class="btns">
-      <button class="btn" id="notionBtn" type="button">記録してNotionを作成</button>
+      <button class="btn" id="notionBtn" type="button">記録してNotionに下書きを作成</button>
       <button class="btn sub" id="copyFbBtn" type="button">Notion用にコピー（手で貼る場合）</button>
     </div>
     <div class="msg" id="notionMsg"></div>
@@ -220,6 +222,19 @@
       </div>
     </details>
     <div class="msg" id="outMsg"></div>
+  </div>
+
+  <!-- 7. 公開 -->
+  <div class="card">
+    <h2><span class="step">7</span>レッスン後：生徒に公開</h2>
+    <p class="hint">Notionの下書きを確認・修正し、「講師より」を書いてから押してください。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="pubStudent" style="max-width:280px"></select>
+      <button class="btn sub" id="pubReload" type="button">一覧を読み込み直す</button>
+      <button class="btn" id="pubBtn" type="button">生徒に公開</button>
+    </div>
+    <div class="msg" id="pubMsg"></div>
+    <div class="msg" id="pubNote"></div>
   </div>
 </div>
 
@@ -331,29 +346,78 @@ const VIEW_TIPS = {
 // ============================================================
 // 状態と保存
 // ============================================================
-const STORE_KEY = "tensaku-tool-v1";
+const STORE_KEY = "tensaku-tool-v2";      // { current: キー, drafts: { "週|生徒": 入力内容 } }
+const OLD_STORE_KEY = "tensaku-tool-v1";  // 1人分だけ保存していたころの形
 const RELAY_KEY = "tensaku-tool-relay";
 let lastSummary = {};
-let state = loadState();
 
 function blankState() {
   return {
     week: Object.keys(WEEKS)[0], student: "", teacher: "",
     p1paste: "", p2speed: {}, p2notta: "",
     p3view: {}, p3checks: {}, p3ipa: {},
-    aiReply: ""
+    aiReply: "", status: ""
   };
 }
-function loadState() {
+const draftKey = s => s.week + "|" + s.student;
+function loadStore() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return Object.assign(blankState(), JSON.parse(raw));
+    if (raw) return JSON.parse(raw);
+    const old = localStorage.getItem(OLD_STORE_KEY);
+    if (old) {
+      const s = Object.assign(blankState(), JSON.parse(old));
+      return { current: draftKey(s), drafts: { [draftKey(s)]: s } };
+    }
   } catch (e) { /* 保存できない環境でも動かす */ }
-  return blankState();
+  return { current: "", drafts: {} };
 }
 function saveState() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* 無視 */ }
+  store.drafts[draftKey(state)] = state;
+  store.current = draftKey(state);
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) { /* 無視 */ }
+  renderDrafts();
 }
+// 別の生徒（または週）の下書きに切り替える。今の入力はそのまま保存しておく
+function switchDraft(week, student) {
+  const teacher = state.teacher;
+  saveState();
+  const saved = store.drafts[week + "|" + student];
+  state = saved ? Object.assign(blankState(), saved) : Object.assign(blankState(), { week, student, teacher });
+  if (!state.teacher) state.teacher = teacher;
+  hideMsg("notionMsg"); hideMsg("pubMsg"); hideMsg("pubNote");
+  saveState();
+  renderAll();
+}
+// 名前のない下書きに名前をつける、または名前を直す
+function renameDraft(student) {
+  if (student === state.student) return;
+  if (store.drafts[state.week + "|" + student]) {
+    if (confirm(`${student}さんの下書きがすでにあります。そちらを開きますか？`)) switchDraft(state.week, student);
+    else $("student").value = state.student;
+    return;
+  }
+  delete store.drafts[draftKey(state)];
+  state.student = student;
+  saveState();
+  renderPart1(); renderResults(); markP1Select();
+}
+const STATUS_LABEL = { notion: "Notionに下書きあり", published: "公開済み" };
+function draftStatus(d) {
+  return STATUS_LABEL[d.status] || (d.aiReply && d.aiReply.trim() ? "AIの返事あり" : "入力中");
+}
+function renderDrafts() {
+  const sel = $("draftSel");
+  if (!sel) return;
+  const keys = Object.keys(store.drafts).filter(k => store.drafts[k].student).sort();
+  sel.innerHTML = `<option value="">＋ 新しい生徒</option>` + keys.map(k => {
+    const d = store.drafts[k];
+    return `<option value="${esc(k)}" ${k === draftKey(state) ? "selected" : ""}>${esc(d.week)}　${esc(d.student)}（${draftStatus(d)}）</option>`;
+  }).join("");
+  if (!state.student) sel.value = "";
+}
+let store = loadStore();
+let state = Object.assign(blankState(), store.drafts[store.current] || {});
 
 const $ = id => document.getElementById(id);
 const W = () => WEEKS[state.week];
@@ -429,7 +493,7 @@ function renderPart1() {
   } else {
     showMsg("p1msg", `読み取りました（${r.name || "名前なし"}）：${r.score} / ${r.max}点`, "ok");
   }
-  if (!state.student && r.name) { state.student = r.name; $("student").value = r.name; saveState(); }
+  if (!state.student && r.name) { renameDraft(r.name); $("student").value = state.student; }
   let html = "<table><tr><th>問</th><th>生徒の回答</th><th>正解</th><th>点</th><th>弱点タイプ</th></tr>";
   r.items.forEach(x => {
     const ans = `${x.typeAns ? TYPE_NAMES[x.typeAns] : "？"}・${x.splitAns || "？"}`;
@@ -952,14 +1016,22 @@ function renderAll() {
   $("p2notta").value = state.p2notta;
   $("aiReply").value = state.aiReply;
   $("p4theme").textContent = "テーマ：" + W().part4theme;
+  renderDrafts();
+  if (typeof markP1Select === "function" && p1Students.length) markP1Select();
+  if ($("pubStudent").options.length) markPubSelect();
   renderPart1();
   renderPart2();
   renderPart3();
   renderResults();
 }
 
-$("week").addEventListener("change", e => { state.week = e.target.value; saveState(); renderAll(); });
-$("student").addEventListener("input", e => { state.student = e.target.value.trim(); saveState(); renderPart1(); renderResults(); });
+$("week").addEventListener("change", e => switchDraft(e.target.value, state.student));
+$("student").addEventListener("change", e => renameDraft(e.target.value.trim()));
+$("draftSel").addEventListener("change", e => {
+  const d = store.drafts[e.target.value];
+  if (d) switchDraft(d.week, d.student);
+  else switchDraft(state.week, "");
+});
 $("teacher").addEventListener("input", e => { state.teacher = e.target.value.trim(); saveState(); renderResults(); });
 // Part 1：回答シートを中継から読み込む
 let p1Students = [];
@@ -985,17 +1057,25 @@ async function loadPart1() {
     showMsg("p1msg", "回答シートを読み込めませんでした：" + e.message + "　下の「手で貼る」も使えます。", "err");
   }
 }
+function markP1Select() {
+  const i = p1Students.findIndex(s => s.name === state.student);
+  $("p1student").value = i >= 0 ? String(i) : "";
+}
 $("p1student").addEventListener("change", e => {
   const s = p1Students[Number(e.target.value)];
   if (!s) return;
+  // 別の生徒を選んだら、その生徒の下書きに切り替える（前の生徒の入力が混ざらないように）
+  if (s.name !== state.student) {
+    if (state.student || store.drafts[state.week + "|" + s.name]) switchDraft(state.week, s.name);
+    else renameDraft(s.name);
+  }
   state.p1paste = s.row.join("\t");
-  state.student = s.name;
   $("p1paste").value = state.p1paste;
-  $("student").value = s.name;
-  saveState(); renderPart1(); renderResults();
+  $("student").value = state.student;
+  saveState(); renderPart1(); renderResults(); markP1Select();
 });
 $("p1reload").addEventListener("click", () => { hideMsg("p1msg"); loadPart1(); });
-$("week").addEventListener("change", loadPart1);
+$("week").addEventListener("change", () => { loadPart1(); loadPubList(); });
 $("relayUrl").addEventListener("change", loadPart1);
 $("relayPass").addEventListener("change", loadPart1);
 loadPart1();
@@ -1093,6 +1173,8 @@ $("notionBtn").addEventListener("click", async () => {
   if (!fb) { showMsg("notionMsg", "生徒用FBがまだありません。先にAIの返事を貼ってください。", "err"); return; }
   if (!relay.url || !relay.pass) { showMsg("notionMsg", "下の「Notion連携の設定」に、中継のURLと合言葉を入れてください。", "err"); return; }
   if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
+  if ((state.status === "notion" || state.status === "published") &&
+      !confirm("この生徒のNotionの下書きはすでにあります。作り直すと、Notionで直した内容と「講師より」は消えます（公開済みのページはそのままです）。作り直しますか？")) return;
   const payload = Object.assign({
     pass: relay.pass,
     title: `${state.week} ${state.student}`,
@@ -1101,15 +1183,18 @@ $("notionBtn").addEventListener("click", async () => {
     rows: $("recordOut").textContent.split("\n").filter(l => l.trim()).map(l => l.split("\t"))
   }, lastSummary);
   $("notionBtn").disabled = true;
-  showMsg("notionMsg", "記録シートに書き込み、Notionにページを作っています…", "warn");
+  showMsg("notionMsg", "記録シートに書き込み、Notionに下書きを作っています…", "warn");
+  const who = draftKey(state);
   try {
     const res = await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) });
     const json = await res.json();
     if (json.error) throw new Error(json.error);
     const el = $("notionMsg");
     el.className = "msg show ok";
-    el.innerHTML = `記録シートに${json.rows || 0}行を記録し、Notionのページを作りました：<a href="${esc(json.url)}" target="_blank" rel="noopener">${esc(json.url)}</a> <button class="btn sub" type="button" id="copyNotionUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>Notionで「講師より」を書き足してから、Slackでリンクを送ってください。`;
-    $("copyNotionUrl").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(json.url));
+    el.innerHTML = `記録シートに${json.rows || 0}行を記録し、Notionに下書きを作りました：<a href="${esc(json.url)}" target="_blank" rel="noopener">下書きを開く</a><br>` +
+      `<strong>まだ生徒には見えません。</strong>Notionで内容を確認・修正し、レッスン後に「講師より」を書いてから、手順7の「生徒に公開」を押してください。`;
+    if (store.drafts[who]) { store.drafts[who].status = "notion"; if (who === draftKey(state)) state.status = "notion"; saveState(); }
+    loadPubList();
   } catch (e) {
     showMsg("notionMsg", "作成できませんでした：" + e.message, "err");
   } finally {
@@ -1117,14 +1202,78 @@ $("notionBtn").addEventListener("click", async () => {
   }
 });
 
-$("copyFbBtn").addEventListener("click", () => copyText($("fbOut").textContent, "outMsg", "コピーしました。生徒のNotionページに貼り、「講師より」を書き足してから、Slackでページのリンクを送ってください。"));
+$("copyFbBtn").addEventListener("click", () => copyText($("fbOut").textContent, "outMsg", "コピーしました。Notionのページに貼って使ってください。"));
 $("resetBtn").addEventListener("click", () => {
-  if (!confirm("この生徒の入力をすべて消します。よろしいですか？")) return;
+  if (!confirm("この生徒の下書き（このツールの入力）を消します。Notionや記録シートに送った内容は消えません。よろしいですか？")) return;
+  delete store.drafts[draftKey(state)];
   const week = state.week, teacher = state.teacher;
-  state = blankState();
-  state.week = week; state.teacher = teacher;
+  state = Object.assign(blankState(), { week, teacher });
   saveState(); renderAll();
 });
+
+// ============================================================
+// 手順7：レッスン後に生徒に公開
+// ============================================================
+let pubStudents = [];
+function markPubSelect() {
+  if (pubStudents.includes(state.student)) $("pubStudent").value = state.student;
+}
+async function loadPubList() {
+  const relay = loadRelay();
+  const sel = $("pubStudent");
+  if (!relay.url || !relay.pass) { sel.innerHTML = '<option value="">（先に手順6の「Notion連携の設定」を入れてください）</option>'; return; }
+  sel.innerHTML = '<option value="">（読み込んでいます…）</option>';
+  try {
+    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "drafts", week: state.week }) });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    pubStudents = json.students || [];
+    sel.innerHTML = `<option value="">生徒を選ぶ（${esc(state.week)}の下書き：${pubStudents.length}人）</option>` +
+      pubStudents.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    markPubSelect();
+  } catch (e) {
+    sel.innerHTML = '<option value="">（読み込めませんでした）</option>';
+    showMsg("pubMsg", "下書きの一覧を読み込めませんでした：" + e.message, "err");
+  }
+}
+$("pubReload").addEventListener("click", () => { hideMsg("pubMsg"); loadPubList(); });
+$("relayUrl").addEventListener("change", loadPubList);
+$("relayPass").addEventListener("change", loadPubList);
+$("pubBtn").addEventListener("click", async () => {
+  const student = $("pubStudent").value;
+  const week = state.week;
+  const relay = loadRelay();
+  hideMsg("pubNote");
+  if (!student) { showMsg("pubMsg", "公開する生徒を選んでください。", "err"); return; }
+  if (!confirm(`${week} ${student}さんのFBを公開します。Notionの下書きの確認と「講師より」は済んでいますか？`)) return;
+  $("pubBtn").disabled = true;
+  showMsg("pubMsg", "生徒のページに入れています…（少し時間がかかります）", "warn");
+  try {
+    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "publish", week, student }) });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    const el = $("pubMsg");
+    el.className = "msg show ok";
+    el.innerHTML = `${json.updated ? "公開済みのページを上書きしました（リンクは前と同じです）" : "公開しました"}：<a href="${esc(json.url)}" target="_blank" rel="noopener">${esc(json.url)}</a> ` +
+      `<button class="btn sub" type="button" id="copyPubUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>このリンクをテスト提出部屋に送ってください。` +
+      (json.skipped ? `<br>※ 画像など${json.skipped}個はコピーできませんでした。必要なら生徒のページに直接入れてください。` : "");
+    $("copyPubUrl").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(json.url));
+    if (json.newStudent) {
+      const note = $("pubNote");
+      note.className = "msg show warn";
+      note.innerHTML = `<strong>${esc(student)}さんの専用ページを新しく作りました。このままでは生徒が開けません。</strong><br>` +
+        `<a href="${esc(json.studentUrl)}" target="_blank" rel="noopener">専用ページを開き</a>、右上の「共有」→「Web公開」→「公開」を押してください。` +
+        `そのあと「編集を許可」「複製を許可」「検索エンジンのインデックス作成」をすべてオフにします（この生徒については最初の1回だけです）。`;
+    }
+    const k = week + "|" + student;
+    if (store.drafts[k]) { store.drafts[k].status = "published"; if (k === draftKey(state)) state.status = "published"; saveState(); }
+  } catch (e) {
+    showMsg("pubMsg", "公開できませんでした：" + e.message, "err");
+  } finally {
+    $("pubBtn").disabled = false;
+  }
+});
+loadPubList();
 
 renderAll();
 </script>
