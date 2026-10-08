@@ -705,7 +705,10 @@ function renderResults() {
     `<div class="stat"><div class="k">Part 3</div><div class="v">${p3.total} / ${p3.max}</div><div class="j">${support3}</div></div>`;
 
   // 記録シート用（Part 1・3はツール、Part 2・4はAI）
-  const all = [...part1Rows(p1), ...aiRows.filter(c => (c[3] || "").trim() === "2"), ...part3Rows(), ...aiRows.filter(c => (c[3] || "").trim() === "4")];
+  // 記録シート用の行は、AIの返事を読み取れてから出す（それまでは入力途中で、Part 3の初期値などが混ざるため）
+  const all = aiRows.length
+    ? [...part1Rows(p1), ...aiRows.filter(c => (c[3] || "").trim() === "2"), ...part3Rows(), ...aiRows.filter(c => (c[3] || "").trim() === "4")]
+    : [];
   $("recordOut").textContent = all.map(c => c.join("\t")).join("\n");
   $("fbOut").textContent = fb;
 }
