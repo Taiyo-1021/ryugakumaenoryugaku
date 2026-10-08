@@ -40,21 +40,16 @@ function doPost(e) {
     if (body.support2) props['補助教材：瞬間英作文'] = { select: { name: body.support2 } };
     if (body.support3) props['補助教材：発音'] = { select: { name: body.support3 } };
 
-    const blocks = markdownToBlocks(body.markdown || '');
     let created;
     try {
       created = notion('post', 'pages', {
-      parent: { database_id: conf.getProperty('NOTION_DB_ID') },
-      icon: { type: 'emoji', emoji: '📝' },
-      properties: props,
-      children: blocks.slice(0, 100)
+        parent: { database_id: conf.getProperty('NOTION_DB_ID') },
+        icon: { type: 'emoji', emoji: '📝' },
+        properties: props
       });
+      appendBlocks(created.id, markdownToBlocks(body.markdown || ''));
     } catch (err) {
-      return reply({ error: '記録シートには' + saved + '行を記録しましたが、Notionのページは作れませんでした（' + err.message + '）' });
-    }
-    // 1回に送れるブロックは100個までなので、残りは追記する
-    for (let i = 100; i < blocks.length; i += 100) {
-      notion('patch', 'blocks/' + created.id + '/children', { children: blocks.slice(i, i + 100) });
+      return reply({ error: '記録シートには' + saved + '行を記録しましたが、Notionのページは' + (created ? '途中までしか' : '') + '作れませんでした（' + err.message + '）' });
     }
     return reply({ url: created.url, rows: saved });
   } catch (err) {
@@ -147,35 +142,115 @@ function plain(text) {
   return { type: 'text', text: { content: String(text).slice(0, 2000) } };
 }
 
-// **太字** を含む1行を、Notionのrich_textに変換する
+// 開け閉めできる欄（トグル）の中身は、トグルを作ったあとに追記する（1回で送れる入れ子は2段までのため）
+function appendBlocks(parentId, blocks) {
+  for (let i = 0; i < blocks.length; i += 100) {
+    const chunk = blocks.slice(i, i + 100);
+    const res = notion('patch', 'blocks/' + parentId + '/children', {
+      children: chunk.map(function (b) { const c = Object.assign({}, b); delete c._children; return c; })
+    });
+    chunk.forEach(function (b, j) {
+      if (b._children && b._children.length) appendBlocks(res.results[j].id, b._children);
+    });
+  }
+}
+
+// **太字** と `タグ` を含む1行を、Notionのrich_textに変換する
 function richText(line) {
   const parts = [];
-  const re = /\*\*(.+?)\*\*/g;
+  const re = /\*\*(.+?)\*\*|`([^`]+)`/g;
   let last = 0, m;
   while ((m = re.exec(line)) !== null) {
     if (m.index > last) parts.push(plain(line.slice(last, m.index)));
-    const bold = plain(m[1]);
-    bold.annotations = { bold: true };
-    parts.push(bold);
+    const t = plain(m[1] !== undefined ? m[1] : m[2]);
+    t.annotations = m[1] !== undefined ? { bold: true } : { code: true };
+    parts.push(t);
     last = re.lastIndex;
   }
   if (last < line.length) parts.push(plain(line.slice(last)));
   return parts.length ? parts : [plain('')];
 }
 
-// ツールが出すMarkdown（見出し・箇条書き・番号付きリスト・段落）をNotionのブロックにする
+function tableCells(line) {
+  return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); });
+}
+
+// ツールが出すMarkdownをNotionのブロックにする
+//   # ## ###：見出し　- ：箇条書き　1. ：番号付き　- [ ] ：チェックボックス　---：区切り線
+//   | a | b |：表　> ：色つきの枠（先頭が絵文字ならそのアイコン）　▶ 〜 ◀：開け閉めできる欄
 function markdownToBlocks(md) {
+  const lines = String(md).replace(/\r/g, '').split('\n');
   const blocks = [];
-  md.replace(/\r/g, '').split('\n').forEach(function (raw) {
-    const line = raw.trimEnd();
-    if (!line.trim() || /^```/.test(line.trim())) return;
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].replace(/\s+$/, '');
+    const t = line.trim();
     let m;
-    if ((m = line.match(/^###\s+(.*)$/))) blocks.push({ type: 'heading_3', heading_3: { rich_text: richText(m[1]) } });
-    else if ((m = line.match(/^##\s+(.*)$/))) blocks.push({ type: 'heading_2', heading_2: { rich_text: richText(m[1]) } });
-    else if ((m = line.match(/^#\s+(.*)$/))) blocks.push({ type: 'heading_1', heading_1: { rich_text: richText(m[1]) } });
-    else if ((m = line.match(/^\s*[-・*]\s+(.*)$/))) blocks.push({ type: 'bulleted_list_item', bulleted_list_item: { rich_text: richText(m[1]) } });
-    else if ((m = line.match(/^\s*\d+[.．]\s+(.*)$/))) blocks.push({ type: 'numbered_list_item', numbered_list_item: { rich_text: richText(m[1]) } });
-    else blocks.push({ type: 'paragraph', paragraph: { rich_text: richText(line) } });
-  });
+    if (!t || /^```/.test(t) || t === '◀') { i++; continue; }
+    if (/^▶\s*/.test(t)) {
+      // ◀ までを中身にする
+      const inner = [];
+      let depth = 0;
+      i++;
+      while (i < lines.length) {
+        const u = lines[i].trim();
+        if (/^▶/.test(u)) depth++;
+        if (u === '◀') { if (depth === 0) break; depth--; }
+        inner.push(lines[i]);
+        i++;
+      }
+      i++;
+      blocks.push({ type: 'toggle', toggle: { rich_text: richText(t.replace(/^▶\s*/, '')) }, _children: markdownToBlocks(inner.join('\n')) });
+      continue;
+    }
+    if (/^\|/.test(t)) {
+      const rows = [];
+      let header = false;
+      while (i < lines.length && /^\|/.test(lines[i].trim())) {
+        const cells = tableCells(lines[i]);
+        if (cells.every(function (c) { return /^:?-{2,}:?$/.test(c); })) header = rows.length === 1;
+        else rows.push(cells);
+        i++;
+      }
+      const width = Math.max.apply(null, rows.map(function (r) { return r.length; }));
+      blocks.push({
+        type: 'table',
+        table: {
+          table_width: width, has_column_header: header, has_row_header: false,
+          children: rows.map(function (r) {
+            const cells = [];
+            for (let k = 0; k < width; k++) cells.push(r[k] ? richText(r[k]) : []);
+            return { type: 'table_row', table_row: { cells: cells } };
+          })
+        }
+      });
+      continue;
+    }
+    if (/^>/.test(t)) {
+      const texts = [];
+      while (i < lines.length && /^>/.test(lines[i].trim())) {
+        texts.push(lines[i].trim().replace(/^>\s?/, ''));
+        i++;
+      }
+      let icon = null;
+      const em = texts[0].match(/^(\p{Extended_Pictographic}️?)\s*/u);
+      if (em) { icon = em[1]; texts[0] = texts[0].slice(em[0].length); }
+      const rich = [];
+      texts.forEach(function (x, k) { if (k) rich.push(plain('\n')); Array.prototype.push.apply(rich, richText(x)); });
+      blocks.push(icon
+        ? { type: 'callout', callout: { rich_text: rich, icon: { type: 'emoji', emoji: icon }, color: 'gray_background' } }
+        : { type: 'quote', quote: { rich_text: rich } });
+      continue;
+    }
+    if (/^-{3,}$/.test(t)) blocks.push({ type: 'divider', divider: {} });
+    else if ((m = t.match(/^#{4,}\s+(.*)$/)) || (m = t.match(/^###\s+(.*)$/))) blocks.push({ type: 'heading_3', heading_3: { rich_text: richText(m[1]) } });
+    else if ((m = t.match(/^##\s+(.*)$/))) blocks.push({ type: 'heading_2', heading_2: { rich_text: richText(m[1]) } });
+    else if ((m = t.match(/^#\s+(.*)$/))) blocks.push({ type: 'heading_1', heading_1: { rich_text: richText(m[1]) } });
+    else if ((m = t.match(/^[-・*]\s+\[([ xX])\]\s*(.*)$/))) blocks.push({ type: 'to_do', to_do: { rich_text: richText(m[2]), checked: m[1] !== ' ' } });
+    else if ((m = t.match(/^[-・*]\s+(.*)$/))) blocks.push({ type: 'bulleted_list_item', bulleted_list_item: { rich_text: richText(m[1]) } });
+    else if ((m = t.match(/^\d+[.．]\s+(.*)$/))) blocks.push({ type: 'numbered_list_item', numbered_list_item: { rich_text: richText(m[1]) } });
+    else blocks.push({ type: 'paragraph', paragraph: { rich_text: richText(t) } });
+    i++;
+  }
   return blocks;
 }
