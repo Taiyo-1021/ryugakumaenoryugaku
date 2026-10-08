@@ -205,7 +205,7 @@
     <pre class="out" id="recordOut"></pre>
     <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー（手で貼る場合）</button></div>
 
-    <div class="subhead">生徒用FB（Notionに貼る）</div>
+    <div class="subhead">生徒用ページ（Notionに作る内容）</div>
     <pre class="out" id="fbOut"></pre>
     <div class="btns">
       <button class="btn" id="notionBtn" type="button">記録してNotionを作成</button>
@@ -232,18 +232,18 @@ const WEEKS = {
     part1SheetId: "1mHVQM1BFiqFX8sG2ObcbrvKvE8Q2H1Ed52fmsXVWFr4", // Part 1のフォームの回答シート
     focus: "文型（第1〜5文型）／頻度副詞／時間表現／接続詞",
     part1: [
-      { q: "Birds fly in the sky.", type: 1, split: "A", wrong: { B: "M（修飾語）の見分け", C: "M（修飾語）の見分け" } },
-      { q: "She runs every morning.", type: 1, split: "B", wrong: { A: "M（修飾語）の見分け", C: "語のかたまり" } },
-      { q: "He is a teacher.", type: 2, split: "C", wrong: { A: "OとCの区別", B: "語のかたまり" } },
-      { q: "This cake tastes sweet.", type: 2, split: "A", wrong: { B: "語のかたまり", C: "OとCの区別" } },
-      { q: "I drink coffee every day.", type: 3, split: "A", wrong: { B: "M（修飾語）の見分け", C: "語のかたまり" } },
-      { q: "She reads many books.", type: 3, split: "B", wrong: { A: "語のかたまり", C: "語のかたまり" } },
-      { q: "I gave him a present.", type: 4, split: "C", wrong: { A: "第4・第5文型の混同", B: "第4・第5文型の混同" } },
-      { q: "She wrote me a letter.", type: 4, split: "A", wrong: { B: "語のかたまり", C: "第4・第5文型の混同" } },
-      { q: "The news made me happy.", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } },
-      { q: "We call him our leader.", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } },
-      { q: "My mother made me a delicious dinner.", type: 4, split: "B", wrong: { A: "第4・第5文型の混同", C: "語のかたまり" } },
-      { q: "The movie made everyone cry.", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } }
+      { q: "Birds fly in the sky.", why: "fly のあとに「〜を」にあたる語がないので第1文型（SV）です。in the sky は「どこで」を表す飾り（M）なので、文型には数えません。", type: 1, split: "A", wrong: { B: "M（修飾語）の見分け", C: "M（修飾語）の見分け" } },
+      { q: "She runs every morning.", why: "every morning は「いつ」を表す M です。runs のあとに「〜を」にあたる語がないので第1文型です。every morning を O にしないよう注意しましょう。", type: 1, split: "B", wrong: { A: "M（修飾語）の見分け", C: "語のかたまり" } },
+      { q: "He is a teacher.", why: "He = a teacher が成り立つので、a teacher は主語を説明する C です。be動詞の後ろの名詞はたいてい C で、第2文型（SVC）になります。is a をまとめて V にはしません。", type: 2, split: "C", wrong: { A: "OとCの区別", B: "語のかたまり" } },
+      { q: "This cake tastes sweet.", why: "「このケーキ = 甘い」が成り立つので、sweet は C です。taste・look・feel・sound など「〜に感じる」動詞は、第2文型になりやすいです。", type: 2, split: "A", wrong: { B: "語のかたまり", C: "OとCの区別" } },
+      { q: "I drink coffee every day.", why: "coffee は「何を飲むか」を表す O です。every day は「いつ」の M なので、O には含めません。第3文型（SVO）です。", type: 3, split: "A", wrong: { B: "M（修飾語）の見分け", C: "語のかたまり" } },
+      { q: "She reads many books.", why: "many books はひとかたまりで「たくさんの本を」という O です。many だけを切り離さないのがポイント。第3文型です。", type: 3, split: "B", wrong: { A: "語のかたまり", C: "語のかたまり" } },
+      { q: "I gave him a present.", why: "「彼に（O）」「プレゼントを（O）」と、O が2つ並ぶ第4文型（SVOO）です。him ≠ a present なので、a present は C ではありません。him と a present は別々の O です。", type: 4, split: "C", wrong: { A: "第4・第5文型の混同", B: "第4・第5文型の混同" } },
+      { q: "She wrote me a letter.", why: "「私に（O）」「手紙を（O）」の第4文型です。me ≠ a letter なので C ではありません。wrote me をまとめて V にしないこと。", type: 4, split: "A", wrong: { B: "語のかたまり", C: "第4・第5文型の混同" } },
+      { q: "The news made me happy.", why: "me = happy（私が幸せ）が成り立つので、happy は C です。O のあとに、O を説明する C が来る形が第5文型（SVOC）です。", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } },
+      { q: "We call him our leader.", why: "him = our leader が成り立つので、our leader は C です。「O を C と呼ぶ」の第5文型です。", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } },
+      { q: "My mother made me a delicious dinner.", why: "me ≠ a delicious dinner なので、O が2つの第4文型です（「私に」「おいしい夕食を」）。Q9と同じ made でも、後ろの形で文型が変わります。", type: 4, split: "B", wrong: { A: "第4・第5文型の混同", C: "語のかたまり" } },
+      { q: "The movie made everyone cry.", why: "「everyone が cry する（泣く）」という関係があるので、everyone が O、cry が C の第5文型です。made A cry で「A を泣かせる」です。", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } }
     ],
     part2: [
       { jp: "私は毎朝シャワーを浴びます。", en: "I take a shower every morning." },
@@ -273,11 +273,11 @@ const WEEKS = {
       { spot: "walk / school / book", look: "語尾に母音がついていないか", type: "語尾の母音" },
       { spot: "listen / often", look: "tを読んでいないか", type: "読まない文字（t・l）" },
       { spot: "afternoon / activities", look: "アクセントの位置", type: "アクセント" },
-      { spot: "early", look: "/ɜːr/", type: "その他" }
+      { spot: "early", look: "/ɜːr/", type: "その他", tip: "early の /ɜːr/ は、口を少しだけ開け、舌を奥に引いて「アー」と「ウー」の間のこもった音を出します。「アーリー」と口を大きく開けないのがコツです。" }
     ],
     part3ipa: [
       { ipa: "/kæt/", word: "cat", type: "/æ/" },
-      { ipa: "/dɒg/", word: "dog", type: "その他" },
+      { ipa: "/dɒg/", word: "dog", type: "その他", tip: "/ɒ/ は口を縦に大きく開けた短い「オ」です。dog は「ドッグ」に近い音で、/ʌ/（duck の「ア」）とは別の音です。" },
       { ipa: "/bʊk/", word: "book", type: "/ʊ/と/uː/" },
       { ipa: "/haʊs/", word: "house", type: "二重母音" },
       { ipa: "/pleɪ/", word: "play", type: "二重母音" },
@@ -296,6 +296,37 @@ const WEEKS = {
 // 補助教材のライン（この点数以下なら「あり」）
 const SUPPORT_LINE = { part2: 13, part3: 11 };
 const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", "第5文型"];
+
+// 生徒用FBに自動で入る解説（AIを通さない部分。週をまたいで使う）
+const PATTERN_TIPS = {
+  "M（修飾語）の見分け": "「いつ・どこで・どのように」を表す語（every morning・in the sky など）は M です。M は文型に数えないので、先に（ ）でくくってから S・V・O・C を探すと見分けやすくなります。",
+  "OとCの区別": "動詞の後ろの語が「主語 = □」になれば C、ならなければ O です。be動詞や look・taste などの後ろは C になることが多いです。",
+  "第4・第5文型の混同": "動詞の後ろに2つ語が並んだら、「1つ目 = 2つ目」または「1つ目が2つ目する」が成り立つかを見ます。成り立てば第5文型（SVOC）、成り立たなければ第4文型（SVOO）です。",
+  "語のかたまり": "many books・a present のような意味のまとまりは、切らずに1つの要素として扱います。V は動詞（made・gave など）だけで、後ろの語を混ぜません。",
+  "文型の番号と形": "第1文型 SV／第2文型 SVC／第3文型 SVO／第4文型 SVOO／第5文型 SVOC。まず V の後ろに何がいくつあるかを数えると、番号を決めやすくなります。",
+  "未回答": "空欄のままだと点数になりません。迷ったら、V の後ろの語の数から考えて、どれかを選んでみましょう。"
+};
+const SOUND_TIPS = {
+  "th": "th は、舌先を上の前歯に軽く当てて（かむようにして）息を出す音です。サ行・ザ行にならないよう、鏡で舌先が見えているか確かめながら練習しましょう。（例：thirty, with, this）",
+  "/æ/": "/æ/ は「ア」と「エ」の間の音です。「エ」の口の形のまま、口を横に大きく開いて「ア」と言うイメージです。（例：cat, happy, family）",
+  "/ʌ/": "/ʌ/ は口をあまり開けずに、短く「アッ」と言う音です。力を抜いて、のどの奥から軽く出します。（例：club, but, cup）",
+  "/ʊ/と/uː/": "/ʊ/ は力を抜いた短い「ウ」、/uː/ は唇を丸めて伸ばす「ウー」です。book は短い /ʊ/、school は長い /uː/ です。",
+  "二重母音": "/aʊ/ /eɪ/ などは、2つの音をなめらかにつなげます。house は「ハウス」、play は「プレイ」と、後ろの音まで言いましょう。「プレー」と伸ばさないこと。",
+  "/ʃ/": "/ʃ/ は唇を少し前に突き出して「シュッ」と息を出す音です。「シ」にならないようにします。（例：shoe, she）",
+  "語尾の母音": "英語の単語は子音で終わることが多いです。walk を「ウォーク」、book を「ブック」と最後に「ウ」をつけず、k の音で止めましょう。",
+  "読まない文字（t・l）": "listen の t、often の t（読まないことが多い）、walk の l は発音しません。綴りではなく、音で覚えましょう。",
+  "アクセント": "英語は強く読む場所が決まっています。afternoon は最後の noon、activities は tiv を強く読みます。強いところを大きく・長く言うと英語らしくなります。",
+  "綴り読み": "綴りどおりに読むと違う音になる単語があります。breakfast は「ブレックファスト」に近い音です。新しい単語は、音声を聞いてから読みましょう。",
+  "記号が読めない": "発音記号は、まず母音の記号（æ・ʌ・ʊ・ɒ など）から覚えると読めるようになります。記号表で1つずつ確認しましょう。",
+  "その他": "お手本の音声をよく聞き、口の形を意識しながら何度か声に出してみましょう。"
+};
+const VIEW_TIPS = {
+  "読み間違い・飛ばし": "読む前に一度黙読して、知らない単語の読み方を確認しておきましょう。指で文を追いながら読むと、飛ばしが減ります。",
+  "母音・子音": "上の「気になった音と直し方」を中心に、口の形を意識して練習しましょう。",
+  "語尾（余計な母音がつかない）": "単語の最後に「ウ」「オ」をつけず、子音で止める意識を持ちましょう。",
+  "リズム・強弱": "名詞・動詞など大事な語を強く、the・a・to などは弱く短く読みます。全部を同じ強さで読まないのがコツです。",
+  "流暢さ": "意味のかたまり（I usually get up / at six thirty）ごとに区切って読むと、つっかえにくくなります。お手本の音声に重ねて読む練習が効果的です。"
+};
 
 // ============================================================
 // 状態と保存
@@ -575,47 +606,62 @@ ${state.p2notta.trim() || "（未入力）"}`);
 - 講師メモは空欄（要確認の場合のみ「要確認」）。
 
 ## 【B】
-生徒が読むNotionページ用の文章を、Markdownで書く（コードブロックには入れない）。次の形にする。
+生徒が読むNotionページのうち、解説の部分を書く。点数・Part 1・Part 3・表・模範解答はツールが自動で入れるので書かない。
+次の見出し（### から始まる8つ）を、この順番・この名前のまま出す（コードブロックには入れない）。
 
-## ${state.week} 確認テストのフィードバック
-**点数**　文型 ○/24 ｜ 瞬間英作文 ○/20（すぐ言えた ○/10・正しく言えた ○/10）｜ 発音 ○/17
+### 診断
+（2〜3文。今の状態をひとことで。何ができていて、どこを直すと伸びるか）
 
-### 今週の重点はこの2つ
-1. （弱点を生徒に分かる言葉で短く。例：often などの位置）
+### 重点1：（弱点を生徒に分かる言葉で短く。例：often などの位置）
+| | あなたの英文 | 正しい英文 |
+|---|---|---|
+| Part 2 Q2 | ✕ （生徒の実際の英文） | ◯ （正しい英文。直したところを **太字**） |
+（この弱点が出ているものを全部、1行ずつ。Part 1の場合は「あなたの答え」「正解」を書く）
+
+**📖 解説**
+（このルールを3〜4文で。必要なら「| 形 | 置く場所 | 例 |」のような表を使う）
+
+**🔍 なぜ間違えやすい？**
+（この生徒の実際の英文を使って、なぜそうなったかを2〜3文で。日本語との違いなど）
+
+**💡 コツ**
+（話すとき・書くときに崩れないための具体的なコツを2〜3文で）
+
+**✏️ 確認問題**
+1. （日本語の文。今週の内容で、この弱点を練習できるもの）
 2. （同じ）
+3. （同じ）
 
-### ① （1つ目の弱点）
-- ✕ （生徒の実際の英文や答え。Partと問番号も）
-- ◯ （正しい英文）
-- なぜ：（ルールを1文で）
-- 今週やること：（何を・どれくらい。1文で）
-
-### ② （2つ目の弱点）
-（同じ形）
+### 重点2：（同じ形）
+（重点1と同じ形）
 
 ### よかったところ
-- （どの問題で、何ができていたか。1〜2つ）
+- （どの問題で、何ができていたか。理由も1文。2〜3個）
 
-### そのほかの間違い
-- （重点以外の間違いを1行ずつ。「✕ … → ◯ …」の形。Part 4の直しもここに入れる。もっと自然な言い方は「もっと自然に：…」と書く）
+### Part 2の解説
+**分かったこと**：（Part 2全体の傾向を2文で。瞬発力0・正確性1の問題があれば「知っているが、まだ口からすぐ出ない」状態として触れる）
+- **Q○**：（正確性0の問題ごとに、何がどう違うか・どう直すかを2〜3文で。重点で詳しく説明した問題は「重点①を見てください」と1文でよい）
 
-### 次週の補助教材
-- 瞬間英作文：あり／なし
-- 発音：あり／なし
-（Part 2が${SUPPORT_LINE.part2}点以下なら瞬間英作文あり、Part 3が${SUPPORT_LINE.part3}点以下なら発音あり。ありの場合は、どの弱点を直すための練習かを一言足す）
+### Part 4の解説
+**分かったこと**：（今週の学習項目をどれだけ使えていたか、全体の傾向を2文で）
+- **○文目**：（直した文ごとに、何がどう違うかを2〜3文で）
+- **○文目（もっと自然に）**：（誤りではないが、もっと自然な言い方があるもの。「◯◯ → ◯◯」と理由1文）
 
-### 講師より
-（空欄のままにする）
+### 今週の練習
+- [ ] （重点1を直す練習。何を・どれくらい・いつ。1行）
+- [ ] （重点2を直す練習）
+- [ ] （必要ならもう1つ）
 
-### 模範解答
-（今週の情報にあるPart 1・Part 2・Part 3 2️⃣の正解を、Partごとに箇条書きで載せる）
+### 確認問題の答え
+- 重点1：1. （英文）／2. （英文）／3. （英文）
+- 重点2：1. （英文）／2. （英文）／3. （英文）
 
 書き方のルール：
-- 1行は短く。説明は1文まで。専門用語（症状・原因・対策など）は使わない。
-- 弱点は必ず生徒の実際の英文を「✕」で見せ、すぐ下に「◯」を置く。
-- 「そのほかの間違い」は間違えたものだけ。正解した問題は書かない。
-- Part 1・Part 3の点数は上の値をそのまま使う。Part 2の正確性は【A】で出した値を数える。
-- 中高生にも分かるやさしい日本語で書く。「不合格」「ダメ」など合否を感じさせる言葉は使わない。
+- 中高生にも分かるやさしい日本語で書く。専門用語（症状・原因・対策など）は使わない。文法用語（主語・動詞・接続詞など）は使ってよい。
+- 弱点は必ず生徒の実際の英文を「✕」で見せ、すぐ横に「◯」を置く。
+- 解説は、生徒が読んで「なぜ間違えたか」「次にどうすればいいか」が分かる量を書く。短くしすぎない。
+- 正解した問題について「Part 2の解説」「Part 4の解説」には書かない。
+- 「不合格」「ダメ」など合否を感じさせる言葉は使わない。
 - 渡された情報にないことを推測で書かない。`);
 
   return lines.join("\n");
@@ -640,8 +686,22 @@ function parseReply(text) {
       while (c.length < 11) c.push("");
       return c;
     });
-  return { rows, fb: bPart };
+  return { rows, sections: parseSections(bPart) };
 }
+
+// 【B】を「### 見出し」ごとに分ける
+function parseSections(text) {
+  const out = {};
+  let key = null;
+  text.split("\n").forEach(line => {
+    const m = line.match(/^###\s+(.+?)\s*$/);
+    if (m) { key = m[1]; out[key] = []; }
+    else if (key) out[key].push(line);
+  });
+  Object.keys(out).forEach(k => { out[k] = out[k].join("\n").trim(); });
+  return out;
+}
+const findSection = (secs, prefix) => Object.keys(secs).find(k => k.replace(/\s/g, "").startsWith(prefix));
 
 function part1Rows(p1) {
   if (!p1 || p1.error) return [];
@@ -671,13 +731,149 @@ function part3Rows() {
   return rows;
 }
 
+// ============================================================
+// 生徒用ページ（Notion）を組み立てる：点数・表・Part 1/3の解説・模範解答はツール、解説の文章はAI
+// ============================================================
+const bar = (score, max) => { const n = Math.round(score / max * 10); return "■".repeat(n) + "□".repeat(10 - n) + " " + Math.round(score / max * 100) + "%"; };
+const cell = v => String(v == null ? "" : v).replace(/\|/g, "／").replace(/\n/g, " ").trim();
+const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "今週の練習", "確認問題の答え"];
+
+function buildStudentPage(d) {
+  const w = W(), sec = d.sections, L = [];
+  const get = prefix => { const k = findSection(sec, prefix); return k ? { title: k, body: sec[k] } : null; };
+  const focusTitle = t => t.replace(/^重点\s*\d\s*[：:]?\s*/, "");
+  const hasP1 = d.p1 && !d.p1.error;
+  const n2 = w.part2.length;
+
+  // 点数
+  const s2 = d.p2total === null ? "―" : (d.p2total <= SUPPORT_LINE.part2 ? "**あり**" : "なし");
+  const s3 = !d.p3.complete ? "―" : (d.p3.total <= SUPPORT_LINE.part3 ? "**あり**" : "なし");
+  L.push(`## ${state.week} 確認テストのフィードバック`, "",
+    "| | 点数 | 達成度 | 次週の補助教材 |", "|---|---|---|---|",
+    `| 📘 文型 | ${hasP1 ? `**${d.p1.score} / ${d.p1.max}**` : "未提出"} | ${hasP1 ? bar(d.p1.score, d.p1.max) : ""} | ― |`,
+    `| 🗣 瞬間英作文 | ${d.p2total === null ? "―" : `**${d.p2total} / 20**`} | ${d.p2total === null ? "" : bar(d.p2total, 20)} | ${s2} |`,
+    `| 🎧 発音 | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
+  if (d.p2total !== null) L.push("", `瞬間英作文の内訳：すぐ言えた ${d.speed} / ${n2}・正しく言えた ${d.acc} / ${n2}`);
+
+  const diag = get("診断");
+  if (diag && diag.body) L.push("", "> 💡 **今週のひとこと診断**", ...diag.body.split("\n").filter(x => x.trim()).map(x => "> " + x.trim()));
+
+  // 重点
+  const focus = [get("重点1"), get("重点2")].filter(Boolean);
+  if (focus.length) {
+    L.push("", "---", "## 🎯 今週の重点はこの2つ", ...focus.map((f, i) => `${i + 1}. ${focusTitle(f.title)}`));
+    focus.forEach((f, i) => L.push("", `### ${"①②"[i]} ${focusTitle(f.title)}`, f.body));
+  }
+  const good = get("よかったところ");
+  if (good && good.body) L.push("", "---", "## 🌟 よかったところ", good.body);
+
+  L.push("", "---", "## 📊 Partごとの結果", "（▶ を押すと開きます）", "");
+
+  // Part 1
+  if (hasP1) {
+    L.push(`▶ **Part 1　文型チェック　${d.p1.score} / ${d.p1.max}**`,
+      "| 問 | 英文 | あなたの答え | 正解 | |", "|---|---|---|---|---|");
+    d.p1.items.forEach(x => L.push(`| Q${x.no} | ${cell(x.q)} | ${x.typeAns ? TYPE_NAMES[x.typeAns] : "未回答"}・${x.splitAns || "未回答"} | ${x.correct} | ${["✕", "△", "◯"][x.score]} |`));
+    const wrong = d.p1.items.filter(x => x.score < 2);
+    if (wrong.length) {
+      L.push("", "**間違えた問題の解説**");
+      wrong.forEach(x => {
+        L.push("", `**Q${x.no} ${x.q}**　あなた：${x.typeAns ? TYPE_NAMES[x.typeAns] : "未回答"}・${x.splitAns || "未回答"} → 正解：**${x.correct}**`);
+        if (w.part1[x.no - 1].why) L.push(w.part1[x.no - 1].why);
+      });
+      const types = [...new Set(wrong.flatMap(x => x.weak))].filter(t => PATTERN_TIPS[t]);
+      if (types.length) L.push("", "**📌 まとめ：見分け方**", ...types.map(t => `- **${t}**：${PATTERN_TIPS[t]}`));
+    } else {
+      L.push("", "全問正解です！文型の見分けはしっかりできています。");
+    }
+    L.push("◀", "");
+  } else {
+    L.push("**Part 1　文型チェック**：未提出", "");
+  }
+
+  // Part 2
+  const p2rows = d.aiRows.filter(c => (c[3] || "").trim() === "2");
+  if (d.p2total !== null) {
+    L.push(`▶ **Part 2　瞬間英作文　${d.p2total} / 20**`,
+      "| 問 | すぐ言えた | 正しく言えた | あなたの英文 | 正しい英文 |", "|---|---|---|---|---|");
+    w.part2.forEach((q, i) => {
+      const r = p2rows.find(c => c[4].replace(/\s/g, "").toUpperCase() === `Q${i + 1}`) || [];
+      const ok = String(r[8] || "").trim() === "1";
+      L.push(`| Q${i + 1} | ${state.p2speed[i] === 1 ? "◯" : "✕"} | ${ok ? "◯" : "✕"} | ${cell(r[5]) || "（なし）"} | ${ok ? "◯" : cell(r[6]) || cell(q.en)} |`);
+    });
+    const ex = get("Part2の解説");
+    if (ex && ex.body) L.push("", ex.body);
+    L.push("◀", "");
+  }
+
+  // Part 3
+  if (d.p3.complete) {
+    L.push(`▶ **Part 3　発音チェック　${d.p3.total} / ${d.p3.max}**`, "| 観点 | 点数 |", "|---|---|");
+    w.part3viewpoints.forEach((n, i) => { const v = state.p3view[i]; L.push(`| ${n} | ${"●".repeat(v)}${"○".repeat(2 - v)} ${v} / 2 |`); });
+    L.push(`| 発音記号 | ${d.p3.ipa} / ${w.part3ipa.length} |`);
+    const used = new Set();
+    const tipFor = (type, own) => {
+      if (own) return own;
+      if (used.has(type)) return "直し方は上と同じです。";
+      used.add(type);
+      return SOUND_TIPS[type] || SOUND_TIPS["その他"];
+    };
+    const sounds = [];
+    w.part3checks.forEach((c, i) => {
+      const s = state.p3checks[i] || {};
+      if (s.on) sounds.push(`- **${c.spot}**：${s.note ? `「${s.note}」に聞こえました。` : `${c.look.replace(/か$/, "")}の音が気になりました。`}${tipFor(c.type, c.tip)}`);
+    });
+    w.part3ipa.forEach((x, i) => {
+      const s = state.p3ipa[i] || {};
+      if (!s.v || s.v === "正解") return;
+      const said = s.note ? `「${s.note}」と読んでいました。` : (s.v === "記号が読めない" ? "記号が読めていませんでした。" : "日本語の音になっていました。");
+      sounds.push(`- **${x.ipa}（${x.word}）**：${said}${s.v === "記号が読めない" ? tipFor("記号が読めない") : tipFor(x.type, x.tip)}`);
+    });
+    if (sounds.length) L.push("", "**気になった音と直し方**", ...sounds);
+    const low = w.part3viewpoints.map((n, i) => ({ n, v: state.p3view[i] })).filter(o => o.v <= 1 && VIEW_TIPS[o.n]);
+    if (low.length) L.push("", "**読み方のアドバイス**", ...low.map(o => `- **${o.n}（${o.v} / 2）**：${VIEW_TIPS[o.n]}`));
+    L.push("◀", "");
+  }
+
+  // Part 4
+  const p4rows = d.aiRows.filter(c => (c[3] || "").trim() === "4");
+  if (p4rows.length) {
+    L.push(`▶ **Part 4　自由英作文（テーマ：${w.part4theme.replace(/（.*$/, "")}）**`,
+      "| | あなたの英文 | 直した文 |", "|---|---|---|");
+    p4rows.forEach((r, i) => L.push(`| ${i + 1} | ${cell(r[5])} | ${cell(r[6]) || "◯"} |`));
+    const ex = get("Part4の解説");
+    if (ex && ex.body) L.push("", ex.body);
+    L.push("◀", "");
+  }
+
+  // 練習
+  const todo = [];
+  const prac = get("今週の練習");
+  if (prac && prac.body) todo.push(prac.body);
+  if (d.p2total !== null && d.p2total <= SUPPORT_LINE.part2) todo.push("- [ ] 補助教材（瞬間英作文）");
+  if (d.p3.complete && d.p3.total <= SUPPORT_LINE.part3) todo.push("- [ ] 補助教材（発音）");
+  if (todo.length) L.push("---", "## ✅ 今週の練習チェックリスト", "終わったらチェックを入れましょう。", ...todo);
+
+  L.push("", "---", "## 💬 講師より", "（ここに講師が書き足します）");
+
+  // 模範解答
+  L.push("", "---", "▶ **📘 模範解答・確認問題の答え**", "**Part 1**",
+    ...w.part1.map((q, i) => `- Q${i + 1} ${q.q} → ${TYPE_NAMES[q.type]}・${q.split}`),
+    "", "**Part 2**", ...w.part2.map((q, i) => `${i + 1}. ${q.jp} → ${q.en}`),
+    "", "**Part 3 発音記号**", ...w.part3ipa.map(x => `- ${x.ipa} → ${x.word}`));
+  const ans = get("確認問題の答え");
+  if (ans && ans.body) L.push("", "**確認問題の答え**", ans.body);
+  L.push("◀");
+  return L.join("\n");
+}
+
 function renderResults() {
   const p1 = analyzePart1();
   const p3 = part3Score();
   const speed = W().part2.reduce((s, _, i) => s + (state.p2speed[i] === 1 ? 1 : 0), 0);
   const speedDone = W().part2.every((_, i) => state.p2speed[i] === 0 || state.p2speed[i] === 1);
 
-  let aiRows = [], fb = "", acc = null;
+  let aiRows = [], sections = null, acc = null;
   hideMsg("replyMsg");
   if (state.aiReply.trim()) {
     const r = parseReply(state.aiReply);
@@ -685,13 +881,15 @@ function renderResults() {
       showMsg("replyMsg", r.error, "err");
     } else {
       aiRows = r.rows;
-      fb = r.fb;
+      sections = r.sections;
       const p2rows = aiRows.filter(c => (c[3] || "").trim() === "2");
       acc = p2rows.reduce((s, c) => s + (String(c[8]).trim() === "1" ? 1 : 0), 0);
       if (p2rows.length !== W().part2.length) {
         showMsg("replyMsg", `Part 2の行が${p2rows.length}行しかありません（${W().part2.length}行のはず）。AIの返事を確認してください。`, "warn");
       } else {
-        showMsg("replyMsg", "読み取りました。下の内容を確認してください。", "ok");
+        const lack = SECTION_NAMES.filter(n => !findSection(sections, n));
+        if (lack.length) showMsg("replyMsg", `AIの返事に次の見出しが見つかりません：${lack.join("、")}。そのまま進めると、その部分は生徒用ページに入りません。`, "warn");
+        else showMsg("replyMsg", "読み取りました。下の内容を確認してください。", "ok");
       }
     }
   }
@@ -720,7 +918,7 @@ function renderResults() {
     ? [...part1Rows(p1), ...aiRows.filter(c => (c[3] || "").trim() === "2"), ...part3Rows(), ...aiRows.filter(c => (c[3] || "").trim() === "4")]
     : [];
   $("recordOut").textContent = all.map(c => c.join("\t")).join("\n");
-  $("fbOut").textContent = fb;
+  $("fbOut").textContent = sections ? buildStudentPage({ p1, p3, speed, acc, p2total, aiRows, sections }) : "";
 }
 
 // ============================================================
