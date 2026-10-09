@@ -229,7 +229,7 @@
   <!-- 7. 公開 -->
   <div class="card">
     <h2><span class="step">7</span>レッスン後：生徒に公開</h2>
-    <p class="hint">レッスン後にスピーキングテストの録画を見て、Notionの下書きの「意識するポイント」のできていたものと「録画を確認した」にチェックをつけ、「次週の独り言で意識すること」を書いてから押してください。ポイントの達成は記録シートにも入ります。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
+    <p class="hint">レッスン後にスピーキングテストの録画を見て、Notionの下書きの「意識するポイント」のできていたものにチェックをつけ、「次週の独り言で意識すること」を書いてから押してください。ポイントの達成は記録シートにも入ります。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="pubStudent" style="max-width:280px"></select>
       <button class="btn sub" id="pubReload" type="button">一覧を読み込み直す</button>
@@ -914,7 +914,6 @@ function part3Rows() {
 // ============================================================
 const bar = (score, max) => { const n = Math.round(score / max * 10); return "■".repeat(n) + "□".repeat(10 - n) + " " + Math.round(score / max * 100) + "%"; };
 const cell = v => String(v == null ? "" : v).replace(/\|/g, "／").replace(/\n/g, " ").trim();
-const SPEAKING_CONFIRM = "録画を確認した（講師用：ポイントのチェックをつけ終えたら✅。この行は生徒のページには出ません）";
 const SPEAKING_PLACEHOLDER = "（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）";
 const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "今週の練習", "確認問題の答え"];
 
@@ -1066,8 +1065,7 @@ function buildStudentPage(d) {
   if ((w.speakingPoints || []).length) {
     // 講師がレッスン後に録画を見て、できていたものにチェックする（公開すると記録シートにも入る）
     L.push("**意識するポイント**（できていたものに ✅）",
-      ...w.speakingPoints.map((x, i) => `- [ ] ポイント${i + 1}　${x.title}：${x.detail}`),
-      `- [ ] ${SPEAKING_CONFIRM}`, "");
+      ...w.speakingPoints.map((x, i) => `- [ ] ポイント${i + 1}　${x.title}：${x.detail}`), "");
   }
   L.push("**次週の独り言で意識すること**", SPEAKING_PLACEHOLDER, "");
   if (todo.length) L.push("---", "## ✅ 今週やること", ...todo);
