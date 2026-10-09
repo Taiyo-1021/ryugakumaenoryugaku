@@ -318,7 +318,6 @@ function listChildren(id) {
 }
 
 // 講師が書く欄の初期の文（残っていたら公開しない）。古い下書きの「講師より」の文も含む
-const SPEAKING_CONFIRM = '録画を確認した';
 function blockText(b) {
   return ((b[b.type] || {}).rich_text || []).map(function (t) { return t.text ? t.text.content : (t.plain_text || ''); }).join('');
 }
@@ -378,15 +377,11 @@ function publish(conf, body) {
   if (TEACHER_PLACEHOLDERS.some(function (t) { return text.indexOf(t) >= 0; })) {
     return { error: '「次週の独り言で意識すること」がまだ書かれていません。Notionの下書きの「（ここに講師が書きます：…）」を書きかえてから、もう一度押してください。' };
   }
-  // スピーキングテストの「意識するポイント」：録画を確認したか、どれができていたか
-  const confirmIdx = blocks.findIndex(function (b) { return b.type === 'to_do' && blockText(b).indexOf(SPEAKING_CONFIRM) === 0; });
+  // スピーキングテストの「意識するポイント」：どれができていたか
   const points = blocks.filter(function (b) { return b.type === 'to_do' && /^ポイント\d+/.test(blockText(b)); });
-  if (confirmIdx >= 0) {
-    if (!blocks[confirmIdx].to_do.checked) {
-      return { error: 'スピーキングテストの録画の確認がまだです。録画を見て「意識するポイント」のできていたものにチェックをつけ、「録画を確認した」にもチェックをつけてから、もう一度押してください。' };
-    }
-    blocks.splice(confirmIdx, 1); // 講師用の行は生徒のページに出さない
-  }
+  // 前の形の下書きにある講師用の確認の行は、生徒のページに出さない
+  const confirmIdx = blocks.findIndex(function (b) { return b.type === 'to_do' && blockText(b).indexOf('録画を確認した') === 0; });
+  if (confirmIdx >= 0) blocks.splice(confirmIdx, 1);
   if (points.length) {
     const teacher = ((drafts[0].properties || {})['担当'] || { rich_text: [] }).rich_text.map(function (t) { return t.plain_text; }).join('');
     const rows = points.map(function (b) {
