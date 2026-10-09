@@ -25,12 +25,21 @@ function doPost(e) {
     if (!body.pass || body.pass !== conf.getProperty('PASSCODE')) {
       return reply({ error: '合言葉が違います。' });
     }
+    // 名前の空白（半角・全角）は取り除いて、同じ人として扱う
+    if (body.student !== undefined) body.student = normalizeName(body.student);
+    if (body.asStudent !== undefined) body.asStudent = normalizeName(body.asStudent);
     if (body.action === 'part1') return reply(readPart1(body.sheetId));
     if (body.action === 'drafts') return reply(listDrafts(conf.getProperty('NOTION_DB_ID'), body.week));
     if (body.action === 'publish') {
       const lock = LockService.getScriptLock();
       lock.waitLock(30000);
-      try { return reply(publish(conf, body.week, body.student)); } finally { lock.releaseLock(); }
+      try { return reply(publish(conf, body)); } finally { lock.releaseLock(); }
+    }
+
+    // 初めての名前が、すでにいる生徒の名前と似ていたら、書き込む前に確認する
+    if (!body.confirmNew) {
+      const similar = similarNames(body.student, knownStudents(conf));
+      if (similar.length) return reply({ needConfirm: true, similar: similar });
     }
 
     // 1. 記録シート
@@ -83,7 +92,7 @@ function readPart1(sheetId) {
   // 同じ名前で複数回答があれば、最後の回答を使う
   const byName = {};
   values.forEach(function (r) {
-    const name = String(r[1] || '').trim();
+    const name = normalizeName(r[1]);
     if (name) byName[name] = r;
   });
   return {
@@ -211,6 +220,61 @@ function studentPage(conf, student) {
   return { id: created.id, url: created.url, isNew: true };
 }
 
+// ============================================================
+// 生徒の名前
+// ============================================================
+function normalizeName(name) {
+  return String(name || '').replace(/[\s　]+/g, '');
+}
+
+// 記録シートと、専用ページがある生徒の名前
+function knownStudents(conf) {
+  const names = {};
+  conf.getKeys().forEach(function (k) { if (k.indexOf('STUDENT_PAGE_') === 0) names[k.slice(13)] = true; });
+  const sheetId = conf.getProperty('SHEET_ID');
+  if (sheetId) {
+    const sheet = SpreadsheetApp.openById(sheetId).getSheets()[0];
+    if (sheet.getLastRow() > 1) {
+      sheet.getRange(2, 2, sheet.getLastRow() - 1, 1).getValues().forEach(function (r) {
+        const n = normalizeName(r[0]);
+        if (n) names[n] = true;
+      });
+    }
+  }
+  return Object.keys(names);
+}
+
+// 旧字体・異体字をそろえる（似ているかの判定だけに使う）
+const KANJI_VARIANTS = { '髙': '高', '﨑': '崎', '嵜': '崎', '齋': '斉', '齊': '斉', '斎': '斉', '邊': '辺', '邉': '辺', '澤': '沢',
+  '濱': '浜', '廣': '広', '嶋': '島', '嶌': '島', '櫻': '桜', '國': '国', '藝': '芸', '德': '徳', '惠': '恵', '眞': '真',
+  '槇': '槙', '龍': '竜', '瀨': '瀬', '冨': '富', '條': '条', '實': '実', '彌': '弥', '壽': '寿', '曾': '曽', '萬': '万' };
+function looseName(name) {
+  return name.split('').map(function (c) { return KANJI_VARIANTS[c] || c; }).join('')
+    .replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); });
+}
+function editDistance(a, b) {
+  const d = [];
+  for (let i = 0; i <= a.length; i++) { d[i] = [i]; }
+  for (let j = 0; j <= b.length; j++) { d[0][j] = j; }
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+  }
+  return d[a.length][b.length];
+}
+// 初めての名前なら、似ている名前の一覧を返す（同じ名前がすでにいれば空）
+function similarNames(name, known) {
+  if (!name || known.indexOf(name) >= 0) return [];
+  const a = looseName(name);
+  return known.filter(function (k) {
+    const b = looseName(k);
+    if (a === b) return true;                                    // 異体字・カタカナの違いだけ
+    if (a.length >= 2 && b.length >= 2 && (a.indexOf(b) >= 0 || b.indexOf(a) >= 0)) return true; // 名字だけ・フルネーム
+    return Math.min(a.length, b.length) >= 3 && editDistance(a, b) <= 1; // 1文字だけ違う
+  });
+}
+
 function listChildren(id) {
   const out = [];
   let cursor;
@@ -261,12 +325,19 @@ function readBlocks(id, skipped) {
   return out;
 }
 
-function publish(conf, week, student) {
+function publish(conf, body) {
+  const week = body.week, student = body.student;
+  // 公開先の生徒（「同じ人」と答えたときは、すでにある名前のページに入れる）
+  const owner = body.asStudent || student;
+  if (!body.confirmNew && !alivePage(conf.getProperty('STUDENT_PAGE_' + owner))) {
+    const similar = similarNames(owner, knownStudents(conf));
+    if (similar.length) return { needConfirm: true, similar: similar };
+  }
   const drafts = findDrafts(conf.getProperty('NOTION_DB_ID'), week, student);
   if (!drafts.length) return { error: week + ' ' + student + 'さんの下書きがNotionにありません。先に「記録してNotionに下書きを作成」を押してください。' };
   const skipped = { n: 0 };
   const blocks = readBlocks(drafts[0].id, skipped);
-  const sp = studentPage(conf, student);
+  const sp = studentPage(conf, owner);
   const title = week + ' 確認テストのフィードバック';
   // 同じ週のページがすでにあれば、中身だけ入れ替える（生徒に送ったリンクを変えない）
   const existing = listChildren(sp.id).filter(function (b) {

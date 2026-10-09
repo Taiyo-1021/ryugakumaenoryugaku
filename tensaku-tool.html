@@ -360,6 +360,7 @@ function blankState() {
   };
 }
 const draftKey = s => s.week + "|" + s.student;
+const normalizeName = n => String(n || "").replace(/[\s\u3000]+/g, "");
 function loadStore() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -456,7 +457,7 @@ function analyzePart1() {
   if (cells.length < need) {
     return { error: `列の数が足りません（${cells.length}列。${need}列必要です）。回答シートの行を、タイムスタンプの列から最後の列まで選んでコピーしてください。` };
   }
-  const name = cells[1].trim();
+  const name = normalizeName(cells[1]);
   const items = qs.map((q, i) => {
     const typeAns = parseType(cells[2 + i * 2]);
     const splitAns = parseSplit(cells[3 + i * 2]);
@@ -944,7 +945,8 @@ function renderResults() {
     if (r.error) {
       showMsg("replyMsg", r.error, "err");
     } else {
-      aiRows = r.rows;
+      // 週・生徒・担当は、AIが書いたものではなくツールの値を使う（名前の揺れで記録がずれないように）
+      aiRows = r.rows.map(c => [state.week, state.student, state.teacher, ...c.slice(3)]);
       sections = r.sections;
       const p2rows = aiRows.filter(c => (c[3] || "").trim() === "2");
       acc = p2rows.reduce((s, c) => s + (String(c[8]).trim() === "1" ? 1 : 0), 0);
@@ -1026,7 +1028,7 @@ function renderAll() {
 }
 
 $("week").addEventListener("change", e => switchDraft(e.target.value, state.student));
-$("student").addEventListener("change", e => renameDraft(e.target.value.trim()));
+$("student").addEventListener("change", e => { const n = normalizeName(e.target.value); e.target.value = n; renameDraft(n); });
 $("draftSel").addEventListener("change", e => {
   const d = store.drafts[e.target.value];
   if (d) switchDraft(d.week, d.student);
@@ -1184,15 +1186,34 @@ $("notionBtn").addEventListener("click", async () => {
   }, lastSummary);
   $("notionBtn").disabled = true;
   showMsg("notionMsg", "記録シートに書き込み、Notionに下書きを作っています…", "warn");
-  const who = draftKey(state);
+  let who = draftKey(state);
   try {
-    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) });
-    const json = await res.json();
+    let json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
+    if (json.needConfirm) {
+      const same = askSameStudent(payload.student, json.similar);
+      if (same === null) { showMsg("notionMsg", "やめました。生徒名を確認してから、もう一度押してください。", "warn"); return; }
+      if (same) {
+        // すでにいる生徒の名前にそろえる
+        if (store.drafts[state.week + "|" + same]) {
+          showMsg("notionMsg", `「${same}」の下書きがこのツールにすでにあります。手順0の下書き一覧から開いて確認してください。`, "warn");
+          return;
+        }
+        renameDraft(same);
+        if (state.student !== same) { showMsg("notionMsg", "やめました。生徒名を確認してから、もう一度押してください。", "warn"); return; }
+        $("student").value = same;
+        renderResults();
+        payload.student = same; payload.title = `${state.week} ${same}`;
+        payload.rows = $("recordOut").textContent.split("\n").filter(l => l.trim()).map(l => l.split("\t"));
+      }
+      payload.confirmNew = true;
+      json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
+    }
     if (json.error) throw new Error(json.error);
     const el = $("notionMsg");
     el.className = "msg show ok";
     el.innerHTML = `記録シートに${json.rows || 0}行を記録し、Notionに下書きを作りました：<a href="${esc(json.url)}" target="_blank" rel="noopener">下書きを開く</a><br>` +
       `<strong>まだ生徒には見えません。</strong>Notionで内容を確認・修正し、レッスン後に「講師より」を書いてから、手順7の「生徒に公開」を押してください。`;
+    who = draftKey(state);
     if (store.drafts[who]) { store.drafts[who].status = "notion"; if (who === draftKey(state)) state.status = "notion"; saveState(); }
     loadPubList();
   } catch (e) {
@@ -1210,6 +1231,14 @@ $("resetBtn").addEventListener("click", () => {
   state = Object.assign(blankState(), { week, teacher });
   saveState(); renderAll();
 });
+
+// 似た名前の生徒がいるときに聞く。同じ人ならその名前、別の人なら ""、やめるなら null
+function askSameStudent(name, similar) {
+  for (const s of similar) {
+    if (confirm(`「${name}」と似た名前の生徒がいます：「${s}」\n\n同じ人ですか？\nOK：同じ人（「${s}」として記録する）\nキャンセル：違う人`)) return s;
+  }
+  return confirm(`「${name}」を新しい生徒として記録します。よろしいですか？`) ? "" : null;
+}
 
 // ============================================================
 // 手順7：レッスン後に生徒に公開
@@ -1249,8 +1278,15 @@ $("pubBtn").addEventListener("click", async () => {
   $("pubBtn").disabled = true;
   showMsg("pubMsg", "生徒のページに入れています…（少し時間がかかります）", "warn");
   try {
-    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "publish", week, student }) });
-    const json = await res.json();
+    const req = { pass: relay.pass, action: "publish", week, student };
+    let json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(req) })).json();
+    if (json.needConfirm) {
+      const same = askSameStudent(student, json.similar);
+      if (same === null) { showMsg("pubMsg", "やめました。", "warn"); return; }
+      if (same) req.asStudent = same;
+      req.confirmNew = true;
+      json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(req) })).json();
+    }
     if (json.error) throw new Error(json.error);
     const el = $("pubMsg");
     el.className = "msg show ok";
