@@ -180,7 +180,7 @@
     <ol class="hint" style="padding-left:20px;margin-top:0">
       <li>Slackから生徒のノートの写真を保存しておく</li>
       <li>手順5でAIに送るとき、<strong>ノートの写真を必ず添付する</strong></li>
-      <li>手順6のあと、記録シート用の行のPart 4（「生徒の回答」の列）と写真を見比べ、読み取り間違いがないか確認する</li>
+      <li>Notionに下書きを作ったら、下書きのPart 4の表（「あなたの英文」の列）と写真を見比べ、読み取り間違いがあればNotionで直す</li>
     </ol>
     <div id="p4theme" class="model"></div>
   </div>
@@ -203,9 +203,11 @@
     <div class="subhead">点数と補助教材（運営用）</div>
     <div class="summary" id="summary"></div>
 
-    <div class="subhead">記録シートに貼る行（全Part）</div>
-    <pre class="out" id="recordOut"></pre>
-    <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー（手で貼る場合）</button></div>
+    <details style="margin-top:14px">
+      <summary class="hint" style="cursor:pointer">記録シートに入る行を見る（ふだんは不要。下のボタンで自動で書き込まれます）</summary>
+      <pre class="out" id="recordOut"></pre>
+      <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー（中継が使えず、手で貼るとき）</button></div>
+    </details>
 
     <div class="subhead">生徒用ページ（Notionに作る内容）</div>
     <pre class="out" id="fbOut"></pre>
