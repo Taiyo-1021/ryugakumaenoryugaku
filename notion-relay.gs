@@ -42,6 +42,13 @@ function doPost(e) {
       if (similar.length) return reply({ needConfirm: true, similar: similar });
     }
 
+    // Notionの下書きが講師に直されていたら、消す前に確認する
+    const oldDrafts = findDrafts(conf.getProperty('NOTION_DB_ID'), body.week, body.student);
+    if (!body.overwrite) {
+      const edited = oldDrafts.filter(function (p) { return editedAfterCreate(conf, p); })[0];
+      if (edited) return reply({ needOverwrite: true, edited: edited.last_edited_time });
+    }
+
     // 1. 記録シート
     const saved = saveRows(conf.getProperty('SHEET_ID'), body.week, body.student, body.rows || []);
 
@@ -62,8 +69,9 @@ function doPost(e) {
     let created;
     try {
       // 同じ週・同じ生徒の古い下書きは消して（ゴミ箱へ）、作り直す
-      findDrafts(conf.getProperty('NOTION_DB_ID'), body.week, body.student).forEach(function (p) {
+      oldDrafts.forEach(function (p) {
         notion('patch', 'pages/' + p.id, { archived: true });
+        conf.deleteProperty('DRAFT_DONE_' + p.id);
       });
       created = notion('post', 'pages', {
         parent: { database_id: conf.getProperty('NOTION_DB_ID') },
@@ -71,6 +79,8 @@ function doPost(e) {
         properties: props
       });
       appendBlocks(created.id, markdownToBlocks(body.markdown || ''));
+      // 作り終えた時点の更新日時を覚えておく（これより後に変わっていれば、講師が直したということ）
+      conf.setProperty('DRAFT_DONE_' + created.id, notion('get', 'pages/' + created.id).last_edited_time);
     } catch (err) {
       return reply({ error: '記録シートには' + saved + '行を記録しましたが、Notionのページは' + (created ? '途中までしか' : '') + '作れませんでした（' + err.message + '）' });
     }
@@ -148,7 +158,18 @@ function notion(method, path, payload) {
     opt.contentType = 'application/json';
     opt.payload = JSON.stringify(payload);
   }
-  const res = UrlFetchApp.fetch('https://api.notion.com/v1/' + path, opt);
+  // 回数制限（429）や一時的なエラー（5xx）のときは、少し待ってやり直す
+  let res;
+  for (let i = 0; ; i++) {
+    res = UrlFetchApp.fetch('https://api.notion.com/v1/' + path, opt);
+    const code = res.getResponseCode();
+    if ((code === 429 || code >= 500) && i < 5) {
+      const after = Number((res.getHeaders() || {})['Retry-After'] || (res.getHeaders() || {})['retry-after']);
+      Utilities.sleep(after > 0 ? after * 1000 : 500 * Math.pow(2, i));
+      continue;
+    }
+    break;
+  }
   const json = JSON.parse(res.getContentText());
   if (res.getResponseCode() >= 300) throw new Error('Notion：' + (json.message || res.getResponseCode()));
   return json;
@@ -180,6 +201,13 @@ function listDrafts(dbId, week) {
     cursor = res.has_more ? res.next_cursor : null;
   } while (cursor);
   return { students: names };
+}
+
+// 下書きが、作ったあとに講師に直されたか（Notionの更新日時は分単位）
+function editedAfterCreate(conf, page) {
+  const done = conf.getProperty('DRAFT_DONE_' + page.id);
+  if (!done) return true; // 記録がない古い下書きは、念のため「直された」とみなす
+  return new Date(page.last_edited_time).getTime() > new Date(done).getTime();
 }
 
 // ページがまだ使えるか（ゴミ箱に入っていないか）
@@ -286,6 +314,7 @@ function listChildren(id) {
   return out;
 }
 
+const TEACHER_PLACEHOLDER = '（ここに講師が書き足します）';
 const COPY_TYPES = ['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item',
   'to_do', 'toggle', 'quote', 'callout', 'divider', 'table', 'code', 'bookmark', 'embed', 'equation', 'image', 'video'];
 
@@ -337,6 +366,9 @@ function publish(conf, body) {
   if (!drafts.length) return { error: week + ' ' + student + 'さんの下書きがNotionにありません。先に「記録してNotionに下書きを作成」を押してください。' };
   const skipped = { n: 0 };
   const blocks = readBlocks(drafts[0].id, skipped);
+  if (JSON.stringify(blocks).indexOf(TEACHER_PLACEHOLDER) >= 0) {
+    return { error: '「講師より」がまだ書かれていません。Notionの下書きの「（ここに講師が書き足します）」を書きかえてから、もう一度押してください。' };
+  }
   const sp = studentPage(conf, owner);
   const title = week + ' 確認テストのフィードバック';
   // 同じ週のページがすでにあれば、中身だけ入れ替える（生徒に送ったリンクを変えない）
@@ -344,8 +376,10 @@ function publish(conf, body) {
     return b.type === 'child_page' && b.child_page.title === title;
   })[0];
   let target;
+  let oldBlocks = [];
   if (existing) {
-    listChildren(existing.id).forEach(function (b) { notion('delete', 'blocks/' + b.id); });
+    // 先に新しい中身を入れてから古い中身を消す（途中で止まってもページが空にならない）
+    oldBlocks = listChildren(existing.id);
     target = notion('get', 'pages/' + existing.id);
   } else {
     target = notion('post', 'pages', {
@@ -355,6 +389,7 @@ function publish(conf, body) {
     });
   }
   appendBlocks(target.id, blocks);
+  oldBlocks.forEach(function (b) { notion('delete', 'blocks/' + b.id); });
   return { url: target.url, studentUrl: sp.url, newStudent: sp.isNew, updated: !!existing, skipped: skipped.n };
 }
 
