@@ -164,7 +164,7 @@
   <!-- 3. Part 3 -->
   <div class="card">
     <h2><span class="step">3</span>Part 3：発音チェック</h2>
-    <p class="hint">1️⃣ 音読は5観点を 2＝ほぼできている／1＝数か所気になる／0＝全体的にできていない で選びます。崩れていたチェック箇所には印をつけ、聞こえ方をカタカナで書きます。2️⃣ 発音記号は最初から「正解」になっているので、つまずいた語だけ変えてください。</p>
+    <p class="hint">1️⃣ 音読は5観点を 2＝ほぼできている／1＝数か所気になる／0＝全体的にできていない で選びます。崩れていた箇所は「どう崩れていたか」を選びます（選ぶと自動で印がつきます）。選択肢にないときだけ「その他」にしてメモを書きます。2️⃣ 発音記号は最初から「正解」になっているので、つまずいた語だけ変えてください。別の単語になったときは、その単語を英語でメモに書きます。</p>
     <div class="subhead">1️⃣ 音読：5観点</div>
     <div class="tbl-scroll"><table id="p3viewpoints"></table></div>
     <div class="subhead">1️⃣ 音読：崩れていたチェック箇所</div>
@@ -280,19 +280,19 @@ const WEEKS = {
       "流暢さ"
     ],
     part3checks: [
-      { spot: "six thirty / healthy", look: "th（/θ/）がsになっていないか", type: "th" },
-      { spot: "with my family", look: "th（/ð/）、familyの/æ/", type: "th" },
-      { spot: "happy / classmates", look: "/æ/が日本語の「ア」になっていないか", type: "/æ/" },
-      { spot: "club / but", look: "/ʌ/", type: "/ʌ/" },
-      { spot: "breakfast", look: "「ブレイク」と綴りで読んでいないか", type: "綴り読み" },
-      { spot: "walk / school / book", look: "語尾に母音がついていないか", type: "語尾の母音" },
-      { spot: "listen / often", look: "tを読んでいないか", type: "読まない文字（t・l）" },
-      { spot: "afternoon / activities", look: "アクセントの位置", type: "アクセント" },
-      { spot: "early", look: "/ɜːr/", type: "その他", tip: "early の /ɜːr/ は、口を少しだけ開け、舌を奥に引いて「アー」と「ウー」の間のこもった音を出します。「アーリー」と口を大きく開けないのがコツです。" }
+      { spot: "six thirty / healthy", look: "th（/θ/）がsになっていないか", type: "th", sounds: ["th"], words: ["thirty", "healthy"] },
+      { spot: "with my family", look: "th（/ð/）、familyの/æ/", type: "th", sounds: ["th", "/æ/"], words: ["with", "family"] },
+      { spot: "happy / classmates", look: "/æ/が日本語の「ア」になっていないか", type: "/æ/", sounds: ["/æ/"], words: ["happy", "classmate"] },
+      { spot: "club / but", look: "/ʌ/", type: "/ʌ/", sounds: ["/ʌ/"], words: ["club", "but"] },
+      { spot: "breakfast", look: "「ブレイク」と綴りで読んでいないか", type: "綴り読み", sounds: ["綴り読み"], words: ["breakfast"] },
+      { spot: "walk / school / book", look: "語尾に母音がついていないか", type: "語尾の母音", sounds: ["語尾の母音"], words: ["walk", "school", "book"] },
+      { spot: "listen / often", look: "tを読んでいないか", type: "読まない文字（t・l）", sounds: ["読まない文字（t・l）"], words: ["listen", "often"] },
+      { spot: "afternoon / activities", look: "アクセントの位置", type: "アクセント", sounds: ["アクセント"], words: ["afternoon", "activity"] },
+      { spot: "early", look: "/ɜːr/", type: "その他", sounds: ["/ɜːr/"], words: ["early"] }
     ],
     part3ipa: [
       { ipa: "/kæt/", word: "cat", type: "/æ/" },
-      { ipa: "/dɒg/", word: "dog", type: "その他", tip: "/ɒ/ は口を縦に大きく開けた短い「オ」です。dog は「ドッグ」に近い音で、/ʌ/（duck の「ア」）とは別の音です。" },
+      { ipa: "/dɒg/", word: "dog", type: "その他", drill: "dog ⇔ duck／hot ⇔ hut／not ⇔ nut を、交互に5回", tip: "/ɒ/ は口を縦に大きく開けた短い「オ」です。dog は「ドッグ」に近い音で、/ʌ/（duck の「ア」）とは別の音です。" },
       { ipa: "/bʊk/", word: "book", type: "/ʊ/と/uː/" },
       { ipa: "/haʊs/", word: "house", type: "二重母音" },
       { ipa: "/pleɪ/", word: "play", type: "二重母音" },
@@ -343,6 +343,70 @@ const VIEW_TIPS = {
   "リズム・強弱": "名詞・動詞など大事な語を強く、the・a・to などは弱く短く読みます。全部を同じ強さで読まないのがコツです。",
   "流暢さ": "意味のかたまり（I usually get up / at six thirty）ごとに区切って読むと、つっかえにくくなります。お手本の音声に重ねて読む練習が効果的です。"
 };
+
+// 発音：崩れ方の選択肢（講師はカタカナを書かずに、これを選ぶ）。say＝生徒に伝える文、tip＝直し方
+const SYMPTOMS = {
+  "th": [
+    { id: "th-s", label: "s（サ行）になった", say: "th が s（サ行）の音になっていました。", tip: "舌先を上の前歯に軽く当て（かむようにして）、すき間から息を出します。s は舌が歯の裏に隠れますが、th は舌先が少し見えます。鏡で確かめながら練習しましょう。" },
+    { id: "th-z", label: "z（ザ行）になった", say: "th が z（ザ行）の音になっていました。", tip: "this・with の th は、舌先を前歯に当てたまま声を出す音です。舌を歯の裏につけるとザ行になるので、舌先を前に出しましょう。" },
+    { id: "th-t", label: "t・d（タ・ダ行）になった", say: "th が t・d（タ・ダ行）の音になっていました。", tip: "舌で歯の裏をはじくと t・d になります。舌先を前歯に当てたまま、息（声）を流し続けましょう。" }
+  ],
+  "/æ/": [
+    { id: "ae-a", label: "日本語の「ア」になった", say: "/æ/ が日本語の「ア」になっていました。", tip: "「エ」の口の形のまま、口を横に大きく開いて「ア」と言います。「ア」と「エ」の間の音です。" },
+    { id: "ae-e", label: "「エ」に近くなった", say: "/æ/ が「エ」に近い音になっていました。", tip: "あごをもう少し下げて口を縦にも開け、「ア」を混ぜるように言いましょう。" }
+  ],
+  "/ʌ/": [
+    { id: "uh-a", label: "口を大きく開けた「ア」になった", say: "/ʌ/ が口を大きく開けた「ア」になっていました。", tip: "/ʌ/ は口をあまり開けずに、短く「アッ」と言う音です。力を抜いて、のどの奥から軽く出します。" },
+    { id: "uh-o", label: "「オ」に近くなった", say: "/ʌ/ が「オ」に近い音になっていました。", tip: "唇を丸めずに、口の力を抜いて短く「アッ」と言いましょう。" }
+  ],
+  "語尾の母音": [
+    { id: "end-u", label: "最後に「ウ」がついた", say: "単語の最後に「ウ」の音がついていました（例：book が「ブック」）。", tip: "最後の子音（k・l など）で音を止め、そのあとに息を出さないようにします。" },
+    { id: "end-o", label: "最後に「オ」がついた", say: "単語の最後に「オ」の音がついていました。", tip: "最後の子音で音を止め、そのあとに息を出さないようにします。" }
+  ],
+  "読まない文字（t・l）": [
+    { id: "silent-t", label: "t を読んだ", say: "listen・often の t を読んでいました。", tip: "listen は「リスン」、often は「オフン」に近い音です。綴りではなく、音で覚えましょう。" }
+  ],
+  "アクセント": [
+    { id: "acc-pos", label: "強く読む場所が違った", say: "強く読む場所がずれていました。", tip: "afternoon は最後の noon、activities は tiv を強く読みます。強いところを大きく・高く・長く言いましょう。" },
+    { id: "acc-flat", label: "全部同じ強さだった", say: "単語の中で、強弱がついていませんでした。", tip: "英語の単語には、強く読む場所が1か所あります。辞書で ˈ の印がある場所を確かめて、そこを大きく言いましょう。" }
+  ],
+  "綴り読み": [
+    { id: "spell", label: "綴りどおりに読んだ", say: "breakfast を綴りどおり「ブレイクファスト」と読んでいました。", tip: "breakfast は「ブレックファスト」に近い音です。知らない単語は、音声を聞いてから読みましょう。" }
+  ],
+  "/ɜːr/": [
+    { id: "er-a", label: "口を大きく開けた「アー」になった", say: "early の /ɜːr/ が「アー」になっていました。", tip: "口を少しだけ開け、舌を奥に引いて「アー」と「ウー」の間のこもった音を出します。" }
+  ]
+};
+const SYMPTOM_BY_ID = {};
+Object.keys(SYMPTOMS).forEach(g => SYMPTOMS[g].forEach(x => { SYMPTOM_BY_ID[x.id] = Object.assign({ group: g }, x); }));
+// 記録シートの弱点タイプ（一覧にない音は「その他」）
+const recSound = g => (g === "/ɜːr/" ? "その他" : g);
+
+// 発音：音ごとのペア練習（生徒のページの「今週やること」にも入る）
+const DRILLS = {
+  "th": "think ⇔ sink／three ⇔ tree／they ⇔ day を、言い分けられるまで交互に5回",
+  "/æ/": "cat ⇔ cut／bad ⇔ bud／hat ⇔ hut を、交互に5回",
+  "/ʌ/": "cup ⇔ cap／luck ⇔ lock／bus ⇔ boss を、交互に5回",
+  "/ʊ/と/uː/": "full ⇔ fool／pull ⇔ pool／look ⇔ Luke を、交互に5回",
+  "二重母音": "late ⇔ let／house ⇔ horse／coat ⇔ caught を、交互に5回",
+  "/ʃ/": "she ⇔ see／shoe ⇔ sue／ship ⇔ sip を、交互に5回",
+  "語尾の母音": "walk・book・good・school を、最後の子音で止めて5回ずつ",
+  "読まない文字（t・l）": "listen・often・walk・talk を、t・l を読まずに5回ずつ",
+  "アクセント": "afternoon・activities・breakfast を、強いところで手をたたきながら5回ずつ",
+  "綴り読み": "breakfast・Wednesday・vegetable を、お手本の音声をまねして5回ずつ",
+  "/ɜːr/": "early・girl・work・first を、口を小さく開けたまま5回ずつ",
+  "記号が読めない": "母音の記号（æ・ʌ・ʊ・ɒ・ə）を、例の単語と一緒に毎日1回声に出す",
+  "その他": "お手本の音声をまねして、5回ずつ声に出す"
+};
+// お手本の音声（Cambridge辞書の発音ページ）
+const audioLinks = words => "🔊 お手本：" + words.map(w => `[${w}](https://dictionary.cambridge.org/ja/dictionary/english/${encodeURIComponent(w)})`).join("・");
+const IPA_CHOICES = [
+  { v: "正解", label: "正解" },
+  { v: "別の単語", label: "別の単語になった" },
+  { v: "音が日本語", label: "日本語の音になった" },
+  { v: "記号が読めない", label: "記号が読めなかった" }
+];
+
 
 // ============================================================
 // 状態と保存
@@ -547,12 +611,16 @@ function renderPart3() {
   });
   $("p3viewpoints").innerHTML = html;
 
-  html = "<tr><th>崩れていた</th><th>箇所</th><th>見る音</th><th>聞こえ方（カタカナ）</th></tr>";
+  html = "<tr><th>崩れていた</th><th>箇所</th><th>どう崩れていたか</th><th>メモ（その他のとき）</th></tr>";
   w.part3checks.forEach((c, i) => {
     const s = state.p3checks[i] || {};
     html += `<tr><td><input type="checkbox" data-p3c="${i}" ${s.on ? "checked" : ""}></td>` +
-      `<td>${esc(c.spot)}</td><td class="model">${esc(c.look)}</td>` +
-      `<td><input type="text" class="small" data-p3cnote="${i}" value="${esc(s.note || "")}" placeholder="例：サーティー"></td></tr>`;
+      `<td>${esc(c.spot)}<div class="model">${esc(c.look)}</div></td>` +
+      `<td><select class="small" data-p3csym="${i}"><option value="">（選ぶ）</option>` +
+      (c.sounds || [c.type]).flatMap(g => SYMPTOMS[g] || []).map(x =>
+        `<option value="${x.id}" ${s.sym === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("") +
+      `<option value="other" ${s.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
+      `<td><input type="text" class="small" data-p3cnote="${i}" value="${esc(s.note || "")}" placeholder="例：音が短すぎた"></td></tr>`;
   });
   $("p3checks").innerHTML = html;
 
@@ -561,9 +629,9 @@ function renderPart3() {
     const s = state.p3ipa[i] || {};
     html += `<tr><td>${esc(x.ipa)}</td><td>${esc(x.word)}</td><td>` +
       `<select class="small" data-p3i="${i}">` +
-      ["正解", "音が日本語", "記号が読めない"].map(o =>
-        `<option value="${o}" ${(s.v || "正解") === o ? "selected" : ""}>${o}</option>`).join("") +
-      `</select></td><td><input type="text" class="small" data-p3inote="${i}" value="${esc(s.note || "")}" placeholder="例：カット"></td></tr>`;
+      IPA_CHOICES.map(o =>
+        `<option value="${o.v}" ${(s.v || "正解") === o.v ? "selected" : ""}>${o.label}</option>`).join("") +
+      `</select></td><td><input type="text" class="small" data-p3inote="${i}" value="${esc(s.note || "")}" placeholder="別の単語のとき：例 duck"></td></tr>`;
   });
   $("p3ipa").innerHTML = html;
 }
@@ -645,8 +713,8 @@ ${state.p2notta.trim() || "（未入力）"}`);
 # Part 3 の結果（講師が採点済み）
 - 点数：${p3.total} / ${p3.max}（音読 ${p3.view} / ${w.part3viewpoints.length * 2}、発音記号 ${p3.ipa} / ${w.part3ipa.length}）
 - 音読の5観点：${w.part3viewpoints.map((n, i) => `${n} ${typeof state.p3view[i] === "number" ? state.p3view[i] : "未入力"}`).join("／")}
-- 崩れていた箇所：${checks.length ? checks.map(o => `${o.c.spot}（${o.c.look}）→ 聞こえ方「${o.s.note || "記録なし"}」`).join("／") : "なし"}
-- 発音記号でつまずいた語：${ipaBad.length ? ipaBad.map(o => `${o.x.ipa} ${o.x.word}：${o.s.v}${o.s.note ? `（「${o.s.note}」）` : ""}`).join("／") : "なし"}
+- 崩れていた箇所：${checks.length ? checks.map(o => `${o.c.spot}（${o.c.look}）→ ${checkDesc(o.c, o.s)}`).join("／") : "なし"}
+- 発音記号でつまずいた語：${ipaBad.length ? ipaBad.map(o => `${o.x.ipa} ${o.x.word}：${(IPA_CHOICES.find(c => c.v === o.s.v) || { label: o.s.v }).label}${o.s.note ? `（${o.s.note}）` : ""}`).join("／") : "なし"}
 
 # Part 4
 添付のノートの写真を読み取って使う。`);
@@ -802,6 +870,14 @@ function part1Rows(p1) {
     x.correct, "", String(x.score), x.weak.join("、") || "正解", ""
   ]);
 }
+// チェック箇所で講師が選んだ崩れ方（なければ null）
+function checkSymptom(s) { return s && s.sym && SYMPTOM_BY_ID[s.sym] ? SYMPTOM_BY_ID[s.sym] : null; }
+function checkDesc(c, s) {
+  const x = checkSymptom(s);
+  if (x) return x.label + (s.note ? `（${s.note}）` : "");
+  return s.note ? s.note : "記録なし";
+}
+
 function part3Rows() {
   const w = W();
   const rows = [];
@@ -811,13 +887,15 @@ function part3Rows() {
   });
   w.part3checks.forEach((c, i) => {
     const s = state.p3checks[i] || {};
-    if (s.on) rows.push([state.week, state.student, state.teacher, "3", `音読：${c.spot}`, s.note || "", "", "", "", c.type, ""]);
+    const x = checkSymptom(s);
+    if (s.on) rows.push([state.week, state.student, state.teacher, "3", `音読：${c.spot}`, checkDesc(c, s), "", "", "", x ? recSound(x.group) : c.type, ""]);
   });
   w.part3ipa.forEach((x, i) => {
     const s = state.p3ipa[i] || {};
     const v = s.v || "正解";
     const type = v === "正解" ? "正解" : v === "記号が読めない" ? "記号が読めない" : x.type;
-    rows.push([state.week, state.student, state.teacher, "3", `記号：${x.ipa}`, s.note || v, x.word, "", v === "正解" ? "1" : "0", type, ""]);
+    const said = v === "正解" ? "正解" : (IPA_CHOICES.find(o => o.v === v) || { label: v }).label + (s.note ? `（${s.note}）` : "");
+    rows.push([state.week, state.student, state.teacher, "3", `記号：${x.ipa}`, said, x.word, "", v === "正解" ? "1" : "0", type, ""]);
   });
   return rows;
 }
@@ -898,29 +976,56 @@ function buildStudentPage(d) {
   }
 
   // Part 3
+  const drillKeys = [];
+  const drillText = keys => [...new Set(keys)].map(k => k.startsWith("word:")
+    ? (w.part3ipa.find(x => x.word === k.slice(5)) || {}).drill
+    : DRILLS[k] || DRILLS["その他"]).filter(Boolean);
   if (d.p3.complete) {
     L.push(`▶ **Part 3　発音チェック　${d.p3.total} / ${d.p3.max}**`, "| 観点 | 点数 |", "|---|---|");
     w.part3viewpoints.forEach((n, i) => { const v = state.p3view[i]; L.push(`| ${n} | ${"●".repeat(v)}${"○".repeat(2 - v)} ${v} / 2 |`); });
     L.push(`| 発音記号 | ${d.p3.ipa} / ${w.part3ipa.length} |`);
+    // 同じ直し方は2回目から「上と同じ」にする
     const used = new Set();
-    const tipFor = (type, own) => {
-      if (own) return own;
-      if (used.has(type)) return "直し方は上と同じです。";
-      used.add(type);
-      return SOUND_TIPS[type] || SOUND_TIPS["その他"];
+    const tipOnce = (key, text) => {
+      if (used.has(key)) return "直し方は上と同じです。";
+      used.add(key);
+      return text;
     };
     const sounds = [];
     w.part3checks.forEach((c, i) => {
       const s = state.p3checks[i] || {};
-      if (s.on) sounds.push(`- **${c.spot}**：${s.note ? `「${s.note}」に聞こえました。` : `${c.look.replace(/か$/, "")}の音が気になりました。`}${tipFor(c.type, c.tip)}`);
+      if (!s.on) return;
+      const x = checkSymptom(s);
+      let line;
+      if (x) {
+        line = `${x.say}${s.note ? `（${s.note}）` : ""}**直し方**：${tipOnce(x.id, x.tip)}`;
+        drillKeys.push(x.group);
+      } else {
+        const g = (c.sounds || [c.type])[0];
+        line = `${s.note ? `${s.note}。` : `${c.look.replace(/か$/, "")}の音が気になりました。`}**直し方**：${tipOnce("g:" + g, c.tip || SOUND_TIPS[g] || SOUND_TIPS["その他"])}`;
+        drillKeys.push(g);
+      }
+      sounds.push(`- **${c.spot}**：${line}　${audioLinks(c.words || [])}`);
     });
     w.part3ipa.forEach((x, i) => {
       const s = state.p3ipa[i] || {};
       if (!s.v || s.v === "正解") return;
-      const said = s.note ? `「${s.note}」と読んでいました。` : (s.v === "記号が読めない" ? "記号が読めていませんでした。" : "日本語の音になっていました。");
-      sounds.push(`- **${x.ipa}（${x.word}）**：${said}${s.v === "記号が読めない" ? tipFor("記号が読めない") : tipFor(x.type, x.tip)}`);
+      let said, tip;
+      if (s.v === "記号が読めない") {
+        said = "記号が読めていませんでした。";
+        tip = tipOnce("ipa:symbol", SOUND_TIPS["記号が読めない"]);
+        drillKeys.push("記号が読めない");
+      } else {
+        said = s.v === "別の単語" ? (s.note ? `${s.note} と読んでいました（別の単語になっています）。` : "別の単語になっていました。")
+          : (s.note ? `「${s.note}」と読んでいました（日本語の音になっています）。` : "日本語の音（カタカナの音）になっていました。");
+        tip = tipOnce("ipa:" + x.word, x.tip || SOUND_TIPS[x.type] || SOUND_TIPS["その他"]);
+        drillKeys.push(x.drill ? "word:" + x.word : x.type);
+      }
+      sounds.push(`- **${x.ipa}（${x.word}）**：${said}**直し方**：${tip}　${audioLinks([x.word])}`);
     });
     if (sounds.length) L.push("", "**気になった音と直し方**", ...sounds);
+    const drills = drillText(drillKeys);
+    if (drills.length) L.push("", "**ペア練習**", ...drills.map(t => "- " + t));
     const low = w.part3viewpoints.map((n, i) => ({ n, v: state.p3view[i] })).filter(o => o.v <= 1 && VIEW_TIPS[o.n]);
     if (low.length) L.push("", "**読み方のアドバイス**", ...low.map(o => `- **${o.n}（${o.v} / 2）**：${VIEW_TIPS[o.n]}`));
     L.push("◀", "");
@@ -943,6 +1048,7 @@ function buildStudentPage(d) {
   // 生徒のページは読み取りのみなので、チェックボックスではなく箇条書きにする
   if (prac && prac.body) todo.push(prac.body.replace(/^(\s*[-・*])\s*\[[ xX]?\]\s*/gm, "$1 "));
   if (d.p2total !== null && d.p2total <= SUPPORT_LINE.part2) todo.push("- 補助教材（瞬間英作文）");
+  drillText(drillKeys).slice(0, 2).forEach(t => todo.push("- 発音：" + t));
   if (d.p3.complete && d.p3.total <= SUPPORT_LINE.part3) todo.push("- 補助教材（発音）");
   if (todo.length) L.push("---", "## ✅ 今週やること", ...todo);
 
@@ -1133,6 +1239,14 @@ document.addEventListener("change", e => {
   if (t.dataset.p3c !== undefined) {
     const i = t.dataset.p3c;
     state.p3checks[i] = Object.assign({}, state.p3checks[i], { on: t.checked });
+  } else if (t.dataset.p3csym !== undefined) {
+    const i = t.dataset.p3csym;
+    state.p3checks[i] = Object.assign({}, state.p3checks[i], { sym: t.value });
+    if (t.value) {
+      state.p3checks[i].on = true;
+      const cb = document.querySelector(`input[data-p3c="${i}"]`);
+      if (cb) cb.checked = true;
+    }
   } else if (t.dataset.p3i !== undefined) {
     const i = t.dataset.p3i;
     state.p3ipa[i] = Object.assign({}, state.p3ipa[i], { v: t.value });

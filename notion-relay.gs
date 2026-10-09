@@ -420,15 +420,17 @@ function appendBlocks(parentId, blocks) {
   }
 }
 
-// **太字** と `タグ` を含む1行を、Notionのrich_textに変換する
+// **太字**・`タグ`・[リンク](URL) を含む1行を、Notionのrich_textに変換する
 function richText(line) {
   const parts = [];
-  const re = /\*\*(.+?)\*\*|`([^`]+)`/g;
+  const re = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
   let last = 0, m;
   while ((m = re.exec(line)) !== null) {
     if (m.index > last) parts.push(plain(line.slice(last, m.index)));
-    const t = plain(m[1] !== undefined ? m[1] : m[2]);
-    t.annotations = m[1] !== undefined ? { bold: true } : { code: true };
+    let t;
+    if (m[1] !== undefined) { t = plain(m[1]); t.annotations = { bold: true }; }
+    else if (m[2] !== undefined) { t = plain(m[2]); t.annotations = { code: true }; }
+    else { t = plain(m[3]); t.text.link = { url: m[4] }; }
     parts.push(t);
     last = re.lastIndex;
   }
