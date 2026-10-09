@@ -314,7 +314,8 @@ function listChildren(id) {
   return out;
 }
 
-const TEACHER_PLACEHOLDER = '（ここに講師が書き足します）';
+// 講師が書く欄の初期の文（残っていたら公開しない）。古い下書きの「講師より」の文も含む
+const TEACHER_PLACEHOLDERS = ['（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）', '（ここに講師が書き足します）'];
 const COPY_TYPES = ['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item',
   'to_do', 'toggle', 'quote', 'callout', 'divider', 'table', 'code', 'bookmark', 'embed', 'equation', 'image', 'video'];
 
@@ -366,8 +367,9 @@ function publish(conf, body) {
   if (!drafts.length) return { error: week + ' ' + student + 'さんの下書きがNotionにありません。先に「記録してNotionに下書きを作成」を押してください。' };
   const skipped = { n: 0 };
   const blocks = readBlocks(drafts[0].id, skipped);
-  if (JSON.stringify(blocks).indexOf(TEACHER_PLACEHOLDER) >= 0) {
-    return { error: '「講師より」がまだ書かれていません。Notionの下書きの「（ここに講師が書き足します）」を書きかえてから、もう一度押してください。' };
+  const text = JSON.stringify(blocks);
+  if (TEACHER_PLACEHOLDERS.some(function (t) { return text.indexOf(t) >= 0; })) {
+    return { error: '「スピーキングテストのフィードバック」がまだ書かれていません。Notionの下書きの「（ここに講師が書きます：…）」を書きかえてから、もう一度押してください。' };
   }
   const sp = studentPage(conf, owner);
   const title = week + ' 確認テストのフィードバック';

@@ -131,7 +131,7 @@
       <div><label class="field" for="student">生徒名</label><input type="text" id="student" placeholder="例：田中"></div>
       <div><label class="field" for="teacher">担当講師</label><input type="text" id="teacher" placeholder="例：佐藤"></div>
     </div>
-    <div style="margin-top:12px"><label class="field" for="draftSel">下書き（このブラウザに生徒ごとに保存されます）</label>
+    <div style="margin-top:12px"><label class="field" for="draftSel">入力中の生徒（このツールへの入力を、生徒ごとにこのブラウザに保存しています。ここで生徒を切り替えます）</label>
       <select id="draftSel" style="max-width:420px"></select></div>
     <div class="btns"><button class="btn sub" id="resetBtn" type="button">この生徒の下書きを消す</button></div>
   </div>
@@ -229,7 +229,7 @@
   <!-- 7. 公開 -->
   <div class="card">
     <h2><span class="step">7</span>レッスン後：生徒に公開</h2>
-    <p class="hint">Notionの下書きを確認・修正し、「講師より」を書いてから押してください。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
+    <p class="hint">Notionの下書きを確認・修正し、「スピーキングテストのフィードバック」を書いてから押してください。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="pubStudent" style="max-width:280px"></select>
       <button class="btn sub" id="pubReload" type="button">一覧を読み込み直す</button>
@@ -907,6 +907,7 @@ function part3Rows() {
 // ============================================================
 const bar = (score, max) => { const n = Math.round(score / max * 10); return "■".repeat(n) + "□".repeat(10 - n) + " " + Math.round(score / max * 100) + "%"; };
 const cell = v => String(v == null ? "" : v).replace(/\|/g, "／").replace(/\n/g, " ").trim();
+const SPEAKING_PLACEHOLDER = "（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）";
 const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "今週の練習", "確認問題の答え"];
 
 function buildStudentPage(d) {
@@ -1052,9 +1053,11 @@ function buildStudentPage(d) {
   if (d.p2total !== null && d.p2total <= SUPPORT_LINE.part2) todo.push("- 補助教材（瞬間英作文）");
   drillText(drillKeys).slice(0, 2).forEach(t => todo.push("- 発音：" + t));
   if (d.p3.complete && d.p3.total <= SUPPORT_LINE.part3) todo.push("- 補助教材（発音）");
+  // スピーキングテスト（レッスン中）のFB。講師がNotionの下書きに書く
+  L.push("---", "## 🗣 スピーキングテストのフィードバック", "**次週の独り言で意識すること**", SPEAKING_PLACEHOLDER, "");
   if (todo.length) L.push("---", "## ✅ 今週やること", ...todo);
 
-  L.push("", "---", "## 💬 講師より", "（ここに講師が書き足します）");
+
 
   // 模範解答
   L.push("", "---", "▶ **📘 模範解答・確認問題の答え**", "**Part 1**",
@@ -1319,7 +1322,7 @@ $("notionBtn").addEventListener("click", async () => {
   if (!relay.url || !relay.pass) { showMsg("notionMsg", "下の「Notion連携の設定」に、中継のURLと合言葉を入れてください。", "err"); return; }
   if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
   if ((state.status === "notion" || state.status === "published") &&
-      !confirm("この生徒のNotionの下書きはすでにあります。作り直すと、Notionで直した内容と「講師より」は消えます（公開済みのページはそのままです）。作り直しますか？")) return;
+      !confirm("この生徒のNotionの下書きはすでにあります。作り直すと、Notionで直した内容とスピーキングテストのフィードバックは消えます（公開済みのページはそのままです）。作り直しますか？")) return;
   if (!confirm(`【${state.week}】${state.student}さんの下書きをNotionに作ります。\n\n週と生徒は合っていますか？`)) return;
   const payload = Object.assign({
     pass: relay.pass,
@@ -1353,7 +1356,7 @@ $("notionBtn").addEventListener("click", async () => {
       json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
     }
     if (json.needOverwrite) {
-      if (!confirm(`Notionの下書きは ${fmtTime(json.edited)} に講師が直しています。\n作り直すと、直した内容と「講師より」が消えます（Notionのゴミ箱から30日間は戻せます）。\n\n作り直しますか？`)) {
+      if (!confirm(`Notionの下書きは ${fmtTime(json.edited)} に講師が直しています。\n作り直すと、直した内容とスピーキングテストのフィードバックが消えます（Notionのゴミ箱から30日間は戻せます）。\n\n作り直しますか？`)) {
         showMsg("notionMsg", "やめました。Notionの下書きはそのままです。", "warn");
         return;
       }
@@ -1365,7 +1368,7 @@ $("notionBtn").addEventListener("click", async () => {
     const el = $("notionMsg");
     el.className = "msg show ok";
     el.innerHTML = `記録シートに${json.rows || 0}行を記録し、Notionに下書きを作りました：<a href="${esc(json.url)}" target="_blank" rel="noopener">下書きを開く</a><br>` +
-      `<strong>まだ生徒には見えません。</strong>Notionで内容を確認・修正し、レッスン後に「講師より」を書いてから、手順7の「生徒に公開」を押してください。`;
+      `<strong>まだ生徒には見えません。</strong>Notionで内容を確認・修正してください。レッスンではこの下書きを画面共有し、スピーキングテストのあとに「スピーキングテストのフィードバック」を書いてから、手順7の「生徒に公開」を押してください。`;
     who = draftKey(state);
     if (store.drafts[who]) { store.drafts[who].status = "notion"; if (who === draftKey(state)) state.status = "notion"; saveState(); }
     loadPubList();
@@ -1429,7 +1432,7 @@ $("pubBtn").addEventListener("click", async () => {
   const relay = loadRelay();
   hideMsg("pubNote");
   if (!student) { showMsg("pubMsg", "公開する生徒を選んでください。", "err"); return; }
-  if (!confirm(`${week} ${student}さんのFBを公開します。Notionの下書きの確認と「講師より」は済んでいますか？`)) return;
+  if (!confirm(`${week} ${student}さんのFBを公開します。Notionの下書きの確認と「スピーキングテストのフィードバック」は済んでいますか？`)) return;
   $("pubBtn").disabled = true;
   showMsg("pubMsg", "生徒のページに入れています…（少し時間がかかります）", "warn");
   try {
