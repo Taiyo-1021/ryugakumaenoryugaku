@@ -50,7 +50,7 @@ function doPost(e) {
     }
 
     // 1. 記録シート
-    const saved = saveRows(conf.getProperty('SHEET_ID'), body.week, body.student, body.rows || []);
+    const saved = saveRows(conf.getProperty('SHEET_ID'), body.week, body.student, body.rows || [], ['1', '2', '3', '4']);
 
     // 2. Notion
     const props = {
@@ -112,7 +112,8 @@ function readPart1(sheetId) {
 }
 
 // 記録シートのA〜K列だけを読み書きする（M列から右の集計の数式には触らない）
-function saveRows(sheetId, week, student, rows) {
+// onlyParts を渡すと、同じ週・生徒の行のうち、そのPartの行だけを置き換える
+function saveRows(sheetId, week, student, rows, onlyParts) {
   if (!sheetId || !rows.length) return 0;
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -124,7 +125,9 @@ function saveRows(sheetId, week, student, rows) {
     // 空の行と、同じ週・同じ生徒の古い行を除く
     const kept = current.filter(function (r) {
       const empty = r.every(function (c) { return c === '' || c === null; });
-      return !empty && !(String(r[0]) === String(week) && String(r[1]) === String(student));
+      const same = String(r[0]) === String(week) && String(r[1]) === String(student) &&
+        (!onlyParts || onlyParts.indexOf(String(r[3])) >= 0);
+      return !empty && !same;
     });
     const incoming = rows.map(function (r) {
       const row = r.slice(0, width);
@@ -315,6 +318,10 @@ function listChildren(id) {
 }
 
 // 講師が書く欄の初期の文（残っていたら公開しない）。古い下書きの「講師より」の文も含む
+const SPEAKING_CONFIRM = '録画を確認した';
+function blockText(b) {
+  return ((b[b.type] || {}).rich_text || []).map(function (t) { return t.text ? t.text.content : (t.plain_text || ''); }).join('');
+}
 const TEACHER_PLACEHOLDERS = ['（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）', '（ここに講師が書き足します）'];
 const COPY_TYPES = ['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item',
   'to_do', 'toggle', 'quote', 'callout', 'divider', 'table', 'code', 'bookmark', 'embed', 'equation', 'image', 'video'];
@@ -369,7 +376,24 @@ function publish(conf, body) {
   const blocks = readBlocks(drafts[0].id, skipped);
   const text = JSON.stringify(blocks);
   if (TEACHER_PLACEHOLDERS.some(function (t) { return text.indexOf(t) >= 0; })) {
-    return { error: '「スピーキングテストのフィードバック」がまだ書かれていません。Notionの下書きの「（ここに講師が書きます：…）」を書きかえてから、もう一度押してください。' };
+    return { error: '「次週の独り言で意識すること」がまだ書かれていません。Notionの下書きの「（ここに講師が書きます：…）」を書きかえてから、もう一度押してください。' };
+  }
+  // スピーキングテストの「意識するポイント」：録画を確認したか、どれができていたか
+  const confirmIdx = blocks.findIndex(function (b) { return b.type === 'to_do' && blockText(b).indexOf(SPEAKING_CONFIRM) === 0; });
+  const points = blocks.filter(function (b) { return b.type === 'to_do' && /^ポイント\d+/.test(blockText(b)); });
+  if (confirmIdx >= 0) {
+    if (!blocks[confirmIdx].to_do.checked) {
+      return { error: 'スピーキングテストの録画の確認がまだです。録画を見て「意識するポイント」のできていたものにチェックをつけ、「録画を確認した」にもチェックをつけてから、もう一度押してください。' };
+    }
+    blocks.splice(confirmIdx, 1); // 講師用の行は生徒のページに出さない
+  }
+  if (points.length) {
+    const teacher = ((drafts[0].properties || {})['担当'] || { rich_text: [] }).rich_text.map(function (t) { return t.plain_text; }).join('');
+    const rows = points.map(function (b) {
+      const m = blockText(b).match(/^(ポイント\d+)\s*([^：:]*)/);
+      return [week, owner, teacher, 'S', m[1] + '：' + m[2].trim(), '', '', '', b.to_do.checked ? 1 : 0, '', ''];
+    });
+    saveRows(conf.getProperty('SHEET_ID'), week, owner, rows, ['S']);
   }
   const sp = studentPage(conf, owner);
   const title = week + ' 確認テストのフィードバック';
