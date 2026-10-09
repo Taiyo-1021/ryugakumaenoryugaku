@@ -309,6 +309,7 @@ const WEEKS = {
 };
 
 // 補助教材のライン（この点数以下なら「あり」）
+const LATEST_WEEK = Object.keys(WEEKS)[Object.keys(WEEKS).length - 1]; // 問題データが入っている一番新しい週
 const SUPPORT_LINE = { part2: 15, part3: 13 }; // 8割未満（Part 2：16/20未満、Part 3：13.6/17未満）
 const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", "第5文型"];
 
@@ -353,7 +354,7 @@ let lastSummary = {};
 
 function blankState() {
   return {
-    week: Object.keys(WEEKS)[0], student: "", teacher: "",
+    week: LATEST_WEEK, student: "", teacher: "",
     p1paste: "", p2speed: {}, p2notta: "",
     p3view: {}, p3checks: {}, p3ipa: {},
     aiReply: "", status: ""
@@ -481,7 +482,15 @@ function analyzePart1() {
     };
   });
   const score = items.reduce((s, x) => s + x.score, 0);
-  return { name, items, score, max: qs.length * 2 };
+  return { name, time: cells[0].trim(), items, score, max: qs.length * 2 };
+}
+
+// 回答の日時（例：2026/10/03 10:00:00）が何日前か。読めなければ null
+function daysAgo(text) {
+  const m = String(text || "").match(/(\d{4})[\/\-年](\d{1,2})[\/\-月](\d{1,2})/);
+  if (!m) return null;
+  const t = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return Math.floor((Date.now() - t.getTime()) / 86400000);
 }
 
 function renderPart1() {
@@ -489,8 +498,11 @@ function renderPart1() {
   const box = $("p1result");
   if (!r) { box.innerHTML = ""; hideMsg("p1msg"); return; }
   if (r.error) { box.innerHTML = ""; showMsg("p1msg", r.error, "err"); return; }
+  const days = daysAgo(r.time);
   if (state.student && r.name && r.name !== state.student) {
     showMsg("p1msg", `回答シートの名前は「${r.name}」です。生徒名と合っているか確認してください。`, "warn");
+  } else if (days !== null && days > 9) {
+    showMsg("p1msg", `この回答は${days}日前のものです（${r.time}）。週（いまは${state.week}）は合っていますか？`, "warn");
   } else {
     showMsg("p1msg", `読み取りました（${r.name || "名前なし"}）：${r.score} / ${r.max}点`, "ok");
   }
@@ -664,7 +676,8 @@ ${state.p2notta.trim() || "（未入力）"}`);
 
 # 出力（この2つだけを、この見出しで出す）
 ## 【A】
-- Part 2とPart 4の行だけを、タブ区切り・見出し行なしでコードブロックに出す。
+- Part 2とPart 4の行だけを、1行に1つずつ、列を「｜」（全角の縦線）で区切って、見出し行なしでコードブロックに出す。空欄の列も「｜」は省かない。
+- 例：Week1｜田中｜佐藤｜2｜Q2｜She plays often the piano.｜She often plays the piano.｜1｜0｜頻度副詞の位置｜
 - 列の順：週、生徒、担当、Part、問、生徒の回答、直した文、瞬発力、点数、弱点タイプ、講師メモ
 - Part 2：Q1〜Q10の10行。Partは「2」、問は「Q1」の形、点数＝正確性。
 - Part 4：1文を1行。Partは「4」、問は「1文目」の形、瞬発力と点数は空欄。誤りのない文は弱点タイプを「正解」にする。
@@ -713,9 +726,9 @@ ${state.p2notta.trim() || "（未入力）"}`);
 - **○文目（もっと自然に）**：（誤りではないが、もっと自然な言い方があるもの。「◯◯ → ◯◯」と理由1文）
 
 ### 今週の練習
-- [ ] （重点1を直す練習。何を・どれくらい・いつ。1行）
-- [ ] （重点2を直す練習）
-- [ ] （必要ならもう1つ）
+- （重点1を直す練習。何を・どれくらい・いつ。1行）
+- （重点2を直す練習）
+- （必要ならもう1つ）
 
 ### 確認問題の答え
 - 重点1：1. （英文）／2. （英文）／3. （英文）
@@ -743,15 +756,28 @@ function parseReply(text) {
   const aPart = t.slice(ai, bi);
   let bPart = t.slice(bi + 3);
   bPart = bPart.replace(/^[\s#]*\n/, "").replace(/```[a-z]*\n?/g, "").trim();
-  const rows = aPart.split("\n")
-    .map(l => l.replace(/^ +| +$/g, ""))
-    .filter(l => l.includes("\t"))
-    .map(l => {
-      const c = l.split("\t").slice(0, 11);
-      while (c.length < 11) c.push("");
-      return c;
-    });
+  const rows = aPart.split("\n").map(splitRow).filter(c => c && c.length >= 5).map(c => {
+    c = c.slice(0, 11);
+    while (c.length < 11) c.push("");
+    return c;
+  });
   return { rows, sections: parseSections(bPart) };
+}
+
+// 【A】の1行を列に分ける。「｜」区切り（今の形）・タブ区切り（前の形）・Markdownの表のどれでも読む
+function splitRow(line) {
+  const l = line.replace(/^\s+|\s+$/g, "");
+  if (!l || l.startsWith("```") || l.includes("【A】")) return null;
+  let cells;
+  if (l.includes("｜")) cells = l.split("｜");
+  else if (l.includes("\t")) cells = l.split("\t");
+  else if (l.startsWith("|")) {
+    cells = l.replace(/^\|/, "").replace(/\|$/, "").split("|");
+    if (cells.every(c => /^\s*:?-{2,}:?\s*$/.test(c))) return null; // 表の区切り線
+  } else return null;
+  cells = cells.map(c => c.trim());
+  if (cells[0] === "週") return null; // 見出し行
+  return cells;
 }
 
 // 【B】を「### 見出し」ごとに分ける
@@ -914,10 +940,11 @@ function buildStudentPage(d) {
   // 練習
   const todo = [];
   const prac = get("今週の練習");
-  if (prac && prac.body) todo.push(prac.body);
-  if (d.p2total !== null && d.p2total <= SUPPORT_LINE.part2) todo.push("- [ ] 補助教材（瞬間英作文）");
-  if (d.p3.complete && d.p3.total <= SUPPORT_LINE.part3) todo.push("- [ ] 補助教材（発音）");
-  if (todo.length) L.push("---", "## ✅ 今週の練習チェックリスト", "終わったらチェックを入れましょう。", ...todo);
+  // 生徒のページは読み取りのみなので、チェックボックスではなく箇条書きにする
+  if (prac && prac.body) todo.push(prac.body.replace(/^(\s*[-・*])\s*\[[ xX]?\]\s*/gm, "$1 "));
+  if (d.p2total !== null && d.p2total <= SUPPORT_LINE.part2) todo.push("- 補助教材（瞬間英作文）");
+  if (d.p3.complete && d.p3.total <= SUPPORT_LINE.part3) todo.push("- 補助教材（発音）");
+  if (todo.length) L.push("---", "## ✅ 今週やること", ...todo);
 
   L.push("", "---", "## 💬 講師より", "（ここに講師が書き足します）");
 
@@ -951,7 +978,7 @@ function renderResults() {
       const p2rows = aiRows.filter(c => (c[3] || "").trim() === "2");
       acc = p2rows.reduce((s, c) => s + (String(c[8]).trim() === "1" ? 1 : 0), 0);
       if (p2rows.length !== W().part2.length) {
-        showMsg("replyMsg", `Part 2の行が${p2rows.length}行しかありません（${W().part2.length}行のはず）。AIの返事を確認してください。`, "warn");
+        showMsg("replyMsg", `Part 2の行が${p2rows.length}行しかありません（${W().part2.length}行のはず）。` + (p2rows.length ? "AIの返事を確認してください。" : "【A】の列の区切り（｜）が読めませんでした。AIに「【A】を｜区切りで出し直して」と頼んでください。"), "warn");
       } else {
         const lack = SECTION_NAMES.filter(n => !findSection(sections, n));
         if (lack.length) showMsg("replyMsg", `AIの返事に次の見出しが見つかりません：${lack.join("、")}。そのまま進めると、その部分は生徒用ページに入りません。`, "warn");
@@ -1032,7 +1059,7 @@ $("student").addEventListener("change", e => { const n = normalizeName(e.target.
 $("draftSel").addEventListener("change", e => {
   const d = store.drafts[e.target.value];
   if (d) switchDraft(d.week, d.student);
-  else switchDraft(state.week, "");
+  else switchDraft(LATEST_WEEK, "");
 });
 $("teacher").addEventListener("input", e => { state.teacher = e.target.value.trim(); saveState(); renderResults(); });
 // Part 1：回答シートを中継から読み込む
@@ -1177,6 +1204,7 @@ $("notionBtn").addEventListener("click", async () => {
   if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
   if ((state.status === "notion" || state.status === "published") &&
       !confirm("この生徒のNotionの下書きはすでにあります。作り直すと、Notionで直した内容と「講師より」は消えます（公開済みのページはそのままです）。作り直しますか？")) return;
+  if (!confirm(`【${state.week}】${state.student}さんの下書きをNotionに作ります。\n\n週と生徒は合っていますか？`)) return;
   const payload = Object.assign({
     pass: relay.pass,
     title: `${state.week} ${state.student}`,
@@ -1208,6 +1236,15 @@ $("notionBtn").addEventListener("click", async () => {
       payload.confirmNew = true;
       json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
     }
+    if (json.needOverwrite) {
+      if (!confirm(`Notionの下書きは ${fmtTime(json.edited)} に講師が直しています。\n作り直すと、直した内容と「講師より」が消えます（Notionのゴミ箱から30日間は戻せます）。\n\n作り直しますか？`)) {
+        showMsg("notionMsg", "やめました。Notionの下書きはそのままです。", "warn");
+        return;
+      }
+      payload.confirmNew = true;
+      payload.overwrite = true;
+      json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
+    }
     if (json.error) throw new Error(json.error);
     const el = $("notionMsg");
     el.className = "msg show ok";
@@ -1231,6 +1268,8 @@ $("resetBtn").addEventListener("click", () => {
   state = Object.assign(blankState(), { week, teacher });
   saveState(); renderAll();
 });
+
+const fmtTime = iso => { const d = new Date(iso); return isNaN(d) ? String(iso) : `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; };
 
 // 似た名前の生徒がいるときに聞く。同じ人ならその名前、別の人なら ""、やめるなら null
 function askSameStudent(name, similar) {
