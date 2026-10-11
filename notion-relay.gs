@@ -325,10 +325,39 @@ const TEACHER_PLACEHOLDERS = ['（ここに講師が書きます：スピーキ�
 const COPY_TYPES = ['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item',
   'to_do', 'toggle', 'quote', 'callout', 'divider', 'table', 'code', 'bookmark', 'embed', 'equation', 'image', 'video'];
 
+// 作るときに使える項目だけを残す（読み出したブロックには、icon: null など送り返せない項目が付いてくる）
+const COPY_FIELDS = {
+  paragraph: ['rich_text', 'color'], quote: ['rich_text', 'color'], toggle: ['rich_text', 'color'],
+  bulleted_list_item: ['rich_text', 'color'], numbered_list_item: ['rich_text', 'color'],
+  heading_1: ['rich_text', 'color', 'is_toggleable'], heading_2: ['rich_text', 'color', 'is_toggleable'],
+  heading_3: ['rich_text', 'color', 'is_toggleable'],
+  to_do: ['rich_text', 'checked', 'color'], callout: ['rich_text', 'icon', 'color'],
+  code: ['rich_text', 'language', 'caption'], divider: [],
+  table: ['table_width', 'has_column_header', 'has_row_header'],
+  bookmark: ['url', 'caption'], embed: ['url', 'caption'], equation: ['expression'],
+  image: ['type', 'external', 'caption'], video: ['type', 'external', 'caption']
+};
+function pickFields(type, data) {
+  const out = {};
+  (COPY_FIELDS[type] || []).forEach(function (k) {
+    const v = data ? data[k] : undefined;
+    if (v === null || v === undefined) return;
+    if (k === 'rich_text' || k === 'caption') out[k] = cleanRich(v);
+    else if (k === 'icon') { if (v.type === 'emoji') out.icon = { type: 'emoji', emoji: v.emoji }; }
+    else out[k] = JSON.parse(JSON.stringify(v));
+  });
+  if (out.color === 'default') delete out.color;
+  return out;
+}
+
 function cleanRich(arr) {
   return (arr || []).map(function (t) {
-    const o = { type: t.type, annotations: t.annotations };
-    if (t.type === 'text') o.text = { content: t.text.content, link: t.text.link };
+    const o = { type: t.type };
+    if (t.annotations) o.annotations = t.annotations;
+    if (t.type === 'text') {
+      o.text = { content: t.text.content };
+      if (t.text.link && t.text.link.url) o.text.link = { url: t.text.link.url };
+    }
     else if (t.type === 'mention') o.mention = t.mention;
     else if (t.type === 'equation') o.equation = t.equation;
     return o;
@@ -343,10 +372,7 @@ function readBlocks(id, skipped) {
     const data = b[type];
     // Notionにアップロードされた画像などは、リンクの期限が切れるのでコピーしない
     if (COPY_TYPES.indexOf(type) < 0 || (data && data.type === 'file')) { skipped.n++; return; }
-    const copy = JSON.parse(JSON.stringify(data));
-    if (copy.rich_text) copy.rich_text = cleanRich(copy.rich_text);
-    if (copy.caption) copy.caption = cleanRich(copy.caption);
-    if (copy.icon && copy.icon.type !== 'emoji') delete copy.icon;
+    const copy = pickFields(type, data);
     const block = { type: type };
     block[type] = copy;
     if (type === 'table') {
