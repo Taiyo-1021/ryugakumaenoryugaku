@@ -918,6 +918,18 @@ const cell = v => String(v == null ? "" : v).replace(/\|/g, "／").replace(/\n/g
 // 次週の課題（チェック欄）。「課題：」で始まる行を中継が読み、公開時に記録シートへ入れる
 const TASK_PREFIX = "課題：";
 const TASKS_BASE = ["Step1", "Step2", "Step3"];
+// 課題の教材リンク（課題をやる週ごと）。教材ができたらURLを入れる。空のままならリンクは出ない
+const TASK_LINKS = {
+  "Week2": { steps: "", sokuji: "", hatsuon: "" },
+  "Week3": { steps: "", sokuji: "", hatsuon: "" }
+};
+const taskLink = (wk, name) => {
+  const l = TASK_LINKS[wk] || {};
+  if (/^Step/.test(name)) return l.steps || "";
+  if (/瞬間英作文/.test(name)) return l.sokuji || "";
+  if (/発音/.test(name)) return l.hatsuon || "";
+  return "";
+};
 const nextWeekOf = wk => { const n = Number(String(wk).replace(/\D/g, "")); return n ? `Week${n + 1}` : "次週"; };
 const SPEAKING_PLACEHOLDER = "（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）";
 const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "確認問題の答え"];
@@ -1072,6 +1084,13 @@ function buildStudentPage(d) {
   L.push("**次週の独り言で意識すること**", SPEAKING_PLACEHOLDER, "");
   L.push("---", `## 📚 ${nextWeekOf(state.week)}の課題`, "レッスンで相談して決めた課題です（✅ ＝ 今週取り組むもの）。",
     ...tasks.map(([n, on]) => `- [${on ? "x" : " "}] ${TASK_PREFIX}${n}`));
+  // 教材リンク（チェック欄の文字は記録に使うので、リンクは別の行に出す）
+  const nw = nextWeekOf(state.week), links = [];
+  [["Step1〜3", "Step1"], ["補助教材：瞬間英作文", "補助教材：瞬間英作文"], ["補助教材：発音", "補助教材：発音"]].forEach(([label, key]) => {
+    const u = taskLink(nw, key);
+    if (u) links.push(`- [${label}の教材](${u})`);
+  });
+  if (links.length) L.push("", "**教材はこちら**", ...links);
 
 
 
@@ -1441,11 +1460,17 @@ async function loadPubList() {
 }
 function slackMessage(week, url, tasks) {
   const lines = [`${week} 確認テストのフィードバックです！`, url, "", `【${nextWeekOf(week)}の課題】`];
+  const nw = nextWeekOf(week);
   tasks.forEach(t => {
     if (t.on) lines.push(`✅ ${t.name}`);
     else if (/^Step/.test(t.name)) lines.push(`➖ ${t.name}（今週はお休みでOK）`);
   });
   if (!tasks.length) lines.push("（Notionのページの「課題」を見てください）");
+  // 取り組む課題の教材リンク（Step1〜3は1つのリンク）
+  const links = [];
+  if (tasks.some(t => t.on && /^Step/.test(t.name)) && taskLink(nw, "Step1")) links.push(`Step1〜3：${taskLink(nw, "Step1")}`);
+  tasks.filter(t => t.on && !/^Step/.test(t.name)).forEach(t => { const u = taskLink(nw, t.name); if (u) links.push(`${t.name.replace(/^補助教材：/, "")}：${u}`); });
+  if (links.length) lines.push("", "【教材】", ...links);
   lines.push("", "まずはFBの「今週の重点」を読んでから、課題に取り組んでみてください。");
   return lines.join("\n");
 }
