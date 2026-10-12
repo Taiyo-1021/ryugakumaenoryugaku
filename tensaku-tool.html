@@ -229,7 +229,7 @@
   <!-- 7. 公開 -->
   <div class="card">
     <h2><span class="step">7</span>レッスン後：生徒に公開</h2>
-    <p class="hint">レッスン後にスピーキングテストの録画を見て、Notionの下書きの「意識するポイント」のできていたものにチェックをつけ、「次週の独り言で意識すること」を書いてから押してください。ポイントの達成は記録シートにも入ります。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
+    <p class="hint">レッスンで生徒と相談して、Notionの下書きの「課題」のチェックを付け外しします。レッスン後にスピーキングテストの録画を見て、「意識するポイント」のできていたものにチェックをつけ、「次週の独り言で意識すること」を書いてから押してください。課題とポイントは記録シートにも入り、Slackに送る文面ができます。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="pubStudent" style="max-width:280px"></select>
       <button class="btn sub" id="pubReload" type="button">一覧を読み込み直す</button>
@@ -237,6 +237,12 @@
     </div>
     <div class="msg" id="pubMsg"></div>
     <div class="msg" id="pubNote"></div>
+    <div id="pubTextBox" style="display:none;margin-top:12px">
+      <div class="subhead">テスト提出部屋に送る文面（必要なら直してから送ってください）</div>
+      <textarea id="pubText" style="min-height:200px"></textarea>
+      <div class="btns"><button class="btn" id="copyPubText" type="button">文面をコピー</button></div>
+      <div class="msg" id="pubTextMsg"></div>
+    </div>
   </div>
 </div>
 
@@ -762,7 +768,7 @@ ${state.p2notta.trim() || "（未入力）"}`);
 
 ## 【B】
 生徒が読むNotionページのうち、解説の部分を書く。点数・Part 1・Part 3・表・模範解答はツールが自動で入れるので書かない。
-次の見出し（### から始まる8つ）を、この順番・この名前のまま出す（コードブロックには入れない）。
+次の見出し（### から始まる7つ）を、この順番・この名前のまま出す（コードブロックには入れない）。
 
 ### 診断
 （2〜3文。今の状態をひとことで。何ができていて、どこを直すと伸びるか）
@@ -801,11 +807,6 @@ ${state.p2notta.trim() || "（未入力）"}`);
 **分かったこと**：（今週の学習項目をどれだけ使えていたか、全体の傾向を2文で）
 - **○文目**：（直した文ごとに、何がどう違うかを2〜3文で）
 - **○文目（もっと自然に）**：（誤りではないが、もっと自然な言い方があるもの。「◯◯ → ◯◯」と理由1文）
-
-### 今週の練習
-- （重点1を直す練習。何を・どれくらい・いつ。1行）
-- （重点2を直す練習）
-- （必要ならもう1つ）
 
 ### 確認問題の答え
 - 重点1：1. （英文）／2. （英文）／3. （英文）
@@ -914,8 +915,12 @@ function part3Rows() {
 // ============================================================
 const bar = (score, max) => { const n = Math.round(score / max * 10); return "■".repeat(n) + "□".repeat(10 - n) + " " + Math.round(score / max * 100) + "%"; };
 const cell = v => String(v == null ? "" : v).replace(/\|/g, "／").replace(/\n/g, " ").trim();
+// 次週の課題（チェック欄）。「課題：」で始まる行を中継が読み、公開時に記録シートへ入れる
+const TASK_PREFIX = "課題：";
+const TASKS_BASE = ["Step1", "Step2", "Step3"];
+const nextWeekOf = wk => { const n = Number(String(wk).replace(/\D/g, "")); return n ? `Week${n + 1}` : "次週"; };
 const SPEAKING_PLACEHOLDER = "（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）";
-const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "今週の練習", "確認問題の答え"];
+const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "確認問題の答え"];
 
 function buildStudentPage(d) {
   const w = W(), sec = d.sections, L = [];
@@ -1052,14 +1057,11 @@ function buildStudentPage(d) {
     L.push("◀", "");
   }
 
-  // 練習
-  const todo = [];
-  const prac = get("今週の練習");
-  // 生徒のページは読み取りのみなので、チェックボックスではなく箇条書きにする
-  if (prac && prac.body) todo.push(prac.body.replace(/^(\s*[-・*])\s*\[[ xX]?\]\s*/gm, "$1 "));
-  if (d.p2total !== null && d.p2total <= SUPPORT_LINE.part2) todo.push("- 補助教材（瞬間英作文）");
-  drillText(drillKeys).slice(0, 2).forEach(t => todo.push("- 発音：" + t));
-  if (d.p3.complete && d.p3.total <= SUPPORT_LINE.part3) todo.push("- 補助教材（発音）");
+  // 次週の課題：Step1〜3は全員に、補助教材はテスト結果で最初からチェックを入れておく。
+  // 講師がレッスンで生徒の生活に合わせて付け外しし、「生徒に公開」で確定する（記録シートにも入る）
+  const need2 = d.p2total !== null && d.p2total <= SUPPORT_LINE.part2;
+  const need3 = d.p3.complete && d.p3.total <= SUPPORT_LINE.part3;
+  const tasks = [...TASKS_BASE.map(n => [n, true]), ["補助教材：瞬間英作文", need2], ["補助教材：発音", need3]];
   // スピーキングテスト（レッスン中）のFB。講師がNotionの下書きに書く
   L.push("---", "## 🗣 スピーキングテストのフィードバック");
   if ((w.speakingPoints || []).length) {
@@ -1068,7 +1070,8 @@ function buildStudentPage(d) {
       ...w.speakingPoints.map((x, i) => `- [ ] ポイント${i + 1}　${x.title}：${x.detail}`), "");
   }
   L.push("**次週の独り言で意識すること**", SPEAKING_PLACEHOLDER, "");
-  if (todo.length) L.push("---", "## ✅ 今週やること", ...todo);
+  L.push("---", `## 📚 ${nextWeekOf(state.week)}の課題`, "レッスンで相談して決めた課題です（✅ ＝ 今週取り組むもの）。",
+    ...tasks.map(([n, on]) => `- [${on ? "x" : " "}] ${TASK_PREFIX}${n}`));
 
 
 
@@ -1436,6 +1439,17 @@ async function loadPubList() {
     showMsg("pubMsg", "下書きの一覧を読み込めませんでした：" + e.message, "err");
   }
 }
+function slackMessage(week, url, tasks) {
+  const lines = [`${week} 確認テストのフィードバックです！`, url, "", `【${nextWeekOf(week)}の課題】`];
+  tasks.forEach(t => {
+    if (t.on) lines.push(`✅ ${t.name}`);
+    else if (/^Step/.test(t.name)) lines.push(`➖ ${t.name}（今週はお休みでOK）`);
+  });
+  if (!tasks.length) lines.push("（Notionのページの「課題」を見てください）");
+  lines.push("", "まずはFBの「今週の重点」を読んでから、課題に取り組んでみてください。");
+  return lines.join("\n");
+}
+$("copyPubText").addEventListener("click", () => copyText($("pubText").value, "pubTextMsg", "コピーしました。テスト提出部屋に貼って送ってください。"));
 $("pubReload").addEventListener("click", () => { hideMsg("pubMsg"); loadPubList(); });
 $("relayUrl").addEventListener("change", loadPubList);
 $("relayPass").addEventListener("change", loadPubList);
@@ -1444,6 +1458,7 @@ $("pubBtn").addEventListener("click", async () => {
   const week = state.week;
   const relay = loadRelay();
   hideMsg("pubNote");
+  $("pubTextBox").style.display = "none";
   if (!student) { showMsg("pubMsg", "公開する生徒を選んでください。", "err"); return; }
   if (!confirm(`${week} ${student}さんのFBを公開します。Notionの下書きの確認と「スピーキングテストのフィードバック」は済んでいますか？`)) return;
   $("pubBtn").disabled = true;
@@ -1465,6 +1480,9 @@ $("pubBtn").addEventListener("click", async () => {
       `<button class="btn sub" type="button" id="copyPubUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>このリンクをテスト提出部屋に送ってください。` +
       (json.skipped ? `<br>※ 画像など${json.skipped}個はコピーできませんでした。必要なら生徒のページに直接入れてください。` : "");
     $("copyPubUrl").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(json.url));
+    // 講師がSlackに送る文面（FBのリンク＋レッスンで確定した課題）
+    $("pubText").value = slackMessage(week, json.url, json.tasks || []);
+    $("pubTextBox").style.display = "";
     if (json.newStudent) {
       const note = $("pubNote");
       note.className = "msg show warn";
