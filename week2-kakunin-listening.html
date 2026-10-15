@@ -59,24 +59,24 @@
     <h2><span class="tag">会話</span>Questions 1–3</h2>
     <button class="play" data-set="0">▶ 会話を再生</button>
     <div class="count" data-count="0"></div>
-    <div class="q"><b>1. What did the man do for the first time?</b>
-      <ul><li>(A) He traveled alone.</li><li>(B) He opened a shop.</li><li>(C) He made chai.</li><li>(D) He studied Hindi.</li></ul></div>
-    <div class="q"><b>2. Why was the man confused?</b>
-      <ul><li>(A) The shop was closed.</li><li>(B) He didn't understand a gesture.</li><li>(C) He lost his bag.</li><li>(D) The chai was too hot.</li></ul></div>
-    <div class="q"><b>3. What did the shop owner let the man do?</b>
-      <ul><li>(A) Take a photo</li><li>(B) Use the phone</li><li>(C) Try some chai</li><li>(D) Work in the shop</li></ul></div>
+    <div class="q"><b>1. What did the host mother make the man do at first?</b>
+      <ul><li>(A) Clean his room</li><li>(B) Walk the dog</li><li>(C) Wash the dishes</li><li>(D) Do the shopping</li></ul></div>
+    <div class="q"><b>2. What did the man cook last weekend?</b>
+      <ul><li>(A) Japanese curry</li><li>(B) Onigiri</li><li>(C) Pasta</li><li>(D) Soup</li></ul></div>
+    <div class="q"><b>3. What is the man planning to do next?</b>
+      <ul><li>(A) Visit Japan</li><li>(B) Go shopping with his host brother</li><li>(C) Buy a new pan</li><li>(D) Teach the family to make onigiri</li></ul></div>
   </div>
 
   <div class="card" id="set2">
     <h2><span class="tag">トーク</span>Questions 4–6</h2>
     <button class="play" data-set="1">▶ トークを再生</button>
     <div class="count" data-count="1"></div>
-    <div class="q"><b>4. What was the speaker afraid of in high school?</b>
-      <ul><li>(A) Talking to teachers</li><li>(B) Making mistakes in English class</li><li>(C) Reading stories</li><li>(D) Going to school</li></ul></div>
-    <div class="q"><b>5. What did the teacher tell the speaker to do?</b>
-      <ul><li>(A) Study harder</li><li>(B) Write a diary</li><li>(C) Speak more slowly</li><li>(D) Join a club</li></ul></div>
-    <div class="q"><b>6. What is the speaker's dream?</b>
-      <ul><li>(A) To write stories</li><li>(B) To live abroad</li><li>(C) To be a singer</li><li>(D) To become a teacher</li></ul></div>
+    <div class="q"><b>4. Where is the talk probably taking place?</b>
+      <ul><li>(A) At a library</li><li>(B) At a running club</li><li>(C) At a hospital</li><li>(D) At a train station</li></ul></div>
+    <div class="q"><b>5. Why will the meeting place change next week?</b>
+      <ul><li>(A) The station will be closed.</li><li>(B) It will rain.</li><li>(C) The coach will be away.</li><li>(D) There will be road work.</li></ul></div>
+    <div class="q"><b>6. What should listeners do if they want to join the marathon?</b>
+      <ul><li>(A) Tell the speaker by Thursday</li><li>(B) Go to the library</li><li>(C) Buy new shoes</li><li>(D) Call the coach</li></ul></div>
   </div>
 </div>
 
@@ -85,21 +85,21 @@
   const SETS = [
     [
       ['N', 'Questions 1 through 3 refer to the following conversation.'],
-      ['W', 'Hi, Ken. How was your trip to India?'],
-      ['M', 'It was great. I decided to travel alone for the first time.'],
-      ['W', 'Wow. Was it difficult?'],
-      ['M', 'A little. One day, I asked a shop owner if the shop was open, and he moved his head from side to side. I thought it meant "no."'],
-      ['W', "But it didn't?"],
-      ['M', 'Right! He smiled and let me try some chai. I was surprised to learn that the same gesture can mean "yes."'],
+      ['W', "Hi, Ken. How's your homestay in Canada?"],
+      ['M', "It's great. But at first, my host mother made me wash the dishes every night."],
+      ['W', 'Really? Did you mind?'],
+      ['M', 'Not at all. Now I enjoy cooking with her. Last weekend, she let me make Japanese curry for the whole family.'],
+      ['W', 'That sounds fun. Did they like it?'],
+      ['M', "Yes! I heard my host brother ask for more. Next, I'm planning to teach them how to make onigiri."],
     ],
     [
       ['N', 'Questions 4 through 6 refer to the following talk.'],
-      ['W', 'Hi, everyone. Today, I want to talk about my favorite teacher. ' +
-            'When I was in high school, I was afraid of making mistakes in English class. ' +
-            "One day, my teacher told me to speak more slowly and not to worry. " +
-            'She also made me read English stories out loud every week. ' +
-            'Thanks to her, I enjoy speaking English now. ' +
-            'My dream is to become a teacher like her.'],
+      ['W', 'Good morning, everyone. Welcome to the Sunday running club. Before we start, let me tell you a few things. ' +
+            "First, please don't forget to drink water during the run. " +
+            'Last week, I saw some members running for an hour without stopping, and one of them felt sick. ' +
+            'Second, our coach told me to change the meeting place next week because of road work. ' +
+            'We will meet in front of the library, not at the station. ' +
+            'Finally, if you are interested in joining the city marathon, please tell me by Thursday.'],
     ],
   ];
   const MAX_PLAYS = 2;

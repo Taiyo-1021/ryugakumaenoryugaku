@@ -28,7 +28,19 @@ function doPost(e) {
     // 名前の空白（半角・全角）は取り除いて、同じ人として扱う
     if (body.student !== undefined) body.student = normalizeName(body.student);
     if (body.asStudent !== undefined) body.asStudent = normalizeName(body.asStudent);
-    if (body.action === 'part1') return reply(readPart1(body.sheetId));
+    if (body.action === 'part1') {
+      // 回答の名前が名簿（生徒ページ・記録シートの名前）にあるか、似た名前は誰かも返す。名簿は講師だけが見る
+      const res = readPart1(body.sheetId);
+      if (!res.error) {
+        const known = knownStudents(conf);
+        res.known = known.sort();
+        res.students.forEach(function (s) {
+          s.known = known.indexOf(s.name) >= 0;
+          s.similar = s.known ? [] : similarNames(s.name, known);
+        });
+      }
+      return reply(res);
+    }
     if (body.action === 'drafts') return reply(listDrafts(conf.getProperty('NOTION_DB_ID'), body.week));
     if (body.action === 'publish') {
       const lock = LockService.getScriptLock();
@@ -408,14 +420,17 @@ function publish(conf, body) {
   // 前の形の下書きにある講師用の確認の行は、生徒のページに出さない
   const confirmIdx = blocks.findIndex(function (b) { return b.type === 'to_do' && blockText(b).indexOf('録画を確認した') === 0; });
   if (confirmIdx >= 0) blocks.splice(confirmIdx, 1);
-  if (points.length) {
-    const teacher = ((drafts[0].properties || {})['担当'] || { rich_text: [] }).rich_text.map(function (t) { return t.plain_text; }).join('');
-    const rows = points.map(function (b) {
-      const m = blockText(b).match(/^(ポイント\d+)\s*([^：:]*)/);
-      return [week, owner, teacher, 'S', m[1] + '：' + m[2].trim(), '', '', '', b.to_do.checked ? 1 : 0, '', ''];
-    });
-    saveRows(conf.getProperty('SHEET_ID'), week, owner, rows, ['S']);
-  }
+  // 次週の課題（レッスンで確定したもの）
+  const tasks = blocks.filter(function (b) { return b.type === 'to_do' && blockText(b).indexOf('課題：') === 0; })
+    .map(function (b) { return { name: blockText(b).slice(3).trim(), on: !!b.to_do.checked }; });
+  const teacher = ((drafts[0].properties || {})['担当'] || { rich_text: [] }).rich_text.map(function (t) { return t.plain_text; }).join('');
+  const rows = points.map(function (b) {
+    const m = blockText(b).match(/^(ポイント\d+)\s*([^：:]*)/);
+    return [week, owner, teacher, 'S', m[1] + '：' + m[2].trim(), '', '', '', b.to_do.checked ? 1 : 0, '', ''];
+  }).concat(tasks.map(function (t) {
+    return [week, owner, teacher, 'T', t.name, '', '', '', t.on ? 1 : 0, '', ''];
+  }));
+  if (rows.length) saveRows(conf.getProperty('SHEET_ID'), week, owner, rows, ['S', 'T']);
   const sp = studentPage(conf, owner);
   const title = week + ' 確認テストのフィードバック';
   // 同じ週のページがすでにあれば、中身だけ入れ替える（生徒に送ったリンクを変えない）
@@ -437,7 +452,7 @@ function publish(conf, body) {
   }
   appendBlocks(target.id, blocks);
   oldBlocks.forEach(function (b) { notion('delete', 'blocks/' + b.id); });
-  return { url: target.url, studentUrl: sp.url, newStudent: sp.isNew, updated: !!existing, skipped: skipped.n };
+  return { url: target.url, studentUrl: sp.url, newStudent: sp.isNew, updated: !!existing, skipped: skipped.n, tasks: tasks };
 }
 
 function reply(obj) {
