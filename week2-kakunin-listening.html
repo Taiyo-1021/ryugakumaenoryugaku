@@ -103,7 +103,11 @@
     ],
   ];
   const MAX_PLAYS = 2;
-  const played = [0, 0];
+  // 再生回数はこのブラウザに残す（ページを開き直しても回数が戻らないように）
+  const PLAY_KEY = 'week2-kakunin-listening-played';
+  let played = [0, 0];
+  try { const v = JSON.parse(localStorage.getItem(PLAY_KEY)); if (Array.isArray(v) && v.length === 2) played = v.map(n => Math.min(Number(n) || 0, MAX_PLAYS)); } catch (e) { /* 保存できない環境でも動かす */ }
+  const savePlayed = () => { try { localStorage.setItem(PLAY_KEY, JSON.stringify(played)); } catch (e) { /* 無視 */ } };
 
   const supported = 'speechSynthesis' in window;
   if (!supported) document.getElementById('warn').hidden = false;
@@ -140,18 +144,22 @@
     const lines = SETS[i];
     busy = true;
     played[i]++;
+    savePlayed();
     updateCount(i);
     const label = btn.textContent;
     btn.textContent = '再生中…';
     refreshButtons();
-    lines.forEach(([who, text], k) => {
+    // 1文ずつ読ませる（Chromeは長い文をまとめて読ませると、15秒ほどで途中で止まることがあるため）
+    const parts = [];
+    lines.forEach(([who, text]) => text.split(/(?<=[.!?])\s+/).forEach(t => parts.push([who, t])));
+    parts.forEach(([who, text], k) => {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = 0.9;
       if (voices[who]) u.voice = voices[who];
       // 男女の声が同じになる端末でも聞き分けられるよう、高さを変える
       if (who === 'M' && voices.M === voices.W) u.pitch = 0.6;
-      if (k === lines.length - 1) {
+      if (k === parts.length - 1) {
         u.onend = u.onerror = () => { busy = false; btn.textContent = label; refreshButtons(); };
       }
       speechSynthesis.speak(u);
