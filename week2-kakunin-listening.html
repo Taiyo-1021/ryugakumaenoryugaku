@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リスニングチェック Week2 確認テスト</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { color: #fff; font-size: 20px; margin: 8px 0 16px; text-align: center; }
+  .card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 10px; }
+  .card p, .card li { font-size: 15px; line-height: 1.8; }
+  .card ol { padding-left: 1.4em; margin: 0; }
+  .tag { display: inline-block; background: #e2e8f0; color: #334155; border-radius: 6px; font-size: 12px; font-weight: 700; padding: 2px 8px; margin-right: 6px; }
+  .q { margin: 14px 0 0; }
+  .q b { display: block; font-size: 15px; line-height: 1.6; }
+  .q ul { list-style: none; padding: 0; margin: 4px 0 0; }
+  .q li { font-size: 15px; line-height: 1.7; }
+  .play {
+    display: block; width: 100%; border: 0; border-radius: 12px;
+    background: var(--q-color); color: #fff; font-size: 17px; font-weight: 800;
+    padding: 14px; cursor: pointer; margin-top: 4px;
+  }
+  .play:disabled { background: #cbd5e1; cursor: default; }
+  .count { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .note { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Week2 確認テスト｜リスニング</h1>
+
+  <div class="card">
+    <h2>やり方（TOEIC形式）</h2>
+    <ol>
+      <li>音声は2つ（会話・トーク）。それぞれ<b>2回まで</b>再生できます。</li>
+      <li>再生する前に、質問と選択肢を読んでおきましょう。</li>
+      <li>各質問の答えを <b>A〜D</b> から1つ選び、グーグルフォームに入力してください。</li>
+    </ol>
+    <p class="note">英文の文字は表示されません。メモを取りながら聞いてOKです。</p>
+    <p id="warn" class="note" hidden>この端末では音声が再生できません。別のブラウザ（Chrome / Safari）で開いてください。</p>
+  </div>
+
+  <div class="card" id="set1">
+    <h2><span class="tag">会話</span>Questions 1–3</h2>
+    <button class="play" data-set="0">▶ 会話を再生</button>
+    <div class="count" data-count="0"></div>
+    <div class="q"><b>1. What did the man do for the first time?</b>
+      <ul><li>(A) He traveled alone.</li><li>(B) He opened a shop.</li><li>(C) He made chai.</li><li>(D) He studied Hindi.</li></ul></div>
+    <div class="q"><b>2. Why was the man confused?</b>
+      <ul><li>(A) The shop was closed.</li><li>(B) He didn't understand a gesture.</li><li>(C) He lost his bag.</li><li>(D) The chai was too hot.</li></ul></div>
+    <div class="q"><b>3. What did the shop owner let the man do?</b>
+      <ul><li>(A) Take a photo</li><li>(B) Use the phone</li><li>(C) Try some chai</li><li>(D) Work in the shop</li></ul></div>
+  </div>
+
+  <div class="card" id="set2">
+    <h2><span class="tag">トーク</span>Questions 4–6</h2>
+    <button class="play" data-set="1">▶ トークを再生</button>
+    <div class="count" data-count="1"></div>
+    <div class="q"><b>4. What was the speaker afraid of in high school?</b>
+      <ul><li>(A) Talking to teachers</li><li>(B) Making mistakes in English class</li><li>(C) Reading stories</li><li>(D) Going to school</li></ul></div>
+    <div class="q"><b>5. What did the teacher tell the speaker to do?</b>
+      <ul><li>(A) Study harder</li><li>(B) Write a diary</li><li>(C) Speak more slowly</li><li>(D) Join a club</li></ul></div>
+    <div class="q"><b>6. What is the speaker's dream?</b>
+      <ul><li>(A) To write stories</li><li>(B) To live abroad</li><li>(C) To be a singer</li><li>(D) To become a teacher</li></ul></div>
+  </div>
+</div>
+
+<script>
+  // 各セットは [話者, 文] の並び。W=女性 M=男性 N=ナレーション
+  const SETS = [
+    [
+      ['N', 'Questions 1 through 3 refer to the following conversation.'],
+      ['W', 'Hi, Ken. How was your trip to India?'],
+      ['M', 'It was great. I decided to travel alone for the first time.'],
+      ['W', 'Wow. Was it difficult?'],
+      ['M', 'A little. One day, I asked a shop owner if the shop was open, and he moved his head from side to side. I thought it meant "no."'],
+      ['W', "But it didn't?"],
+      ['M', 'Right! He smiled and let me try some chai. I was surprised to learn that the same gesture can mean "yes."'],
+    ],
+    [
+      ['N', 'Questions 4 through 6 refer to the following talk.'],
+      ['W', 'Hi, everyone. Today, I want to talk about my favorite teacher. ' +
+            'When I was in high school, I was afraid of making mistakes in English class. ' +
+            "One day, my teacher told me to speak more slowly and not to worry. " +
+            'She also made me read English stories out loud every week. ' +
+            'Thanks to her, I enjoy speaking English now. ' +
+            'My dream is to become a teacher like her.'],
+    ],
+  ];
+  const MAX_PLAYS = 2;
+  const played = [0, 0];
+
+  const supported = 'speechSynthesis' in window;
+  if (!supported) document.getElementById('warn').hidden = false;
+
+  function pickVoices() {
+    const en = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('en'));
+    const us = en.filter(v => v.lang === 'en-US');
+    const pool = us.length ? us : en;
+    const female = pool.find(v => /Samantha|Google US English|Aria|Jenny|Zira|female/i.test(v.name)) || pool[0];
+    const male = pool.find(v => /Alex|Daniel|Fred|Guy|David|Mark|male/i.test(v.name) && v !== female) || pool[1] || female;
+    return { W: female, N: female, M: male };
+  }
+
+  function updateCount(i) {
+    const left = MAX_PLAYS - played[i];
+    document.querySelector(`[data-count="${i}"]`).textContent =
+      left > 0 ? `あと ${left} 回 再生できます` : '再生は終わりです';
+  }
+
+  const buttons = [...document.querySelectorAll('.play')];
+  let busy = false;
+  function refreshButtons() {
+    buttons.forEach(b => {
+      const i = +b.dataset.set;
+      b.disabled = !supported || busy || played[i] >= MAX_PLAYS;
+    });
+  }
+
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    const i = +btn.dataset.set;
+    if (busy || played[i] >= MAX_PLAYS) return;
+    speechSynthesis.cancel();
+    const voices = pickVoices();
+    const lines = SETS[i];
+    busy = true;
+    played[i]++;
+    updateCount(i);
+    const label = btn.textContent;
+    btn.textContent = '再生中…';
+    refreshButtons();
+    lines.forEach(([who, text], k) => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      if (voices[who]) u.voice = voices[who];
+      // 男女の声が同じになる端末でも聞き分けられるよう、高さを変える
+      if (who === 'M' && voices.M === voices.W) u.pitch = 0.6;
+      if (k === lines.length - 1) {
+        u.onend = u.onerror = () => { busy = false; btn.textContent = label; refreshButtons(); };
+      }
+      speechSynthesis.speak(u);
+    });
+  }));
+
+  updateCount(0); updateCount(1); refreshButtons();
+  if (supported) speechSynthesis.onvoiceschanged = () => {};
+</script>
+</body>
+</html>
