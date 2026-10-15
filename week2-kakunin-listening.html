@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リスニングチェック Week2 確認テスト</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { color: #fff; font-size: 20px; margin: 8px 0 16px; text-align: center; }
+  .card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 10px; }
+  .card p, .card li { font-size: 15px; line-height: 1.8; }
+  .card ol { padding-left: 1.4em; margin: 0; }
+  .play {
+    display: block; width: 100%; border: 0; border-radius: 12px;
+    background: var(--q-color); color: #fff; font-size: 18px; font-weight: 800;
+    padding: 16px; cursor: pointer;
+  }
+  .play:disabled { background: #cbd5e1; cursor: default; }
+  .count { text-align: center; color: var(--muted); font-size: 14px; margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .note { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Week2 確認テスト｜リスニング</h1>
+
+  <div class="card">
+    <h2>やり方</h2>
+    <ol>
+      <li>先に下の質問を読んでください。</li>
+      <li>「音声を再生」を押して英語を聞きます（<b>2回まで</b>）。</li>
+      <li>質問の答えを、<b>日本語で</b>グーグルフォームに入力してください。</li>
+    </ol>
+    <p class="note">メモを取りながら聞いてOKです。英文の文字は表示されません。</p>
+  </div>
+
+  <div class="card">
+    <h2>質問</h2>
+    <ol>
+      <li>ケンは今年、何を始めましたか？</li>
+      <li>それはなぜですか？</li>
+      <li>ケンは毎朝、練習のために何をしていますか？</li>
+      <li>ケンは来月、何をする予定ですか？</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <button id="play" class="play">▶ 音声を再生</button>
+    <div id="count" class="count">あと 2 回 再生できます</div>
+    <p id="warn" class="note" hidden>この端末では音声が再生できません。別のブラウザ（Chrome / Safari）で開いてください。</p>
+  </div>
+</div>
+
+<script>
+  const SCRIPT = "Hi, I'm Ken. This year, I decided to learn Korean. " +
+    "I want to watch Korean dramas without subtitles. " +
+    "Every morning, I listen to a Korean podcast to practice. " +
+    "I enjoy learning new words, but speaking is still hard for me. " +
+    "Next month, I'm planning to visit Seoul with my sister. " +
+    "I hope to order food in Korean there!";
+  const MAX_PLAYS = 2;
+
+  const btn = document.getElementById('play');
+  const countEl = document.getElementById('count');
+  let played = 0;
+
+  if (!('speechSynthesis' in window)) {
+    btn.disabled = true;
+    document.getElementById('warn').hidden = false;
+  }
+
+  function englishVoice() {
+    const voices = speechSynthesis.getVoices();
+    return voices.find(v => v.lang === 'en-US' && /Samantha|Google US English|Aria|Jenny/.test(v.name))
+      || voices.find(v => v.lang === 'en-US')
+      || voices.find(v => v.lang && v.lang.startsWith('en'));
+  }
+
+  function updateCount() {
+    const left = MAX_PLAYS - played;
+    countEl.textContent = left > 0 ? `あと ${left} 回 再生できます` : '再生は終わりです。フォームに答えを入力してください。';
+  }
+
+  btn.addEventListener('click', () => {
+    if (played >= MAX_PLAYS) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(SCRIPT);
+    u.lang = 'en-US';
+    u.rate = 0.9;
+    const v = englishVoice();
+    if (v) u.voice = v;
+    btn.disabled = true;
+    btn.textContent = '再生中…';
+    u.onend = u.onerror = () => {
+      btn.textContent = '▶ 音声を再生';
+      btn.disabled = played >= MAX_PLAYS;
+    };
+    played++;
+    updateCount();
+    speechSynthesis.speak(u);
+  });
+</script>
+</body>
+</html>
