@@ -153,9 +153,10 @@
     const parts = [];
     lines.forEach(([who, text]) => text.split(/(?<=[.!?])\s+/).forEach(t => parts.push([who, t])));
     parts.forEach(([who, text], k) => {
-      const u = new SpeechSynthesisUtterance(text);
+      // 英語の音声は onigiri を「オニジャイリ」のように読むので、読み方だけ書き換える
+      const u = new SpeechSynthesisUtterance(text.replace(/onigiri/gi, 'oh-nee-ghee-ree'));
       u.lang = 'en-US';
-      u.rate = 0.9;
+      u.rate = 1.05;
       if (voices[who]) u.voice = voices[who];
       // 男女の声が同じになる端末でも聞き分けられるよう、高さを変える
       if (who === 'M' && voices.M === voices.W) u.pitch = 0.6;
