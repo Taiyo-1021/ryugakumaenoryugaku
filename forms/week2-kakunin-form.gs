@@ -32,20 +32,20 @@ const PART1 = [
   '私は彼に手伝ってほしいです。'
 ];
 
-// 正解は1-A、2-B、3-C、4-B、5-C、6-D（フォームには表示しない）
+// 正解は1-C、2-A、3-D、4-B、5-D、6-A（フォームには表示しない）
 const LISTENING = [
-  ['What did the man do for the first time?',
-    ['He traveled alone.', 'He opened a shop.', 'He made chai.', 'He studied Hindi.']],
-  ['Why was the man confused?',
-    ['The shop was closed.', "He didn't understand a gesture.", 'He lost his bag.', 'The chai was too hot.']],
-  ['What did the shop owner let the man do?',
-    ['Take a photo', 'Use the phone', 'Try some chai', 'Work in the shop']],
-  ['What was the speaker afraid of in high school?',
-    ['Talking to teachers', 'Making mistakes in English class', 'Reading stories', 'Going to school']],
-  ['What did the teacher tell the speaker to do?',
-    ['Study harder', 'Write a diary', 'Speak more slowly', 'Join a club']],
-  ["What is the speaker's dream?",
-    ['To write stories', 'To live abroad', 'To be a singer', 'To become a teacher']]
+  ["What did the host mother make the man do at first?",
+    ["Clean his room", "Walk the dog", "Wash the dishes", "Do the shopping"]],
+  ["What did the man cook last weekend?",
+    ["Japanese curry", "Onigiri", "Pasta", "Soup"]],
+  ["What is the man planning to do next?",
+    ["Visit Japan", "Go shopping with his host brother", "Buy a new pan", "Teach the family to make onigiri"]],
+  ["Where is the talk probably taking place?",
+    ["At a library", "At a running club", "At a hospital", "At a train station"]],
+  ["Why will the meeting place change next week?",
+    ["The station will be closed.", "It will rain.", "The coach will be away.", "There will be road work."]],
+  ["What should listeners do if they want to join the marathon?",
+    ["Tell the speaker by Thursday", "Go to the library", "Buy new shoes", "Call the coach"]]
 ];
 
 function createWeek2Form() {
