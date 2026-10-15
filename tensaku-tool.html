@@ -128,7 +128,9 @@
     <h2><span class="step">0</span>基本情報</h2>
     <div class="row3">
       <div><label class="field" for="week">週</label><select id="week"></select></div>
-      <div><label class="field" for="student">生徒名</label><input type="text" id="student" placeholder="例：田中"></div>
+      <div><label class="field" for="student">生徒名</label>
+        <select id="studentSel" style="display:none"></select>
+        <input type="text" id="student" placeholder="例：田中"></div>
       <div><label class="field" for="teacher">担当講師</label><input type="text" id="teacher" placeholder="例：佐藤"></div>
     </div>
     <div style="margin-top:12px"><label class="field" for="draftSel">入力中の生徒（このツールへの入力を、生徒ごとにこのブラウザに保存しています。ここで生徒を切り替えます）</label>
@@ -140,6 +142,7 @@
   <div class="card">
     <h2><span class="step">1</span><span id="p1title">Part 1：文型チェック</span></h2>
     <p class="hint" id="p1hint">フォームに回答した生徒を選ぶと、点数と弱点タイプが出ます。生徒名も自動で入ります。</p>
+    <p class="hint">回答の一覧には、すべての週の回答が出ます。選ぶと、週と生徒名がその回答に合わせて切り替わります。</p>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="p1student" style="max-width:280px"><option value="">（回答を読み込んでいます…）</option></select>
       <button class="btn sub" id="p1reload" type="button">回答を読み込み直す</button>
@@ -336,7 +339,6 @@ const WEEKS = {
     }
   },
   "Week2": {
-    openFrom: "2026-10-17", // この日から、新しく開く生徒の週がWeek2になる（それまではWeek1）
     part1SheetId: "1QmKNqpNdto09N1tQQx1nZmVMo5ow8E7a1F2NmNSi29w", // Part 1・3②のフォームの回答シート
     focus: "不定詞（〜すること・〜するための・〜するべき）／動名詞／let・make・see・hear＋人＋動詞／tell・want＋人＋to＋動詞",
     // Part 1：和文英訳。1問ごとに問う文法（target）を決め、それが正しく使えていれば1点（単語・冠詞などのミスは点を引かず、FBで直す）
@@ -447,10 +449,7 @@ const WEEKS = {
 };
 
 // 補助教材のライン（この点数以下なら「あり」）
-// 新しく開く生徒の週：添削を始める日（openFrom）を過ぎた週のうち、一番新しい週。
-// 次の週の問題データを早めに入れておいても、その日までは前の週で開く（講師が週を選び忘れても間違えないように）
-const todayStr = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
-const LATEST_WEEK = Object.keys(WEEKS).filter(k => !WEEKS[k].openFrom || WEEKS[k].openFrom <= todayStr).pop() || Object.keys(WEEKS)[0];
+const LATEST_WEEK = Object.keys(WEEKS)[Object.keys(WEEKS).length - 1]; // 問題データが入っている一番新しい週
 const SUPPORT_LINE = { part2: 17, part3: 15 }; // 9割未満（Part 2：18/20未満、Part 3：15.3/17未満）
 const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", "第5文型"];
 
@@ -596,6 +595,7 @@ function blankState() {
     p3read: {}, p3extra: [], p3done: false,
     // Week2以降：Part 1 和文英訳の判定を講師が直したもの（問番号: 1 or 0）
     p1judge: {},
+    p1from: "", // 回答シートに書かれていた名前（名簿の名前にそろえたとき、元の名前を覚えておく）
     aiReply: "", status: ""
   };
 }
@@ -808,8 +808,10 @@ function renderPart1() {
   if (!r) { box.innerHTML = ""; hideMsg("p1msg"); return; }
   if (r.error) { box.innerHTML = ""; showMsg("p1msg", r.error, "err"); return; }
   const days = daysAgo(r.time);
-  if (state.student && r.name && r.name !== state.student) {
+  if (state.student && r.name && r.name !== state.student && r.name !== state.p1from) {
     showMsg("p1msg", `回答シートの名前は「${r.name}」です。生徒名と合っているか確認してください。`, "warn");
+  } else if (state.student && r.name && r.name !== state.student) {
+    showMsg("p1msg", `回答シートの名前「${r.name}」を、名簿の「${state.student}」さんとして入力しています。`, "ok");
   } else if (days !== null && days > 9) {
     showMsg("p1msg", `この回答は${days}日前のものです（${r.time}）。週（いまは${state.week}）は合っていますか？`, "warn");
   } else if (r.mode === "translate") {
@@ -1663,6 +1665,7 @@ function renderAll() {
     : "フォームに回答した生徒を選ぶと、点数と弱点タイプが出ます。生徒名も自動で入ります。";
   $("p3title").textContent = isReading() ? "Part 3：音読・リスニング" : "Part 3：発音チェック";
   renderDrafts();
+  if (typeof renderRoster === "function") renderRoster();
   if (typeof markP1Select === "function" && p1Students.length) markP1Select();
   if ($("pubStudent").options.length) markPubSelect();
   renderPart1();
@@ -1672,7 +1675,7 @@ function renderAll() {
 }
 
 $("week").addEventListener("change", e => switchDraft(e.target.value, state.student));
-$("student").addEventListener("change", e => { const n = normalizeName(e.target.value); e.target.value = n; renameDraft(n); });
+$("student").addEventListener("change", e => { const n = normalizeName(e.target.value); e.target.value = n; renameDraft(n); renderRoster(); });
 $("draftSel").addEventListener("change", e => {
   const d = store.drafts[e.target.value];
   if (d) switchDraft(d.week, d.student);
@@ -1680,51 +1683,89 @@ $("draftSel").addEventListener("change", e => {
 });
 $("teacher").addEventListener("input", e => { state.teacher = e.target.value.trim(); saveState(); renderResults(); });
 // Part 1：回答シートを中継から読み込む
+// 回答の一覧：すべての週の回答シートを読む。{ week, name, row, known, similar }
 let p1Students = [];
+// 名簿（講師だけが見る）：中継が返す、生徒ページと記録シートにある名前。中継が古くて返さないときは null（生徒名は手入力）
+let roster = null;
 async function loadPart1() {
   const relay = loadRelay();
   const sel = $("p1student");
-  const sheetId = W().part1SheetId;
   if (!relay.url || !relay.pass) {
     sel.innerHTML = '<option value="">（先に手順6の「Notion連携の設定」を入れてください）</option>';
     return;
   }
-  if (!sheetId) { sel.innerHTML = '<option value="">（この週の回答シートが未設定です）</option>'; return; }
+  const weeks = Object.keys(WEEKS).filter(k => WEEKS[k].part1SheetId).reverse(); // 新しい週から
   sel.innerHTML = '<option value="">（回答を読み込んでいます…）</option>';
-  try {
-    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "part1", sheetId }) });
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    p1Students = json.students || [];
-    sel.innerHTML = '<option value="">生徒を選ぶ（' + p1Students.length + '人が回答済み）</option>' +
-      p1Students.map((s, i) => `<option value="${i}" ${s.name === state.student ? "selected" : ""}>${esc(s.name)}</option>`).join("");
-  } catch (e) {
-    sel.innerHTML = '<option value="">（読み込めませんでした）</option>';
-    showMsg("p1msg", "回答シートを読み込めませんでした：" + e.message + "　下の「手で貼る」も使えます。", "err");
+  const list = [], fails = [];
+  for (const wk of weeks) {
+    try {
+      const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "part1", sheetId: WEEKS[wk].part1SheetId }) });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      if (json.known) roster = json.known;
+      (json.students || []).forEach(s => list.push(Object.assign({ week: wk }, s)));
+    } catch (e) { fails.push(`${wk}：${e.message}`); }
   }
+  p1Students = list;
+  const opt = (s, i) => `<option value="${i}">${esc(s.week)}　${esc(s.name)}（${esc(String(s.row[0] || "").replace(/^\d{4}\//, "").replace(/:\d{2}$/, ""))}回答）${s.known === false ? "　※名簿にない名前" : ""}</option>`;
+  sel.innerHTML = `<option value="">回答を選ぶ（${list.length}件）</option>` +
+    weeks.map(wk => `<optgroup label="${esc(wk)}">` + list.map((s, i) => s.week === wk ? opt(s, i) : "").join("") + "</optgroup>").join("");
+  markP1Select();
+  renderRoster();
+  if (fails.length) showMsg("p1msg", "読み込めなかった回答シートがあります：" + fails.join("／") + "　下の「手で貼る」も使えます。", list.length ? "warn" : "err");
 }
 function markP1Select() {
-  const i = p1Students.findIndex(s => s.name === state.student);
+  const i = p1Students.findIndex(s => s.week === state.week && (s.name === state.student || s.name === state.p1from));
   $("p1student").value = i >= 0 ? String(i) : "";
+}
+// 回答の名前を名簿の名前にそろえる。名簿にあればそのまま、似た名前があれば講師に聞く。やめたら null
+function rosterName(s) {
+  if (!roster || s.known !== false) return s.name;
+  return askSameStudent(s.name, s.similar || []) === null ? null : (askSameStudent.last || s.name);
 }
 $("p1student").addEventListener("change", e => {
   const s = p1Students[Number(e.target.value)];
   if (!s) return;
-  // 別の生徒を選んだら、その生徒の下書きに切り替える（前の生徒の入力が混ざらないように）
-  if (s.name !== state.student) {
-    if (state.student || store.drafts[state.week + "|" + s.name]) switchDraft(state.week, s.name);
-    else renameDraft(s.name);
+  const name = rosterName(s);
+  if (name === null) { markP1Select(); return; }
+  // 選んだ回答の週と生徒の下書きに切り替える（前の生徒の入力が混ざらないように）
+  if (s.week !== state.week || name !== state.student) {
+    if (state.student || s.week !== state.week || store.drafts[s.week + "|" + name]) switchDraft(s.week, name);
+    else renameDraft(name);
   }
+  state.p1from = s.name;
   state.p1paste = s.row.join("\t");
   $("p1paste").value = state.p1paste;
   $("student").value = state.student;
-  saveState(); renderPart1(); renderPart3(); renderResults(); markP1Select();
+  saveState(); renderPart1(); renderPart3(); renderResults(); markP1Select(); renderRoster();
 });
 $("p1reload").addEventListener("click", () => { hideMsg("p1msg"); loadPart1(); });
-$("week").addEventListener("change", () => { loadPart1(); loadPubList(); });
+$("week").addEventListener("change", () => { markP1Select(); loadPubList(); });
 $("relayUrl").addEventListener("change", loadPart1);
 $("relayPass").addEventListener("change", loadPart1);
 loadPart1();
+
+// 手順0の生徒名：名簿があれば選ぶ。名簿にない生徒だけ「新しい生徒」で名前を打つ
+function renderRoster() {
+  const sel = $("studentSel"), inp = $("student");
+  if (!roster) { sel.style.display = "none"; inp.style.display = ""; return; }
+  const names = [...new Set([...roster, ...(state.student ? [state.student] : [])])].sort((a, b) => a.localeCompare(b, "ja"));
+  const typing = sel.value === "__new__" && !state.student;
+  sel.innerHTML = `<option value="">生徒を選ぶ（名簿：${roster.length}人）</option>` +
+    names.map(n => `<option value="${esc(n)}" ${n === state.student ? "selected" : ""}>${esc(n)}${roster.includes(n) ? "" : "（名簿にない）"}</option>`).join("") +
+    `<option value="__new__" ${typing ? "selected" : ""}>＋ 名簿にない新しい生徒（名前を入力）</option>`;
+  sel.style.display = "";
+  inp.style.display = typing ? "" : "none";
+}
+$("studentSel").addEventListener("change", e => {
+  const v = e.target.value;
+  if (v === "__new__") { $("student").style.display = ""; $("student").value = ""; $("student").focus(); return; }
+  $("student").style.display = "none";
+  if (!v || v === state.student) return;
+  renameDraft(v);
+  $("student").value = state.student;
+  renderRoster();
+});
 
 $("p1paste").addEventListener("input", e => { state.p1paste = e.target.value; saveState(); renderPart1(); renderPart3(); renderResults(); });
 $("p2notta").addEventListener("input", e => { state.p2notta = e.target.value; saveState(); });
@@ -1943,8 +1984,9 @@ const fmtTime = iso => { const d = new Date(iso); return isNaN(d) ? String(iso) 
 
 // 似た名前の生徒がいるときに聞く。同じ人ならその名前、別の人なら ""、やめるなら null
 function askSameStudent(name, similar) {
+  askSameStudent.last = "";
   for (const s of similar) {
-    if (confirm(`「${name}」と似た名前の生徒がいます：「${s}」\n\n同じ人ですか？\nOK：同じ人（「${s}」として記録する）\nキャンセル：違う人`)) return s;
+    if (confirm(`「${name}」と似た名前の生徒がいます：「${s}」\n\n同じ人ですか？\nOK：同じ人（「${s}」として記録する）\nキャンセル：違う人`)) { askSameStudent.last = s; return s; }
   }
   return confirm(`「${name}」を新しい生徒として記録します。よろしいですか？`) ? "" : null;
 }

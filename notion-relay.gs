@@ -28,7 +28,19 @@ function doPost(e) {
     // 名前の空白（半角・全角）は取り除いて、同じ人として扱う
     if (body.student !== undefined) body.student = normalizeName(body.student);
     if (body.asStudent !== undefined) body.asStudent = normalizeName(body.asStudent);
-    if (body.action === 'part1') return reply(readPart1(body.sheetId));
+    if (body.action === 'part1') {
+      // 回答の名前が名簿（生徒ページ・記録シートの名前）にあるか、似た名前は誰かも返す。名簿は講師だけが見る
+      const res = readPart1(body.sheetId);
+      if (!res.error) {
+        const known = knownStudents(conf);
+        res.known = known.sort();
+        res.students.forEach(function (s) {
+          s.known = known.indexOf(s.name) >= 0;
+          s.similar = s.known ? [] : similarNames(s.name, known);
+        });
+      }
+      return reply(res);
+    }
     if (body.action === 'drafts') return reply(listDrafts(conf.getProperty('NOTION_DB_ID'), body.week));
     if (body.action === 'publish') {
       const lock = LockService.getScriptLock();
