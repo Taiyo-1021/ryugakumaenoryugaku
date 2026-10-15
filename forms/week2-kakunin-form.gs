@@ -69,7 +69,7 @@ function createWeek2Form() {
   });
 
   form.addPageBreakItem()
-    .setTitle('PART3②｜リスニング（TOEIC形式）')
+    .setTitle('PART3②｜リスニング（4択）')
     .setHelpText('下のリンクから音声（会話1つ・トーク1つ、各2回まで）を聞き、答えをA〜Dから選んでください。\n' + LISTENING_URL);
   LISTENING.forEach(function (q, i) {
     const item = form.addMultipleChoiceItem();
