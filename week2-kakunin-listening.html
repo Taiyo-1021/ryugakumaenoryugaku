@@ -59,24 +59,24 @@
     <h2><span class="tag">会話</span>Questions 1–3</h2>
     <button class="play" data-set="0">▶ 会話を再生</button>
     <div class="count" data-count="0"></div>
-    <div class="q"><b>1. Why is the man tired?</b>
-      <ul><li>(A) He played games late at night.</li><li>(B) He stayed up to finish a report.</li><li>(C) He walked to the station.</li><li>(D) He worked at a café.</li></ul></div>
-    <div class="q"><b>2. What did the man forget to do?</b>
-      <ul><li>(A) Send an email</li><li>(B) Eat dinner</li><li>(C) Buy a ticket</li><li>(D) Call the woman</li></ul></div>
-    <div class="q"><b>3. What will the speakers probably do next?</b>
-      <ul><li>(A) Have lunch at a café</li><li>(B) Write a report</li><li>(C) Take a train</li><li>(D) Cook dinner</li></ul></div>
+    <div class="q"><b>1. What did the man do for the first time?</b>
+      <ul><li>(A) He traveled alone.</li><li>(B) He opened a shop.</li><li>(C) He made chai.</li><li>(D) He studied Hindi.</li></ul></div>
+    <div class="q"><b>2. Why was the man confused?</b>
+      <ul><li>(A) The shop was closed.</li><li>(B) He didn't understand a gesture.</li><li>(C) He lost his bag.</li><li>(D) The chai was too hot.</li></ul></div>
+    <div class="q"><b>3. What did the shop owner let the man do?</b>
+      <ul><li>(A) Take a photo</li><li>(B) Use the phone</li><li>(C) Try some chai</li><li>(D) Work in the shop</li></ul></div>
   </div>
 
   <div class="card" id="set2">
     <h2><span class="tag">トーク</span>Questions 4–6</h2>
     <button class="play" data-set="1">▶ トークを再生</button>
     <div class="count" data-count="1"></div>
-    <div class="q"><b>4. Who is the speaker probably talking to?</b>
-      <ul><li>(A) Museum staff</li><li>(B) Members of an English club</li><li>(C) Hotel guests</li><li>(D) Shop customers</li></ul></div>
-    <div class="q"><b>5. What should the listeners bring?</b>
-      <ul><li>(A) A dictionary</li><li>(B) A ticket</li><li>(C) A notebook</li><li>(D) A lunch box</li></ul></div>
-    <div class="q"><b>6. What should the listeners do by Wednesday?</b>
-      <ul><li>(A) Pay for the trip</li><li>(B) Finish their homework</li><li>(C) Tell the speaker if they want to join the trip</li><li>(D) Practice speaking with a partner</li></ul></div>
+    <div class="q"><b>4. What was the speaker afraid of in high school?</b>
+      <ul><li>(A) Talking to teachers</li><li>(B) Making mistakes in English class</li><li>(C) Reading stories</li><li>(D) Going to school</li></ul></div>
+    <div class="q"><b>5. What did the teacher tell the speaker to do?</b>
+      <ul><li>(A) Study harder</li><li>(B) Write a diary</li><li>(C) Speak more slowly</li><li>(D) Join a club</li></ul></div>
+    <div class="q"><b>6. What is the speaker's dream?</b>
+      <ul><li>(A) To write stories</li><li>(B) To live abroad</li><li>(C) To be a singer</li><li>(D) To become a teacher</li></ul></div>
   </div>
 </div>
 
@@ -85,20 +85,21 @@
   const SETS = [
     [
       ['N', 'Questions 1 through 3 refer to the following conversation.'],
-      ['W', 'Hi, Ken. You look tired today.'],
-      ['M', 'Yeah. I stayed up late to finish my report.'],
-      ['W', 'Oh, no. Did you finish it?'],
-      ['M', 'Yes, finally. But I forgot to eat dinner last night!'],
-      ['W', "Then let's have lunch together. I know a nice café near the station."],
-      ['M', 'Great idea. I want to try something new.'],
+      ['W', 'Hi, Ken. How was your trip to India?'],
+      ['M', 'It was great. I decided to travel alone for the first time.'],
+      ['W', 'Wow. Was it difficult?'],
+      ['M', 'A little. One day, I asked a shop owner if the shop was open, and he moved his head from side to side. I thought it meant "no."'],
+      ['W', "But it didn't?"],
+      ['M', 'Right! He smiled and let me try some chai. I was surprised to learn that the same gesture can mean "yes."'],
     ],
     [
       ['N', 'Questions 4 through 6 refer to the following talk.'],
-      ['W', 'Hello, everyone. Thank you for joining our English club. ' +
-            'This month, we are going to practice speaking every Friday. ' +
-            "Speaking in front of people is not easy, but don't worry about making mistakes. " +
-            'Please remember to bring a notebook to write down new words. ' +
-            'Also, if you want to join our trip to the museum, please tell me by Wednesday.'],
+      ['W', 'Hi, everyone. Today, I want to talk about my favorite teacher. ' +
+            'When I was in high school, I was afraid of making mistakes in English class. ' +
+            "One day, my teacher told me to speak more slowly and not to worry. " +
+            'She also made me read English stories out loud every week. ' +
+            'Thanks to her, I enjoy speaking English now. ' +
+            'My dream is to become a teacher like her.'],
     ],
   ];
   const MAX_PLAYS = 2;
