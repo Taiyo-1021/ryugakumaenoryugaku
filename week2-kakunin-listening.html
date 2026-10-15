@@ -25,13 +25,18 @@
   .card h2 { font-size: 16px; margin: 0 0 10px; }
   .card p, .card li { font-size: 15px; line-height: 1.8; }
   .card ol { padding-left: 1.4em; margin: 0; }
+  .tag { display: inline-block; background: #e2e8f0; color: #334155; border-radius: 6px; font-size: 12px; font-weight: 700; padding: 2px 8px; margin-right: 6px; }
+  .q { margin: 14px 0 0; }
+  .q b { display: block; font-size: 15px; line-height: 1.6; }
+  .q ul { list-style: none; padding: 0; margin: 4px 0 0; }
+  .q li { font-size: 15px; line-height: 1.7; }
   .play {
     display: block; width: 100%; border: 0; border-radius: 12px;
-    background: var(--q-color); color: #fff; font-size: 18px; font-weight: 800;
-    padding: 16px; cursor: pointer;
+    background: var(--q-color); color: #fff; font-size: 17px; font-weight: 800;
+    padding: 14px; cursor: pointer; margin-top: 4px;
   }
   .play:disabled { background: #cbd5e1; cursor: default; }
-  .count { text-align: center; color: var(--muted); font-size: 14px; margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .count { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
   .note { font-size: 13px; color: var(--muted); }
 </style>
 </head>
@@ -40,80 +45,120 @@
   <h1>Week2 確認テスト｜リスニング</h1>
 
   <div class="card">
-    <h2>やり方</h2>
+    <h2>やり方（TOEIC形式）</h2>
     <ol>
-      <li>先に下の質問を読んでください。</li>
-      <li>「音声を再生」を押して英語を聞きます（<b>2回まで</b>）。</li>
-      <li>質問の答えを、<b>日本語で</b>グーグルフォームに入力してください。</li>
+      <li>音声は2つ（会話・トーク）。それぞれ<b>2回まで</b>再生できます。</li>
+      <li>再生する前に、質問と選択肢を読んでおきましょう。</li>
+      <li>各質問の答えを <b>A〜D</b> から1つ選び、グーグルフォームに入力してください。</li>
     </ol>
-    <p class="note">メモを取りながら聞いてOKです。英文の文字は表示されません。</p>
-  </div>
-
-  <div class="card">
-    <h2>質問</h2>
-    <ol>
-      <li>ケンは今年、何を始めましたか？</li>
-      <li>それはなぜですか？</li>
-      <li>ケンは毎朝、練習のために何をしていますか？</li>
-      <li>ケンは来月、何をする予定ですか？</li>
-    </ol>
-  </div>
-
-  <div class="card">
-    <button id="play" class="play">▶ 音声を再生</button>
-    <div id="count" class="count">あと 2 回 再生できます</div>
+    <p class="note">英文の文字は表示されません。メモを取りながら聞いてOKです。</p>
     <p id="warn" class="note" hidden>この端末では音声が再生できません。別のブラウザ（Chrome / Safari）で開いてください。</p>
+  </div>
+
+  <div class="card" id="set1">
+    <h2><span class="tag">会話</span>Questions 1–3</h2>
+    <button class="play" data-set="0">▶ 会話を再生</button>
+    <div class="count" data-count="0"></div>
+    <div class="q"><b>1. Why is the man tired?</b>
+      <ul><li>(A) He played games late at night.</li><li>(B) He stayed up to finish a report.</li><li>(C) He walked to the station.</li><li>(D) He worked at a café.</li></ul></div>
+    <div class="q"><b>2. What did the man forget to do?</b>
+      <ul><li>(A) Send an email</li><li>(B) Eat dinner</li><li>(C) Buy a ticket</li><li>(D) Call the woman</li></ul></div>
+    <div class="q"><b>3. What will the speakers probably do next?</b>
+      <ul><li>(A) Have lunch at a café</li><li>(B) Write a report</li><li>(C) Take a train</li><li>(D) Cook dinner</li></ul></div>
+  </div>
+
+  <div class="card" id="set2">
+    <h2><span class="tag">トーク</span>Questions 4–6</h2>
+    <button class="play" data-set="1">▶ トークを再生</button>
+    <div class="count" data-count="1"></div>
+    <div class="q"><b>4. Who is the speaker probably talking to?</b>
+      <ul><li>(A) Museum staff</li><li>(B) Members of an English club</li><li>(C) Hotel guests</li><li>(D) Shop customers</li></ul></div>
+    <div class="q"><b>5. What should the listeners bring?</b>
+      <ul><li>(A) A dictionary</li><li>(B) A ticket</li><li>(C) A notebook</li><li>(D) A lunch box</li></ul></div>
+    <div class="q"><b>6. What should the listeners do by Wednesday?</b>
+      <ul><li>(A) Pay for the trip</li><li>(B) Finish their homework</li><li>(C) Tell the speaker if they want to join the trip</li><li>(D) Practice speaking with a partner</li></ul></div>
   </div>
 </div>
 
 <script>
-  const SCRIPT = "Hi, I'm Ken. This year, I decided to learn Korean. " +
-    "I want to watch Korean dramas without subtitles. " +
-    "Every morning, I listen to a Korean podcast to practice. " +
-    "I enjoy learning new words, but speaking is still hard for me. " +
-    "Next month, I'm planning to visit Seoul with my sister. " +
-    "I hope to order food in Korean there!";
+  // 各セットは [話者, 文] の並び。W=女性 M=男性 N=ナレーション
+  const SETS = [
+    [
+      ['N', 'Questions 1 through 3 refer to the following conversation.'],
+      ['W', 'Hi, Ken. You look tired today.'],
+      ['M', 'Yeah. I stayed up late to finish my report.'],
+      ['W', 'Oh, no. Did you finish it?'],
+      ['M', 'Yes, finally. But I forgot to eat dinner last night!'],
+      ['W', "Then let's have lunch together. I know a nice café near the station."],
+      ['M', 'Great idea. I want to try something new.'],
+    ],
+    [
+      ['N', 'Questions 4 through 6 refer to the following talk.'],
+      ['W', 'Hello, everyone. Thank you for joining our English club. ' +
+            'This month, we are going to practice speaking every Friday. ' +
+            "Speaking in front of people is not easy, but don't worry about making mistakes. " +
+            'Please remember to bring a notebook to write down new words. ' +
+            'Also, if you want to join our trip to the museum, please tell me by Wednesday.'],
+    ],
+  ];
   const MAX_PLAYS = 2;
+  const played = [0, 0];
 
-  const btn = document.getElementById('play');
-  const countEl = document.getElementById('count');
-  let played = 0;
+  const supported = 'speechSynthesis' in window;
+  if (!supported) document.getElementById('warn').hidden = false;
 
-  if (!('speechSynthesis' in window)) {
-    btn.disabled = true;
-    document.getElementById('warn').hidden = false;
+  function pickVoices() {
+    const en = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('en'));
+    const us = en.filter(v => v.lang === 'en-US');
+    const pool = us.length ? us : en;
+    const female = pool.find(v => /Samantha|Google US English|Aria|Jenny|Zira|female/i.test(v.name)) || pool[0];
+    const male = pool.find(v => /Alex|Daniel|Fred|Guy|David|Mark|male/i.test(v.name) && v !== female) || pool[1] || female;
+    return { W: female, N: female, M: male };
   }
 
-  function englishVoice() {
-    const voices = speechSynthesis.getVoices();
-    return voices.find(v => v.lang === 'en-US' && /Samantha|Google US English|Aria|Jenny/.test(v.name))
-      || voices.find(v => v.lang === 'en-US')
-      || voices.find(v => v.lang && v.lang.startsWith('en'));
+  function updateCount(i) {
+    const left = MAX_PLAYS - played[i];
+    document.querySelector(`[data-count="${i}"]`).textContent =
+      left > 0 ? `あと ${left} 回 再生できます` : '再生は終わりです';
   }
 
-  function updateCount() {
-    const left = MAX_PLAYS - played;
-    countEl.textContent = left > 0 ? `あと ${left} 回 再生できます` : '再生は終わりです。フォームに答えを入力してください。';
+  const buttons = [...document.querySelectorAll('.play')];
+  let busy = false;
+  function refreshButtons() {
+    buttons.forEach(b => {
+      const i = +b.dataset.set;
+      b.disabled = !supported || busy || played[i] >= MAX_PLAYS;
+    });
   }
 
-  btn.addEventListener('click', () => {
-    if (played >= MAX_PLAYS) return;
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    const i = +btn.dataset.set;
+    if (busy || played[i] >= MAX_PLAYS) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(SCRIPT);
-    u.lang = 'en-US';
-    u.rate = 0.9;
-    const v = englishVoice();
-    if (v) u.voice = v;
-    btn.disabled = true;
+    const voices = pickVoices();
+    const lines = SETS[i];
+    busy = true;
+    played[i]++;
+    updateCount(i);
+    const label = btn.textContent;
     btn.textContent = '再生中…';
-    u.onend = u.onerror = () => {
-      btn.textContent = '▶ 音声を再生';
-      btn.disabled = played >= MAX_PLAYS;
-    };
-    played++;
-    updateCount();
-    speechSynthesis.speak(u);
-  });
+    refreshButtons();
+    lines.forEach(([who, text], k) => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US';
+      u.rate = 0.9;
+      if (voices[who]) u.voice = voices[who];
+      // 男女の声が同じになる端末でも聞き分けられるよう、高さを変える
+      if (who === 'M' && voices.M === voices.W) u.pitch = 0.6;
+      if (k === lines.length - 1) {
+        u.onend = u.onerror = () => { busy = false; btn.textContent = label; refreshButtons(); };
+      }
+      speechSynthesis.speak(u);
+    });
+  }));
+
+  updateCount(0); updateCount(1); refreshButtons();
+  if (supported) speechSynthesis.onvoiceschanged = () => {};
 </script>
 </body>
 </html>
