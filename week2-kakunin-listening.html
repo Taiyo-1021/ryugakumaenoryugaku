@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>リスニングチェック Week2 確認テスト</title>
+<title>リピートチェック Week2 確認テスト</title>
 <style>
   :root {
     --q-color: #2563eb;
@@ -25,162 +25,118 @@
   .card h2 { font-size: 16px; margin: 0 0 10px; }
   .card p, .card li { font-size: 15px; line-height: 1.8; }
   .card ol { padding-left: 1.4em; margin: 0; }
-  .tag { display: inline-block; background: #e2e8f0; color: #334155; border-radius: 6px; font-size: 12px; font-weight: 700; padding: 2px 8px; margin-right: 6px; }
-  .q { margin: 14px 0 0; }
-  .q b { display: block; font-size: 15px; line-height: 1.6; }
-  .q ul { list-style: none; padding: 0; margin: 4px 0 0; }
-  .q li { font-size: 15px; line-height: 1.7; }
+  .q { display: flex; align-items: center; gap: 12px; }
+  .q .no { flex: none; width: 44px; height: 44px; border-radius: 50%; background: #e2e8f0; color: #334155; font-weight: 800; display: flex; align-items: center; justify-content: center; }
   .play {
-    display: block; width: 100%; border: 0; border-radius: 12px;
+    flex: 1; border: 0; border-radius: 12px;
     background: var(--q-color); color: #fff; font-size: 17px; font-weight: 800;
-    padding: 14px; cursor: pointer; margin-top: 4px;
+    padding: 14px; cursor: pointer;
   }
   .play:disabled { background: #cbd5e1; cursor: default; }
-  .count { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .status { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; min-height: 1.5em; font-variant-numeric: tabular-nums; }
+  .status.turn { color: #dc2626; font-weight: 800; font-size: 15px; }
   .note { font-size: 13px; color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Week2 確認テスト｜リスニング</h1>
+  <h1>Week2 確認テスト｜リピート</h1>
 
   <div class="card">
     <h2>やり方</h2>
     <ol>
-      <li>音声は2つ（会話・トーク）。それぞれ<b>2回まで</b>再生できます。</li>
-      <li>再生する前に、質問と選択肢を読んでおきましょう。</li>
-      <li>各質問の答えを <b>A〜D</b> から1つ選び、グーグルフォームに入力してください。</li>
+      <li>録画（または録音）を始めてから、Q1 から順に再生してください。</li>
+      <li>1問につき、ネイティブの英文が<b>2回</b>流れます。</li>
+      <li>英文のあと「ピッ」と鳴ったら、聞こえた英文を<b>そのまままねして</b>声に出してください（1問で2回言います）。</li>
+      <li>各問とも、再生できるのは<b>1回だけ</b>です。5問終わったら、録画（録音）をSlackで提出してください。</li>
     </ol>
-    <p class="note">英文の文字は表示されません。メモを取りながら聞いてOKです。</p>
-    <p id="warn" class="note" hidden>この端末では音声が再生できません。別のブラウザ（Chrome / Safari）で開いてください。</p>
+    <p class="note">英文の文字は表示されません。うまく言えなくても、止めずに次へ進んでください。</p>
   </div>
 
-  <div class="card" id="set1">
-    <h2><span class="tag">会話</span>Questions 1–3</h2>
-    <button class="play" data-set="0">▶ 会話を再生</button>
-    <div class="count" data-count="0"></div>
-    <div class="q"><b>1. What did the host mother make the man do at first?</b>
-      <ul><li>(A) Clean his room</li><li>(B) Walk the dog</li><li>(C) Wash the dishes</li><li>(D) Do the shopping</li></ul></div>
-    <div class="q"><b>2. What did the man cook last weekend?</b>
-      <ul><li>(A) Japanese curry</li><li>(B) Onigiri</li><li>(C) Pasta</li><li>(D) Soup</li></ul></div>
-    <div class="q"><b>3. What is the man planning to do next?</b>
-      <ul><li>(A) Visit Japan</li><li>(B) Go shopping with his host brother</li><li>(C) Buy a new pan</li><li>(D) Teach the family to make onigiri</li></ul></div>
-  </div>
-
-  <div class="card" id="set2">
-    <h2><span class="tag">トーク</span>Questions 4–6</h2>
-    <button class="play" data-set="1">▶ トークを再生</button>
-    <div class="count" data-count="1"></div>
-    <div class="q"><b>4. Where is the talk probably taking place?</b>
-      <ul><li>(A) At a library</li><li>(B) At a running club</li><li>(C) At a hospital</li><li>(D) At a train station</li></ul></div>
-    <div class="q"><b>5. Why will the meeting place change next week?</b>
-      <ul><li>(A) The station will be closed.</li><li>(B) It will rain.</li><li>(C) The coach will be away.</li><li>(D) There will be road work.</li></ul></div>
-    <div class="q"><b>6. What should listeners do if they want to join the marathon?</b>
-      <ul><li>(A) Tell the speaker by Thursday</li><li>(B) Go to the library</li><li>(C) Buy new shoes</li><li>(D) Call the coach</li></ul></div>
-  </div>
+  <div class="card" id="list"></div>
 </div>
 
 <script>
-  // 各セットは [話者, 文] の並び。W=女性 M=男性 N=ナレーション
-  const SETS = [
-    [
-      ['N', 'Questions 1 through 3 refer to the following conversation.'],
-      ['W', "Hi, Ken. How's your homestay in Canada?"],
-      ['M', "It's great. But at first, my host mother made me wash the dishes every night."],
-      ['W', 'Really? Did you mind?'],
-      ['M', 'Not at all. Now I enjoy cooking with her. Last weekend, she let me make Japanese curry for the whole family.'],
-      ['W', 'That sounds fun. Did they like it?'],
-      ['M', "Yes! I heard my host brother ask for more. Next, I'm planning to teach them how to make onigiri."],
-    ],
-    [
-      ['N', 'Questions 4 through 6 refer to the following talk.'],
-      ['W', 'Good morning, everyone. Welcome to the Sunday running club. Before we start, let me tell you a few things. ' +
-            "First, please don't forget to drink water during the run. " +
-            'Last week, I saw some members running for an hour without stopping, and one of them felt sick. ' +
-            'Second, our coach told me to change the meeting place next week because of road work. ' +
-            'We will meet in front of the library, not at the station. ' +
-            'Finally, if you are interested in joining the city marathon, please tell me by Thursday.'],
-    ],
-  ];
-  const MAX_PLAYS = 2;
-  // 再生回数はこのブラウザに残す（ページを開き直しても回数が戻らないように）
-  const PLAY_KEY = 'week2-kakunin-listening-played';
-  let played = [0, 0];
-  try { const v = JSON.parse(localStorage.getItem(PLAY_KEY)); if (Array.isArray(v) && v.length === 2) played = v.map(n => Math.min(Number(n) || 0, MAX_PLAYS)); } catch (e) { /* 保存できない環境でも動かす */ }
+  const COUNT = 5;
+  // 再生したかはこのブラウザに残す（ページを開き直しても、もう一度聞けないように）
+  const PLAY_KEY = 'week2-kakunin-repeat-played';
+  let played = [];
+  try { const v = JSON.parse(localStorage.getItem(PLAY_KEY)); if (Array.isArray(v)) played = v; } catch (e) { /* 保存できない環境でも動かす */ }
   const savePlayed = () => { try { localStorage.setItem(PLAY_KEY, JSON.stringify(played)); } catch (e) { /* 無視 */ } };
 
-  const supported = 'speechSynthesis' in window;
-  if (!supported) document.getElementById('warn').hidden = false;
-
-  // 自然に聞こえる声を上から順に探す（Fred や Albert などの機械っぽい声・おもしろ声は使わない）
-  const FEMALE_NAMES = ['Samantha', 'Ava', 'Allison', 'Susan', 'Zoe', 'Microsoft Aria', 'Microsoft Jenny', 'Google US English', 'Karen', 'Moira', 'Serena', 'Zira'];
-  const MALE_NAMES = ['Aaron', 'Evan', 'Nathan', 'Tom', 'Alex', 'Microsoft Guy', 'Microsoft Andrew', 'Microsoft Christopher', 'Microsoft Eric', 'Google UK English Male', 'Daniel', 'Arthur', 'Oliver', 'Gordon', 'Lee', 'Rishi', 'David', 'Mark'];
-  const ODD = /Fred|Albert|Ralph|Junior|Bad News|Good News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Hysterical|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Eddy|Reed|Rocko|Sandy|Shelley|Grandma|Grandpa|Flo/i;
-  function pickVoices() {
-    const en = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('en') && !ODD.test(v.name));
-    // 名前の候補順に探し、同じ名前ならアメリカ英語・高音質（Enhanced / Premium / Natural）を優先する
-    const score = v => (v.lang === 'en-US' ? 2 : 0) + (/Enhanced|Premium|Natural|Neural|Online/i.test(v.name) ? 1 : 0);
-    const find = names => {
-      for (const n of names) {
-        const hit = en.filter(v => v.name.toLowerCase().includes(n.toLowerCase())).sort((a, b) => score(b) - score(a))[0];
-        if (hit) return hit;
-      }
-      return null;
-    };
-    const female = find(FEMALE_NAMES) || en.find(v => /\bfemale\b/i.test(v.name)) || en[0];
-    const male = find(MALE_NAMES) || en.find(v => /\bmale\b/i.test(v.name) && v !== female) || female;
-    return { W: female, N: female, M: male };
-  }
-
-  function updateCount(i) {
-    const left = MAX_PLAYS - played[i];
-    document.querySelector(`[data-count="${i}"]`).textContent =
-      left > 0 ? `あと ${left} 回 再生できます` : '再生は終わりです';
+  // 音声の中の並び：0.6秒 → 英文 → ピッ＋ポーズ → 英文 → ピッ＋ポーズ。ポーズ中は「あなたの番」と出す
+  const audios = [];
+  const list = document.getElementById('list');
+  for (let i = 0; i < COUNT; i++) {
+    const row = document.createElement('div');
+    row.style.marginBottom = i < COUNT - 1 ? '18px' : '0';
+    row.innerHTML = `<div class="q"><div class="no">Q${i + 1}</div><button class="play" data-i="${i}">▶ 再生</button></div><div class="status" data-s="${i}"></div>`;
+    list.appendChild(row);
+    const a = new Audio(`audio/week2-repeat-q${i + 1}.mp3`);
+    a.preload = 'auto';
+    audios.push(a);
   }
 
   const buttons = [...document.querySelectorAll('.play')];
-  let busy = false;
-  function refreshButtons() {
-    buttons.forEach(b => {
-      const i = +b.dataset.set;
-      b.disabled = !supported || busy || played[i] >= MAX_PLAYS;
+  let busy = -1;
+  const status = i => document.querySelector(`[data-s="${i}"]`);
+  // 電話や画面ロックで途中で止まったときだけ、続きから再生できる
+  const paused = [];
+  function refresh() {
+    buttons.forEach((b, i) => {
+      b.disabled = busy >= 0 || (!!played[i] && !paused[i]);
+      if (busy !== i) b.textContent = paused[i] ? '▶ 続きを再生' : played[i] ? '再生しました' : '▶ 再生';
     });
   }
 
-  buttons.forEach(btn => btn.addEventListener('click', () => {
-    const i = +btn.dataset.set;
-    if (busy || played[i] >= MAX_PLAYS) return;
-    speechSynthesis.cancel();
-    const voices = pickVoices();
-    const lines = SETS[i];
-    busy = true;
-    played[i]++;
-    savePlayed();
-    updateCount(i);
-    const label = btn.textContent;
+  // ピッのあとのポーズ（あなたの番）かどうかを、音の大きさの代わりに再生位置で判断する
+  // 各音声の英文の長さ（秒）。q*.mp3 を作ったときの値
+  const CLIP = [3.85, 3.38, 3.75, 5.15, 5.82];
+  const LEAD = 0.6, BEEP = 0.18;
+  function phase(i, t) {
+    const c = CLIP[i], pause = Math.max(4.0, c * 1.6 + 1.5) - BEEP;
+    const one = c + BEEP + pause;
+    const x = t - LEAD;
+    if (x < 0) return '';
+    const k = Math.floor(x / one), y = x - k * one;
+    if (k > 1) return '';
+    return y < c ? `${k + 1}回目を聞いてください` : 'あなたの番：まねして言ってください';
+  }
+
+  buttons.forEach((btn, i) => btn.addEventListener('click', () => {
+    if (busy >= 0 || (played[i] && !paused[i])) return;
+    const a = audios[i];
+    busy = i;
     btn.textContent = '再生中…';
-    refreshButtons();
-    // 1文ずつ読ませる（Chromeは長い文をまとめて読ませると、15秒ほどで途中で止まることがあるため）
-    const parts = [];
-    lines.forEach(([who, text]) => text.split(/(?<=[.!?])\s+/).forEach(t => parts.push([who, t])));
-    parts.forEach(([who, text], k) => {
-      // 英語の音声は onigiri を「オニジャイリ」のように読むので、読み方だけ書き換える
-      const u = new SpeechSynthesisUtterance(text.replace(/onigiri/gi, 'oh-nee-ghee-ree'));
-      u.lang = 'en-US';
-      u.rate = 1.05;
-      if (voices[who]) u.voice = voices[who];
-      // 男女の声が同じになる端末でも聞き分けられるよう、高さを変える
-      // （下げすぎると機械っぽくなるので控えめに）
-      if (who === 'M' && voices.M === voices.W) u.pitch = 0.8;
-      if (k === parts.length - 1) {
-        u.onend = u.onerror = () => { busy = false; btn.textContent = label; refreshButtons(); };
-      }
-      speechSynthesis.speak(u);
+    refresh();
+    if (!paused[i]) a.currentTime = 0;
+    paused[i] = false;
+    a.play().then(() => {
+      played[i] = true; savePlayed();
+    }).catch(() => {
+      busy = -1; refresh();
+      status(i).textContent = '再生できませんでした。もう一度押してください。';
     });
   }));
-
-  updateCount(0); updateCount(1); refreshButtons();
-  if (supported) speechSynthesis.onvoiceschanged = () => {};
+  audios.forEach((a, i) => {
+    a.addEventListener('timeupdate', () => {
+      const s = phase(i, a.currentTime), el = status(i);
+      el.textContent = s;
+      el.classList.toggle('turn', s.startsWith('あなたの番'));
+    });
+    a.addEventListener('pause', () => {
+      if (a.ended || busy !== i) return;
+      paused[i] = true; busy = -1; refresh();
+    });
+    a.addEventListener('ended', () => {
+      busy = -1;
+      const el = status(i);
+      el.classList.remove('turn');
+      el.textContent = i < COUNT - 1 ? `終わりました。Q${i + 2} へ進んでください。` : '5問終わりました。録画（録音）を止めて、Slackで提出してください。';
+      refresh();
+    });
+  });
+  refresh();
 </script>
 </body>
 </html>

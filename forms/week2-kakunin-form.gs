@@ -1,9 +1,9 @@
-// Week2 確認テストのフォーム（Part1 和文英訳24問＋Part3② リスニング6問）と回答シートを作る。
+// Week2 確認テストのフォーム（Part1 和文英訳24問）と回答シートを作る。
+// Part3② はリピート（録画をSlackで提出）になったので、フォームには入れない。
 // 使い方：script.google.com で新しいプロジェクトを作り、この中身を貼り付けて createWeek2Form を実行する。
 // 実行後、「実行ログ」にフォームのURL（生徒用）と回答シートのIDが出る。
 
 const WEEK2_FOLDER_ID = '1n6Ym3XUtQ_eEC6vRiGRMftNcD2ufi3bG'; // Week2 フォルダ
-const LISTENING_URL = 'https://taiyo-1021.github.io/ryugakumaenoryugaku/week2-kakunin-listening.html';
 
 const PART1 = [
   '私は新しいスポーツに挑戦したいです。',
@@ -32,26 +32,11 @@ const PART1 = [
   '私は彼に手伝ってほしいです。'
 ];
 
-// 正解は1-C、2-A、3-D、4-B、5-D、6-A（フォームには表示しない）
-const LISTENING = [
-  ["What did the host mother make the man do at first?",
-    ["Clean his room", "Walk the dog", "Wash the dishes", "Do the shopping"]],
-  ["What did the man cook last weekend?",
-    ["Japanese curry", "Onigiri", "Pasta", "Soup"]],
-  ["What is the man planning to do next?",
-    ["Visit Japan", "Go shopping with his host brother", "Buy a new pan", "Teach the family to make onigiri"]],
-  ["Where is the talk probably taking place?",
-    ["At a library", "At a running club", "At a hospital", "At a train station"]],
-  ["Why will the meeting place change next week?",
-    ["The station will be closed.", "It will rain.", "The coach will be away.", "There will be road work."]],
-  ["What should listeners do if they want to join the marathon?",
-    ["Tell the speaker by Thursday", "Go to the library", "Buy new shoes", "Call the coach"]]
-];
 
 function createWeek2Form() {
-  const form = FormApp.create('Week2 確認テスト｜Part1 和文英訳・Part3② リスニング');
+  const form = FormApp.create('Week2 確認テスト｜Part1 和文英訳');
   form.setDescription(
-    'Week2 確認テストの Part1（和文英訳）と Part3②（リスニング）の解答フォームです。\n' +
+    'Week2 確認テストの Part1（和文英訳）の解答フォームです。\n' +
     'わからない問題も調べずに、自分の知識の範囲内で英文を組み立てましょう。');
   form.setCollectEmail(false);
   form.setShowLinkToRespondAgain(false);
@@ -68,20 +53,8 @@ function createWeek2Form() {
     form.addTextItem().setTitle('Q' + (i + 1) + '. ' + jp);
   });
 
-  form.addPageBreakItem()
-    .setTitle('PART3②｜リスニング（4択）')
-    .setHelpText('下のリンクから音声（会話1つ・トーク1つ、各2回まで）を聞き、答えをA〜Dから選んでください。\n' + LISTENING_URL);
-  LISTENING.forEach(function (q, i) {
-    const item = form.addMultipleChoiceItem();
-    item.setTitle('L' + (i + 1) + '. ' + q[0])
-      .setChoices(q[1].map(function (text, k) {
-        return item.createChoice('ABCD'.charAt(k) + '）' + text);
-      }))
-      .setRequired(true);
-  });
-
   // 回答シート（名前に「確認テスト」を含むことが、添削ツールで読み込む条件）
-  const ss = SpreadsheetApp.create('Week2 確認テスト｜Part1 和文英訳・Part3② リスニング（回答）');
+  const ss = SpreadsheetApp.create('Week2 確認テスト｜Part1 和文英訳（回答）');
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
 
   try {
