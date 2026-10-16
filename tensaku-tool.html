@@ -419,14 +419,14 @@ const WEEKS = {
         ] }
       ]
     },
-    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声から各デイ1文。
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声から各デイ1文（Q1〜Q3は短め・文の一部）。
     // ネイティブ音声が2回流れ、そのあとのポーズで生徒がまねして言う。chunks は講師がチェックするかたまり
     repeat: [
-      { day: "Day8", text: "I watched many cooking videos, and they made everything look easy.", chunks: ["I watched many cooking videos,", "and they made everything", "look easy."] },
+      { day: "Day8", text: "I like trying new recipes,", chunks: ["I like", "trying new recipes,"] },
+      { day: "Day10", text: "I was surprised to learn", chunks: ["I was surprised", "to learn"] },
+      { day: "Day12", text: "I still remember seeing his proud face.", chunks: ["I still remember", "seeing his proud face."] },
       { day: "Day9", text: "I study English to talk with people from other countries.", chunks: ["I study English", "to talk with people", "from other countries."] },
-      { day: "Day10", text: "I was surprised to learn that the same gesture can mean \"yes\" in India.", chunks: ["I was surprised to learn", "that the same gesture", "can mean \"yes\" in India."] },
-      { day: "Day11", text: "I want to become a teacher because words can change how students see themselves.", chunks: ["I want to become a teacher", "because words can change", "how students see themselves."] },
-      { day: "Day12", text: "Then I tried explaining it with superhero examples, and he started laughing.", chunks: ["Then I tried explaining it", "with superhero examples,", "and he started laughing."] }
+      { day: "Day11", text: "I want to become a teacher because words can change how students see themselves.", chunks: ["I want to become a teacher", "because words can change", "how students see themselves."] }
     ],
     supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
     part4theme: "挑戦していること（今挑戦していること・挑戦したいこと／何を、なぜ、どうやって／きっかけ）",
@@ -545,7 +545,7 @@ const SYMPTOMS = {
     { id: "rp-skip", label: "語が抜けた", say: "かたまりの中の語が抜けていました。", tip: "to・the・with などの小さな語は、弱く短く読まれるので聞き落としやすいです。音声を何度か聞いて、弱く聞こえる語も小さくまねして入れましょう。" },
     { id: "rp-word", label: "別の語になった", say: "聞こえた語が、別の語になっていました。", tip: "似た音の語に置きかわっていました。英文の意味を思い浮かべながら聞くと、聞き間違いが減ります。" },
     { id: "rp-sound", label: "音がちがった（カタカナになった）", say: "音が、お手本とちがう（カタカナのような）音になっていました。", tip: "文字の読み方ではなく、聞こえたままの音をまねしましょう。聞こえた音をカタカナで書き出してから、お手本と比べると違いに気づけます。" },
-    { id: "rp-link", label: "つながりが切れた", say: "お手本ではつながっている音を、切って言っていました。", tip: "子音で終わる語と母音で始まる語はつなげて言います（explaining it → エクスプレイニンギッ）。お手本の音のつながりを、そのまままねしましょう。" },
+    { id: "rp-link", label: "つながりが切れた", say: "お手本ではつながっている音を、切って言っていました。", tip: "子音で終わる語と母音で始まる語はつなげて言います（make it → メイキッ）。お手本の音のつながりを、そのまままねしましょう。" },
     { id: "rp-rhythm", label: "リズム・抑揚がちがった", say: "強弱や上げ下げが、お手本とちがっていました。", tip: "大事な語を強く、小さな語を弱く言うリズムをまねしましょう。手をたたきながら、強いところだけ合わせる練習も効果的です。" }
   ]
 };
@@ -940,7 +940,7 @@ function renderRepeat() {
         `<td><select class="small" data-p3repsym="${k}"><option value="">（選ぶ）</option>` +
         SYMPTOMS["リピート"].map(y => `<option value="${y.id}" ${s.sym === y.id ? "selected" : ""}>${esc(y.label)}</option>`).join("") +
         `<option value="other" ${s.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
-        `<td><input type="text" class="small" data-p3repnote="${k}" value="${esc(s.note || "")}" placeholder="例：it とつながらない"></td></tr>`;
+        `<td><input type="text" class="small" data-p3repnote="${k}" value="${esc(s.note || "")}" placeholder="例：make pasta がつながらない"></td></tr>`;
     });
   });
   $("p3rep").innerHTML = html;
