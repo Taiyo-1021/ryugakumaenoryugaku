@@ -428,7 +428,7 @@ const WEEKS = {
       { day: "Day11", text: "I want to become a teacher because words can change how students see themselves.", chunks: ["I want to become a teacher", "because words can change", "how students see themselves."] },
       { day: "Day12", text: "Then I tried explaining it with superhero examples, and he started laughing.", chunks: ["Then I tried explaining it", "with superhero examples,", "and he started laughing."] }
     ],
-    supportLine: { part2: 17, part3: 17 }, // 9割未満（Part 2：18/20未満、音読：18/20未満）。リピートは判定に入れない
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
     part4theme: "挑戦していること（今挑戦していること・挑戦したいこと／何を、なぜ、どうやって／きっかけ）",
     speakingPoints: [
       { title: "「〜すること」を2通りで", detail: "不定詞（to＋動詞）と動名詞（動詞＋ing）の両方を使う" },
@@ -999,10 +999,13 @@ function renderPart3() {
 function part3Score() {
   const w = W();
   if (isReading()) {
-    // 音読の採点を終えたと講師がチェックするまでは点数を出さない（最初は全部「できた」になっているため）
-    const s = readingScore();
-    return { view: s.total, ipa: 0, total: s.total, max: s.max, views: s.views,
-      complete: !!state.p3done, missing: state.p3done ? [] : ["採点を終えたチェック"] };
+    // 音読（とリピート）の採点を終えたと講師がチェックするまでは点数を出さない（最初は全部「できた」になっているため）。
+    // 補助教材の判定は、音読とリピートの合計で行う
+    const s = readingScore(), RS = repeatScore();
+    const missing = [state.p3done ? "" : "音読", RS && !RS.complete ? "リピート" : ""].filter(Boolean);
+    return { view: s.total, ipa: 0, read: s.total, readMax: s.max, views: s.views, rep: RS,
+      total: s.total + (RS ? RS.total : 0), max: s.max + (RS ? RS.max : 0),
+      complete: !missing.length, missing };
   }
   let view = 0;
   const missing = [];
@@ -1082,7 +1085,8 @@ ${state.p2notta.trim() || "（未入力）"}`);
     const RS = repeatScore();
     lines.push(`
 # Part 3 の結果（講師・ツールが採点済み）
-- 音読：${p3.total} / ${p3.max}（${p3.views.map(v => `${v.name} ${v.score}/${v.max}`).join("／")}）
+- Part 3 の合計（音読＋リピート）：${p3.total} / ${p3.max}
+- 音読：${p3.read} / ${p3.readMax}（${p3.views.map(v => `${v.name} ${v.score}/${v.max}`).join("／")}）
 - 音読で崩れていた箇所：${bad.length ? bad.map(b => `${b.where}→${b.desc}`).join("／") : "なし"}
 - 評価箇所のほかに講師が気づいたこと：${state.p3extra.filter(x => x.text).length ? state.p3extra.filter(x => x.text).map(x => `${x.text}→${extraDesc(x)}`).join("／") : "なし"}
 - リピート（ネイティブ音声を聞いて1文まねする×5問）：${RS && RS.complete ? `${RS.total} / ${RS.max}（${RS.items.map(x => `Q${x.no} ${REP_TRY[x.tryNo]}${repFlags(x) ? "・" + repFlags(x) : ""}${x.bad.length ? `［${x.bad.map(b => `「${b.chunk}」${repDesc(b)}`).join("／")}］` : ""}`).join("／")}）` : "未採点"}
@@ -1377,8 +1381,11 @@ function buildStudentPage(d) {
     "| | 点数 | 達成度 | 次週の補助教材 |", "|---|---|---|---|",
     `| 📘 ${isTranslate() ? "文法（和文英訳）" : "文型"} | ${p1s === null ? (hasP1 ? "―" : "未提出") : `**${p1s} / ${p1m}**`} | ${p1s === null ? "" : bar(p1s, p1m)} | ― |`,
     `| 🗣 瞬間英作文 | ${d.p2total === null ? "―" : `**${d.p2total} / 20**`} | ${d.p2total === null ? "" : bar(d.p2total, 20)} | ${s2} |`,
-    `| ${isReading() ? "🎙 音読" : "🎧 発音"} | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
-  if (RS) L.push(`| 🔁 リピート | ${RS.complete ? `**${RS.total} / ${RS.max}**` : "―"} | ${RS.complete ? bar(RS.total, RS.max) : ""} | ― |`);
+    isReading()
+      ? `| 🎙 音読 | ${state.p3done ? `**${d.p3.read} / ${d.p3.readMax}**` : "―"} | ${state.p3done ? bar(d.p3.read, d.p3.readMax) : ""} | ${RS ? "↓" : s3} |`
+      : `| 🎧 発音 | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
+  if (RS) L.push(`| 🔁 リピート | ${RS.complete ? `**${RS.total} / ${RS.max}**` : "―"} | ${RS.complete ? bar(RS.total, RS.max) : ""} | ↓ |`,
+    `| 🎧 音読＋リピート | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
   if (d.p2total !== null) L.push("", `瞬間英作文の内訳：すぐ言えた ${d.speed} / ${n2}・正しく言えた ${d.acc} / ${n2}`);
 
   const diag = get("診断");
@@ -1445,9 +1452,9 @@ function buildStudentPage(d) {
   const drillText = keys => [...new Set(keys)].map(k => k.startsWith("word:")
     ? (w.part3ipa.find(x => x.word === k.slice(5)) || {}).drill
     : DRILLS[k] || DRILLS["その他"]).filter(Boolean);
-  if (isReading() && d.p3.complete) {
+  if (isReading() && state.p3done) {
     const R = w.reading;
-    L.push(`▶ **Part 3　音読　${d.p3.total} / ${d.p3.max}**`, "| 観点 | 点数 |", "|---|---|");
+    L.push(`▶ **Part 3　音読　${d.p3.read} / ${d.p3.readMax}**`, "| 観点 | 点数 |", "|---|---|");
     d.p3.views.forEach((v, i) => L.push(`| ${MARKS[i]} ${v.name} | ${"●".repeat(v.score)}${"○".repeat(v.max - v.score)} ${v.score} / ${v.max} |`));
     // 評価したところ（観点ごとに○✕）
     L.push("", "**チェックしたところ**");
@@ -1640,7 +1647,7 @@ function renderResults() {
   const support2 = p2total === null ? "AIの返事待ち" : (p2total <= SL().part2 ? "瞬間英作文：あり" : "瞬間英作文：なし");
   // 音読の採点がそろうまでは点数を出さない（初期値だけで点数が見えてしまうため）
   const p3started = isReading() ? false : p3.missing.length < W().part3viewpoints.length;
-  const support3 = !p3.complete ? (isReading() ? "音読の採点待ち（手順3のチェック）" : p3started ? `音読があと${p3.missing.length}項目` : "音読の採点待ち") : (p3.total <= SL().part3 ? "発音：あり" : "発音：なし");
+  const support3 = !p3.complete ? (isReading() ? `${p3.missing.join("・")}の採点待ち（手順3のチェック）` : p3started ? `音読があと${p3.missing.length}項目` : "音読の採点待ち") : (p3.total <= SL().part3 ? "発音：あり" : "発音：なし");
   // Part 1 の点数（和文英訳はAIと講師の判定から）
   const tr = p1 && !p1.error && p1.mode === "translate" ? translateItems(p1) : null;
   const p1score = !p1 || p1.error ? null : tr ? (tr.complete ? tr.score : null) : p1.score;
@@ -1656,7 +1663,7 @@ function renderResults() {
   $("summary").innerHTML =
     `<div class="stat"><div class="k">Part 1</div><div class="v">${p1score !== null ? `${p1score} / ${p1max}` : "―"}</div><div class="j">${tr && !tr.complete ? `AIの判定待ち（${tr.waiting}問）` : "判定には使わない"}</div></div>` +
     `<div class="stat"><div class="k">Part 2（瞬発力 ${speedDone ? speed : "入力途中"} ＋ 正確性 ${acc === null ? "―" : acc}）</div><div class="v">${p2total === null ? "―" : `${p2total} / 20`}</div><div class="j">${support2}</div></div>` +
-    `<div class="stat"><div class="k">Part 3${isReading() ? " 音読" : ""}</div><div class="v">${p3.complete ? `${p3.total} / ${p3.max}` : "―"}</div><div class="j">${support3}${RS ? `<br>リピート ${RS.complete ? `${RS.total} / ${RS.max}` : "採点待ち"}（判定には使わない）` : ""}</div></div>`;
+    `<div class="stat"><div class="k">Part 3${RS ? "（音読＋リピート）" : isReading() ? " 音読" : ""}</div><div class="v">${p3.complete ? `${p3.total} / ${p3.max}` : "―"}</div><div class="j">${support3}${RS ? `<br>音読 ${state.p3done ? `${p3.read} / ${p3.readMax}` : "―"}・リピート ${RS.complete ? `${RS.total} / ${RS.max}` : "―"}` : ""}</div></div>`;
 
   // 記録シート用（Part 1・3はツール、Part 2・4はAI）
   // 記録シート用の行は、AIの返事を読み取れてから出す（それまでは入力途中で、Part 3の初期値などが混ざるため）
