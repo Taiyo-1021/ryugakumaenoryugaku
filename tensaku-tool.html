@@ -177,7 +177,7 @@
     <div class="tbl-scroll"><table id="p3ipa"></table></div>
     </div>
     <div id="p3new" style="display:none">
-    <p class="hint">1️⃣ 音読は、下の評価箇所を録音で聞き、<strong>崩れていたものだけ</strong>チェックして「どう崩れていたか」を選びます（選ぶと自動でチェックが入ります）。選択肢にないときだけ「その他」にしてメモを書きます。観点ごとの点数（各4点・20点満点）はツールが数えます。評価箇所のほかに気になったところは「＋ 追加」で書き足すと、生徒のフィードバックに入ります（点数には入りません）。2️⃣ リスニングはフォームの回答から自動で採点します。</p>
+    <p class="hint">1️⃣ 音読は、下の評価箇所を録音で聞き、<strong>崩れていたものだけ</strong>チェックして「どう崩れていたか」を選びます（選ぶと自動でチェックが入ります）。選択肢にないときだけ「その他」にしてメモを書きます。観点ごとの点数（各4点・20点満点）はツールが数えます。評価箇所のほかに気になったところは「＋ 追加」で書き足すと、生徒のフィードバックに入ります（点数には入りません）。</p>
     <details><summary class="hint" style="cursor:pointer">音読の本文を見る</summary><div id="p3passage" class="model" style="font-size:14px;line-height:1.9;margin:6px 0 10px"></div></details>
     <div class="subhead">1️⃣ 音読：評価箇所（崩れていたものだけチェック）</div>
     <div class="tbl-scroll"><table id="p3items"></table></div>
@@ -185,8 +185,10 @@
     <div class="tbl-scroll"><table id="p3extra"></table></div>
     <div class="btns"><button class="btn sub" id="p3addExtra" type="button">＋ 追加</button></div>
     <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3done"> 音読の録音を最後まで聞いて、採点を終えた</label>
-    <div class="subhead">2️⃣ リスニング（フォームの回答から自動）</div>
-    <div class="tbl-scroll" id="p3listen"></div>
+    <div class="subhead">2️⃣ リピート（ネイティブ音声が2回流れ、そのあとに生徒がまねして言う）</div>
+    <p class="hint">録音を聞き、各かたまりを<strong>言えなかった回だけ</strong>✕にチェックして、理由を選びます（何もチェックしなければ「言えた」です）。1回目で全部言えたら2点、2回目で言えたら1点、どちらもだめなら0点。さらに「詰まった」「言い直した」がなければ各1点（1問4点・20点満点）。点数はツールが数えます。</p>
+    <div class="tbl-scroll"><table id="p3rep"></table></div>
+    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3repDone"> リピートの録音を最後まで聞いて、採点を終えた</label>
     </div>
   </div>
 
@@ -417,22 +419,16 @@ const WEEKS = {
         ] }
       ]
     },
-    // Part 3 2️⃣ リスニング（4択）。answer はフォームの選択肢の先頭の文字
-    listening: {
-      scripts: [
-        "W: Hi, Ken. How's your homestay in Canada?\nM: It's great. But at first, my host mother made me wash the dishes every night.\nW: Really? Did you mind?\nM: Not at all. Now I enjoy cooking with her. Last weekend, she let me make Japanese curry for the whole family.\nW: That sounds fun. Did they like it?\nM: Yes! I heard my host brother ask for more. Next, I'm planning to teach them how to make onigiri.",
-        "Good morning, everyone. Welcome to the Sunday running club. Before we start, let me tell you a few things. First, please don't forget to drink water during the run. Last week, I saw some members running for an hour without stopping, and one of them felt sick. Second, our coach told me to change the meeting place next week because of road work. We will meet in front of the library, not at the station. Finally, if you are interested in joining the city marathon, please tell me by Thursday."
-      ],
-      items: [
-        { q: "What did the host mother make the man do at first?", answer: "C", text: "Wash the dishes", why: "made me wash the dishes（皿洗いをさせた）と言っています。" },
-        { q: "What did the man cook last weekend?", answer: "A", text: "Japanese curry", why: "she let me make Japanese curry と言っています。onigiri は「次に教える予定」のものです。" },
-        { q: "What is the man planning to do next?", answer: "D", text: "Teach the family to make onigiri", why: "I'm planning to teach them how to make onigiri と言っています。" },
-        { q: "Where is the talk probably taking place?", answer: "B", text: "At a running club", why: "Welcome to the Sunday running club で始まっています。" },
-        { q: "Why will the meeting place change next week?", answer: "D", text: "There will be road work.", why: "because of road work（道路工事のため）と言っています。library と station は集合場所の話です。" },
-        { q: "What should listeners do if they want to join the marathon?", answer: "A", text: "Tell the speaker by Thursday", why: "please tell me by Thursday と言っています。" }
-      ]
-    },
-    supportLine: { part2: 17, part3: 17 }, // 9割未満（Part 2：18/20未満、音読：18/20未満）。リスニングは判定に入れない
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声から各デイ1文。
+    // ネイティブ音声が2回流れ、そのあとのポーズで生徒がまねして言う。chunks は講師がチェックするかたまり
+    repeat: [
+      { day: "Day8", text: "I watched many cooking videos, and they made everything look easy.", chunks: ["I watched many cooking videos,", "and they made everything", "look easy."] },
+      { day: "Day9", text: "I study English to talk with people from other countries.", chunks: ["I study English", "to talk with people", "from other countries."] },
+      { day: "Day10", text: "I was surprised to learn that the same gesture can mean \"yes\" in India.", chunks: ["I was surprised to learn", "that the same gesture", "can mean \"yes\" in India."] },
+      { day: "Day11", text: "I want to become a teacher because words can change how students see themselves.", chunks: ["I want to become a teacher", "because words can change", "how students see themselves."] },
+      { day: "Day12", text: "Then I tried explaining it with superhero examples, and he started laughing.", chunks: ["Then I tried explaining it", "with superhero examples,", "and he started laughing."] }
+    ],
+    supportLine: { part2: 17, part3: 17 }, // 9割未満（Part 2：18/20未満、音読：18/20未満）。リピートは判定に入れない
     part4theme: "挑戦していること（今挑戦していること・挑戦したいこと／何を、なぜ、どうやって／きっかけ）",
     speakingPoints: [
       { title: "「〜すること」を2通りで", detail: "不定詞（to＋動詞）と動名詞（動詞＋ing）の両方を使う" },
@@ -443,7 +439,7 @@ const WEEKS = {
     weakTypes: {
       grammar: "正解／to＋動詞にする動詞（want・decide・hope など）／-ing にする動詞（enjoy・keep・stop など）／前置詞の後ろの -ing／〜すること（主語・補語）／〜するために（目的の to）／名詞＋to（〜するべき・〜する相手）／感情の原因の to／let・make＋人＋動詞の原形／see・hear＋人＋動詞／tell・want＋人＋to＋動詞／動詞の形（原形・-ing・to）／時制／三単現／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
       pattern: "",
-      sound: "流暢さ／th／v／/æ/／リンキング／アクセント／リズム／その他"
+      sound: "流暢さ／th／v／/æ/／リンキング／アクセント／リズム／リピート／その他"
     }
   }
 };
@@ -478,7 +474,8 @@ const SOUND_TIPS = {
   "v": "v は上の前歯を下唇に軽く当てて声を出す音です。b にならないよう、唇どうしを合わせないようにしましょう。",
   "リンキング": "子音で終わる語のあとに母音で始まる語が来たら、つなげて1語のように読みます（got up → ガタップ）。",
   "リズム": "大事な語は強く、小さな語（with・my・on など）は弱く短く読みます。文の終わりは下げて終わりましょう。",
-  "その他": "お手本の音声をよく聞き、口の形を意識しながら何度か声に出してみましょう。"
+  "リピート": "文字を思い浮かべるより、聞こえた音のかたまりをそのまままねる意識で言いましょう。シャドーイングの音声で、1文ずつ止めてリピートする練習が効果的です。",
+  "その他":"お手本の音声をよく聞き、口の形を意識しながら何度か声に出してみましょう。"
 };
 const VIEW_TIPS = {
   "読み間違い・飛ばし": "読む前に一度黙読して、知らない単語の読み方を確認しておきましょう。指で文を追いながら読むと、飛ばしが減ります。",
@@ -541,6 +538,15 @@ const SYMPTOMS = {
     { id: "rh-strong", label: "小さな語を強く読んだ", say: "with・my・on などの小さな語を、強く読んでいました。", tip: "with・my・on・to・a などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。" },
     { id: "rh-chunk", label: "かたまりの途中で切った", say: "意味のかたまりの途中で区切っていました。", tip: "I also enjoy cooking ／ with my sister ／ on weekends のように、意味のかたまりの切れ目で区切りましょう。" },
     { id: "rh-up", label: "文末が上がった", say: "文の終わりが上がっていました。", tip: "ふつうの文（疑問文でない文）は、最後の大事な語で声を下げて終わります。上げると質問しているように聞こえます。" }
+  ],
+  // リピート（Part 3②）：ネイティブの音声をどこまで再現できたか
+  "リピート": [
+    { id: "rp-none", label: "言えなかった（止まった）", say: "このかたまりは、声に出して言えませんでした。", tip: "意味を思い出そうとするより、聞こえた音のかたまりをそのまま口に出すことを優先しましょう。1文ずつ止めて聞き、すぐにまねする練習が効果的です。" },
+    { id: "rp-skip", label: "語が抜けた", say: "かたまりの中の語が抜けていました。", tip: "to・the・with などの小さな語は、弱く短く読まれるので聞き落としやすいです。音声を何度か聞いて、弱く聞こえる語も小さくまねして入れましょう。" },
+    { id: "rp-word", label: "別の語になった", say: "聞こえた語が、別の語になっていました。", tip: "似た音の語に置きかわっていました。英文の意味を思い浮かべながら聞くと、聞き間違いが減ります。" },
+    { id: "rp-sound", label: "音がちがった（カタカナになった）", say: "音が、お手本とちがう（カタカナのような）音になっていました。", tip: "文字の読み方ではなく、聞こえたままの音をまねしましょう。聞こえた音をカタカナで書き出してから、お手本と比べると違いに気づけます。" },
+    { id: "rp-link", label: "つながりが切れた", say: "お手本ではつながっている音を、切って言っていました。", tip: "子音で終わる語と母音で始まる語はつなげて言います（explaining it → エクスプレイニンギッ）。お手本の音のつながりを、そのまままねしましょう。" },
+    { id: "rp-rhythm", label: "リズム・抑揚がちがった", say: "強弱や上げ下げが、お手本とちがっていました。", tip: "大事な語を強く、小さな語を弱く言うリズムをまねしましょう。手をたたきながら、強いところだけ合わせる練習も効果的です。" }
   ]
 };
 const SYMPTOM_BY_ID = {};
@@ -566,6 +572,7 @@ const DRILLS = {
   "v": "very ⇔ berry／vest ⇔ best／vote ⇔ boat を、交互に5回",
   "リンキング": "got up・a lot of・find out・pick it up を、ゆっくり→速くの順でつなげて5回ずつ",
   "リズム": "I also enjoy cooking with my sister on weekends. を、大事な語で手をたたきながら5回",
+  "リピート": "Week2 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）",
   "その他": "お手本の音声をまねして、5回ずつ声に出す"
 };
 // お手本の音声（Cambridge辞書の発音ページ）
@@ -593,6 +600,8 @@ function blankState() {
     p3view: {}, p3checks: {}, p3ipa: {},
     // Week2以降：音読の評価箇所（"観点番号-項目番号": {on, sym, note}）、評価箇所のほかの気づき、採点を終えたか
     p3read: {}, p3extra: [], p3done: false,
+    // Week2以降：リピート（"問-かたまり-回": 言えなかった、"問-かたまり": {sym, note}、問: {stop, redo}）、採点を終えたか
+    p3rep: {}, p3repq: {}, p3repDone: false,
     // Week2以降：Part 1 和文英訳の判定を講師が直したもの（問番号: 1 or 0）
     p1judge: {},
     p1from: "", // 回答シートに書かれていた名前（名簿の名前にそろえたとき、元の名前を覚えておく）
@@ -664,7 +673,7 @@ const $ = id => document.getElementById(id);
 const W = () => WEEKS[state.week];
 // Week2以降の形かどうか（Week1は前の形のまま動かす）
 const isTranslate = () => W().part1Mode === "translate"; // Part 1 が和文英訳
-const isReading = () => !!W().reading;                    // Part 3 の音読が評価箇所の○×＋リスニング
+const isReading = () => !!W().reading;                    // Part 3 の音読が評価箇所の○×＋リピート
 const SL = () => W().supportLine || SUPPORT_LINE;          // 補助教材のライン（週ごとに変えられる）
 
 // AIの返事は何度も読むので、同じ文章なら1回だけ解析する
@@ -706,12 +715,6 @@ function parseSplit(text) {
   return { "Ａ": "A", "Ｂ": "B", "Ｃ": "C" }[m[1]] || m[1];
 }
 
-// 選択肢（「C）Wash the dishes」など）の先頭の文字
-function parseChoice(text) {
-  const m = String(text || "").trim().match(/^\(?([ABCDＡＢＣＤ])/);
-  if (!m) return null;
-  return { "Ａ": "A", "Ｂ": "B", "Ｃ": "C", "Ｄ": "D" }[m[1]] || m[1];
-}
 
 function analyzePart1() {
   const raw = state.p1paste.trim();
@@ -719,16 +722,14 @@ function analyzePart1() {
   const cells = raw.split("\n")[0].split("\t");
   const qs = W().part1;
   if (isTranslate()) {
-    // 和文英訳：タイムスタンプ・名前・Q1〜Qn・リスニングL1〜Lm の順
-    const ls = (W().listening || { items: [] }).items;
-    const need = 2 + qs.length + ls.length;
+    // 和文英訳：タイムスタンプ・名前・Q1〜Qn の順（後ろに前のリスニングの列が残っていても使わない）
+    const need = 2 + qs.length;
     if (cells.length < need) {
       return { error: `列の数が足りません（${cells.length}列。${need}列必要です）。回答シートの行を、タイムスタンプの列から最後の列まで選んでコピーしてください。` };
     }
     return {
       mode: "translate", name: normalizeName(cells[1]), time: cells[0].trim(),
-      answers: qs.map((_, i) => (cells[2 + i] || "").trim()),
-      listen: ls.map((_, i) => parseChoice(cells[2 + qs.length + i]))
+      answers: qs.map((_, i) => (cells[2 + i] || "").trim())
     };
   }
   const need = 2 + qs.length * 2;
@@ -783,16 +784,29 @@ function translateItems(p1) {
     complete: done.length === items.length, waiting: items.length - done.length
   };
 }
-// リスニング：フォームの回答から自動で採点
-function listenItems(p1) {
-  const L = W().listening;
-  if (!L || !p1 || p1.error || p1.mode !== "translate") return null;
-  const items = L.items.map((x, i) => {
-    const ans = p1.listen[i];
-    return Object.assign({ no: i + 1, ans, ok: ans === x.answer }, x);
+// リピート：1問4点（言えた回 2＝1回目で全部言えた／1＝2回目で言えた／0＝言えなかった、詰まりなし 1、言い直しなし 1）
+const REP_TRY = ["1回目で言えた", "2回目で言えた", "言えなかった"];
+function repeatScore() {
+  const R = W().repeat;
+  if (!R) return null;
+  const miss = (qi, ci, t) => !!state.p3rep[`${qi}-${ci}-${t}`];
+  const items = R.map((q, qi) => {
+    const f = state.p3repq[qi] || {};
+    const m1 = q.chunks.map((_, ci) => miss(qi, ci, 1)), m2 = q.chunks.map((_, ci) => miss(qi, ci, 2));
+    const tryNo = !m1.some(Boolean) ? 0 : !m2.some(Boolean) ? 1 : 2;
+    const score = [2, 1, 0][tryNo] + (f.stop ? 0 : 1) + (f.redo ? 0 : 1);
+    const bad = q.chunks.map((c, ci) => {
+      const s = state.p3rep[`${qi}-${ci}`] || {};
+      return { ci, chunk: c, m1: m1[ci], m2: m2[ci], s, x: checkSymptom(s) };
+    }).filter(b => b.m1 || b.m2);
+    return { no: qi + 1, q, tryNo, stop: !!f.stop, redo: !!f.redo, score, max: 4, bad };
   });
-  return { items, score: items.filter(x => x.ok).length, max: items.length };
+  return { items, total: items.reduce((s, x) => s + x.score, 0), max: items.length * 4, complete: !!state.p3repDone };
 }
+// かたまりの言えなかった様子（「1回目✕・2回目◯：語が抜けた（メモ）」）
+const repDesc = b => `1回目${b.m1 ? "✕" : "◯"}・2回目${b.m2 ? "✕" : "◯"}` +
+  (b.x ? `：${b.x.label}${b.s.note ? `（${b.s.note}）` : ""}` : b.s.note ? `：${b.s.note}` : "");
+const repFlags = x => [x.stop ? "詰まった" : "", x.redo ? "言い直した" : ""].filter(Boolean).join("・");
 
 // 回答の日時（例：2026/10/03 10:00:00）が何日前か。読めなければ null
 function daysAgo(text) {
@@ -907,15 +921,30 @@ function renderReading() {
   if (!state.p3extra.length) html += `<tr><td colspan="4" class="model">（なし）</td></tr>`;
   $("p3extra").innerHTML = html;
   $("p3done").checked = !!state.p3done;
+  renderRepeat();
+}
 
-  const L = listenItems(analyzePart1());
-  if (!L) { $("p3listen").innerHTML = '<p class="hint">手順1でフォームの回答を読み込むと出ます。</p>'; return; }
-  html = `<table><tr><th>問</th><th>質問</th><th>生徒</th><th>正解</th><th></th></tr>`;
-  L.items.forEach(x => {
-    html += `<tr><td>L${x.no}</td><td>${esc(x.q)}</td><td>${esc(x.ans || "未回答")}</td><td>${x.answer}</td>` +
-      `<td><span class="pill ${x.ok ? "ok" : "ng"}">${x.ok ? "○" : "×"}</span></td></tr>`;
+function renderRepeat() {
+  const RS = repeatScore();
+  if (!RS) { $("p3rep").innerHTML = ""; return; }
+  let html = "<tr><th>かたまり</th><th>1回目<br>言えなかった</th><th>2回目<br>言えなかった</th><th>理由</th><th>メモ</th></tr>";
+  RS.items.forEach((x, qi) => {
+    html += `<tr><td colspan="5" style="background:#f9fafb"><strong>Q${x.no}（${esc(x.q.day)}）</strong>　${x.score} / ${x.max}点（${REP_TRY[x.tryNo]}）` +
+      `<div class="model">${esc(x.q.text)}</div>` +
+      `<label style="margin-right:14px;font-size:13px"><input type="checkbox" data-p3rq="${qi}" data-f="stop" ${x.stop ? "checked" : ""}> 詰まった</label>` +
+      `<label style="font-size:13px"><input type="checkbox" data-p3rq="${qi}" data-f="redo" ${x.redo ? "checked" : ""}> 言い直した</label></td></tr>`;
+    x.q.chunks.forEach((c, ci) => {
+      const k = `${qi}-${ci}`, s = state.p3rep[k] || {};
+      html += `<tr><td>${esc(c)}</td>` +
+        [1, 2].map(t => `<td style="text-align:center"><input type="checkbox" data-p3rep="${k}-${t}" ${state.p3rep[`${k}-${t}`] ? "checked" : ""}></td>`).join("") +
+        `<td><select class="small" data-p3repsym="${k}"><option value="">（選ぶ）</option>` +
+        SYMPTOMS["リピート"].map(y => `<option value="${y.id}" ${s.sym === y.id ? "selected" : ""}>${esc(y.label)}</option>`).join("") +
+        `<option value="other" ${s.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
+        `<td><input type="text" class="small" data-p3repnote="${k}" value="${esc(s.note || "")}" placeholder="例：it とつながらない"></td></tr>`;
+    });
   });
-  $("p3listen").innerHTML = html + `</table><p class="hint" style="margin-top:6px">リスニング：${L.score} / ${L.max}点（補助教材の判定には使いません）</p>`;
+  $("p3rep").innerHTML = html;
+  $("p3repDone").checked = !!state.p3repDone;
 }
 
 // 音読：観点ごとに、崩れた項目の数を引いて点数にする
@@ -1050,13 +1079,13 @@ ${state.p2notta.trim() || "（未入力）"}`);
   // Part 3
   if (isReading()) {
     const bad = readBadList();
-    const L = listenItems(p1);
+    const RS = repeatScore();
     lines.push(`
 # Part 3 の結果（講師・ツールが採点済み）
 - 音読：${p3.total} / ${p3.max}（${p3.views.map(v => `${v.name} ${v.score}/${v.max}`).join("／")}）
 - 音読で崩れていた箇所：${bad.length ? bad.map(b => `${b.where}→${b.desc}`).join("／") : "なし"}
 - 評価箇所のほかに講師が気づいたこと：${state.p3extra.filter(x => x.text).length ? state.p3extra.filter(x => x.text).map(x => `${x.text}→${extraDesc(x)}`).join("／") : "なし"}
-- リスニング：${L ? `${L.score} / ${L.max}（間違えた問題：${L.items.filter(x => !x.ok).map(x => `L${x.no}`).join("・") || "なし"}）` : "未提出"}
+- リピート（ネイティブ音声を聞いて1文まねする×5問）：${RS && RS.complete ? `${RS.total} / ${RS.max}（${RS.items.map(x => `Q${x.no} ${REP_TRY[x.tryNo]}${repFlags(x) ? "・" + repFlags(x) : ""}${x.bad.length ? `［${x.bad.map(b => `「${b.chunk}」${repDesc(b)}`).join("／")}］` : ""}`).join("／")}）` : "未採点"}
 
 # Part 4
 添付のノートの写真を読み取って使う。`);
@@ -1279,8 +1308,11 @@ function part3Rows() {
       const y = checkSymptom(x);
       rows.push([...base, `音読（追加）：${x.text}`, extraDesc(x), "", "", "", y ? recSound(y.group) : "その他", "評価箇所外"]);
     });
-    const L = listenItems(analyzePart1());
-    if (L) L.items.forEach(x => rows.push([...base, `L${x.no}`, x.ans || "未回答", x.answer, "", x.ok ? "1" : "0", x.ok ? "正解" : (x.ans ? "リスニング" : "未回答"), ""]));
+    const RS = repeatScore();
+    if (RS && RS.complete) RS.items.forEach(x => {
+      rows.push([...base, `リピート：Q${x.no}`, REP_TRY[x.tryNo] + (repFlags(x) ? `・${repFlags(x)}` : ""), x.q.text, "", String(x.score), x.score === x.max ? "正解" : "リピート", ""]);
+      x.bad.forEach(b => rows.push([...base, `リピート：Q${x.no}／${b.chunk}`, repDesc(b), "", "", "", "リピート", ""]));
+    });
     return rows;
   }
   w.part3viewpoints.forEach((n, i) => {
@@ -1340,13 +1372,13 @@ function buildStudentPage(d) {
   const tr = hasP1 && d.p1.mode === "translate" ? translateItems(d.p1) : null;
   const p1s = !hasP1 ? null : tr ? (tr.complete ? tr.score : null) : d.p1.score;
   const p1m = !hasP1 ? 0 : tr ? tr.max : d.p1.max;
-  const LS = isReading() ? listenItems(d.p1) : null;
+  const RS = isReading() ? repeatScore() : null;
   L.push(`## ${state.week} 確認テストのフィードバック`, "",
     "| | 点数 | 達成度 | 次週の補助教材 |", "|---|---|---|---|",
     `| 📘 ${isTranslate() ? "文法（和文英訳）" : "文型"} | ${p1s === null ? (hasP1 ? "―" : "未提出") : `**${p1s} / ${p1m}**`} | ${p1s === null ? "" : bar(p1s, p1m)} | ― |`,
     `| 🗣 瞬間英作文 | ${d.p2total === null ? "―" : `**${d.p2total} / 20**`} | ${d.p2total === null ? "" : bar(d.p2total, 20)} | ${s2} |`,
     `| ${isReading() ? "🎙 音読" : "🎧 発音"} | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
-  if (isReading()) L.push(`| 🎧 リスニング | ${LS ? `**${LS.score} / ${LS.max}**` : "未提出"} | ${LS ? bar(LS.score, LS.max) : ""} | ― |`);
+  if (RS) L.push(`| 🔁 リピート | ${RS.complete ? `**${RS.total} / ${RS.max}**` : "―"} | ${RS.complete ? bar(RS.total, RS.max) : ""} | ― |`);
   if (d.p2total !== null) L.push("", `瞬間英作文の内訳：すぐ言えた ${d.speed} / ${n2}・正しく言えた ${d.acc} / ${n2}`);
 
   const diag = get("診断");
@@ -1450,13 +1482,22 @@ function buildStudentPage(d) {
     L.push("◀", "");
   }
   if (isReading()) {
-    const LI = listenItems(d.p1);
-    if (LI) {
-      L.push(`▶ **Part 3②　リスニング　${LI.score} / ${LI.max}**`, "| 問 | あなたの答え | 正解 | |", "|---|---|---|---|");
-      LI.items.forEach(x => L.push(`| ${x.no} | ${x.ans || "未回答"} | ${x.answer}（${cell(x.text)}） | ${x.ok ? "◯" : "✕"} |`));
-      const wrongL = LI.items.filter(x => !x.ok);
-      if (wrongL.length) L.push("", "**間違えた問題のポイント**", ...wrongL.map(x => `- **${x.no}. ${x.q}**　${x.why}`));
-      L.push("", "英文（スクリプト）は、いちばん下の「模範解答」にあります。聞き取れなかったところを確かめてから、もう一度聞いてみましょう。");
+    if (RS && RS.complete) {
+      L.push(`▶ **Part 3②　リピート　${RS.total} / ${RS.max}**`, "| 問 | 英文 | 言えた回 | 詰まらずに | 言い直さずに | 点数 |", "|---|---|---|---|---|---|");
+      RS.items.forEach(x => L.push(`| Q${x.no} | ${cell(x.q.text)} | ${["1回目 ◯", "2回目 ◯", "✕"][x.tryNo]} | ${x.stop ? "✕" : "◯"} | ${x.redo ? "✕" : "◯"} | ${x.score} / ${x.max} |`));
+      // 言えなかったかたまりと直し方（同じ直し方は2回目から「上と同じ」）
+      const used = new Set(), lines = [];
+      RS.items.forEach(x => x.bad.forEach(b => {
+        const y = b.x;
+        const say = y ? y.say : (b.s.note ? `${b.s.note}。` : "このかたまりが、お手本のように言えていませんでした。");
+        const key = y ? y.id : "rp-other";
+        const tip = used.has(key) ? "直し方は上と同じです。" : (used.add(key), y ? y.tip : SOUND_TIPS["リピート"]);
+        lines.push(`- **Q${x.no}「${b.chunk}」**（1回目${b.m1 ? "✕" : "◯"}・2回目${b.m2 ? "✕" : "◯"}）：${say}${y && b.s.note ? `（${b.s.note}）` : ""}**直し方**：${tip}`);
+      }));
+      if (lines.length) L.push("", "**言えなかったところと直し方**", ...lines);
+      else L.push("", "5問とも、お手本の音声をしっかり再現できていました！");
+      if (RS.items.some(x => x.stop || x.redo)) L.push("", "**詰まり・言い直しについて**", "途中で止まったり言い直したりしたところがありました。完ぺきに言えなくても、聞こえた音のまま最後まで言い切ることを優先しましょう。");
+      L.push("", "**ペア練習**", "- " + DRILLS["リピート"]);
       L.push("◀", "");
     }
   } else if (d.p3.complete) {
@@ -1553,9 +1594,7 @@ function buildStudentPage(d) {
       : w.part1.map((q, i) => `- Q${i + 1} ${q.q} → ${TYPE_NAMES[q.type]}・${q.split}`)),
     "", "**Part 2**", ...w.part2.map((q, i) => `${i + 1}. ${q.jp} → ${q.en}`));
   if (isReading()) {
-    const Ls = w.listening;
-    L.push("", "**Part 3② リスニングの英文**", "（会話）", ...Ls.scripts[0].split("\n"), "", "（トーク）", Ls.scripts[1],
-      "", "答え：" + Ls.items.map((x, i) => `${i + 1}-${x.answer}`).join("　"));
+    if (w.repeat) L.push("", "**Part 3② リピートの英文**", ...w.repeat.map((q, i) => `${i + 1}. ${q.text}（${q.day}）`));
   } else {
     L.push("", "**Part 3 発音記号**", ...w.part3ipa.map(x => `- ${x.ipa} → ${x.word}`));
   }
@@ -1606,7 +1645,7 @@ function renderResults() {
   const tr = p1 && !p1.error && p1.mode === "translate" ? translateItems(p1) : null;
   const p1score = !p1 || p1.error ? null : tr ? (tr.complete ? tr.score : null) : p1.score;
   const p1max = !p1 || p1.error ? 0 : tr ? tr.max : p1.max;
-  const LS = isReading() ? listenItems(p1) : null;
+  const RS = isReading() ? repeatScore() : null;
   lastSummary = {
     part1: p1score,
     part2: p2total,
@@ -1617,7 +1656,7 @@ function renderResults() {
   $("summary").innerHTML =
     `<div class="stat"><div class="k">Part 1</div><div class="v">${p1score !== null ? `${p1score} / ${p1max}` : "―"}</div><div class="j">${tr && !tr.complete ? `AIの判定待ち（${tr.waiting}問）` : "判定には使わない"}</div></div>` +
     `<div class="stat"><div class="k">Part 2（瞬発力 ${speedDone ? speed : "入力途中"} ＋ 正確性 ${acc === null ? "―" : acc}）</div><div class="v">${p2total === null ? "―" : `${p2total} / 20`}</div><div class="j">${support2}</div></div>` +
-    `<div class="stat"><div class="k">Part 3${isReading() ? " 音読" : ""}</div><div class="v">${p3.complete ? `${p3.total} / ${p3.max}` : "―"}</div><div class="j">${support3}${LS ? `<br>リスニング ${LS.score} / ${LS.max}（判定には使わない）` : ""}</div></div>`;
+    `<div class="stat"><div class="k">Part 3${isReading() ? " 音読" : ""}</div><div class="v">${p3.complete ? `${p3.total} / ${p3.max}` : "―"}</div><div class="j">${support3}${RS ? `<br>リピート ${RS.complete ? `${RS.total} / ${RS.max}` : "採点待ち"}（判定には使わない）` : ""}</div></div>`;
 
   // 記録シート用（Part 1・3はツール、Part 2・4はAI）
   // 記録シート用の行は、AIの返事を読み取れてから出す（それまでは入力途中で、Part 3の初期値などが混ざるため）
@@ -1663,7 +1702,7 @@ function renderAll() {
   $("p1hint").textContent = isTranslate()
     ? "フォームに回答した生徒を選ぶと、英文が出ます。○×（その問題の文法が正しく使えたか）は、手順6でAIの返事を貼ると自動で入ります。違うと思ったら押して直してください。生徒名も自動で入ります。"
     : "フォームに回答した生徒を選ぶと、点数と弱点タイプが出ます。生徒名も自動で入ります。";
-  $("p3title").textContent = isReading() ? "Part 3：音読・リスニング" : "Part 3：発音チェック";
+  $("p3title").textContent = isReading() ? "Part 3：音読・リピート" : "Part 3：発音チェック";
   renderDrafts();
   if (typeof renderRoster === "function") renderRoster();
   if (typeof markP1Select === "function" && p1Students.length) markP1Select();
@@ -1773,6 +1812,7 @@ $("aiReply").addEventListener("input", e => { state.aiReply = e.target.value; sa
 // Part 3（Week2以降）：評価箇所のほかの気づき・採点を終えたチェック
 $("p3addExtra").addEventListener("click", () => { state.p3extra.push({ text: "", sym: "", note: "" }); saveState(); renderPart3(); });
 $("p3done").addEventListener("change", e => { state.p3done = e.target.checked; saveState(); renderResults(); });
+$("p3repDone").addEventListener("change", e => { state.p3repDone = e.target.checked; saveState(); renderResults(); });
 
 document.addEventListener("click", e => {
   const del = e.target.closest("button[data-p3xdel]");
@@ -1817,6 +1857,23 @@ document.addEventListener("change", e => {
     if (t.value) state.p3read[k].on = true;
     saveState(); renderPart3(); renderResults();
     return;
+  } else if (t.dataset.p3rep !== undefined) {
+    // リピート：かたまりを言えなかった回
+    if (t.checked) state.p3rep[t.dataset.p3rep] = true; else delete state.p3rep[t.dataset.p3rep];
+    saveState(); renderRepeat(); renderResults();
+    return;
+  } else if (t.dataset.p3repsym !== undefined) {
+    // 理由を選んだのに✕がどちらにもなければ、1回目を✕にする
+    const k = t.dataset.p3repsym;
+    state.p3rep[k] = Object.assign({}, state.p3rep[k], { sym: t.value });
+    if (t.value && !state.p3rep[`${k}-1`] && !state.p3rep[`${k}-2`]) state.p3rep[`${k}-1`] = true;
+    saveState(); renderRepeat(); renderResults();
+    return;
+  } else if (t.dataset.p3rq !== undefined) {
+    const qi = t.dataset.p3rq;
+    state.p3repq[qi] = Object.assign({}, state.p3repq[qi], { [t.dataset.f]: t.checked });
+    saveState(); renderRepeat(); renderResults();
+    return;
   } else if (t.dataset.p3xsym !== undefined) {
     const i = t.dataset.p3xsym;
     state.p3extra[i] = Object.assign({}, state.p3extra[i], { sym: t.value });
@@ -1846,6 +1903,15 @@ document.addEventListener("input", e => {
     if (t.value && !state.p3read[k].on) {
       state.p3read[k].on = true;
       const cb = document.querySelector(`input[data-p3r="${k}"]`);
+      if (cb) cb.checked = true;
+    }
+  } else if (t.dataset.p3repnote !== undefined) {
+    // メモだけ書いたときも、✕がなければ1回目を✕にする（入力中に表を描き直さないよう、チェックだけ付ける）
+    const k = t.dataset.p3repnote;
+    state.p3rep[k] = Object.assign({}, state.p3rep[k], { note: t.value });
+    if (t.value && !state.p3rep[`${k}-1`] && !state.p3rep[`${k}-2`]) {
+      state.p3rep[`${k}-1`] = true;
+      const cb = document.querySelector(`input[data-p3rep="${k}-1"]`);
       if (cb) cb.checked = true;
     }
   } else if (t.dataset.p3xtext !== undefined) {
