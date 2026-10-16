@@ -112,12 +112,23 @@
   const supported = 'speechSynthesis' in window;
   if (!supported) document.getElementById('warn').hidden = false;
 
+  // 自然に聞こえる声を上から順に探す（Fred や Albert などの機械っぽい声・おもしろ声は使わない）
+  const FEMALE_NAMES = ['Samantha', 'Ava', 'Allison', 'Susan', 'Zoe', 'Microsoft Aria', 'Microsoft Jenny', 'Google US English', 'Karen', 'Moira', 'Serena', 'Zira'];
+  const MALE_NAMES = ['Aaron', 'Evan', 'Nathan', 'Tom', 'Alex', 'Microsoft Guy', 'Microsoft Andrew', 'Microsoft Christopher', 'Microsoft Eric', 'Google UK English Male', 'Daniel', 'Arthur', 'Oliver', 'Gordon', 'Lee', 'Rishi', 'David', 'Mark'];
+  const ODD = /Fred|Albert|Ralph|Junior|Bad News|Good News|Bahh|Bells|Boing|Bubbles|Cellos|Deranged|Hysterical|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Eddy|Reed|Rocko|Sandy|Shelley|Grandma|Grandpa|Flo/i;
   function pickVoices() {
-    const en = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('en'));
-    const us = en.filter(v => v.lang === 'en-US');
-    const pool = us.length ? us : en;
-    const female = pool.find(v => /Samantha|Google US English|Aria|Jenny|Zira|female/i.test(v.name)) || pool[0];
-    const male = pool.find(v => /Alex|Daniel|Fred|Guy|David|Mark|male/i.test(v.name) && v !== female) || pool[1] || female;
+    const en = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('en') && !ODD.test(v.name));
+    // 名前の候補順に探し、同じ名前ならアメリカ英語・高音質（Enhanced / Premium / Natural）を優先する
+    const score = v => (v.lang === 'en-US' ? 2 : 0) + (/Enhanced|Premium|Natural|Neural|Online/i.test(v.name) ? 1 : 0);
+    const find = names => {
+      for (const n of names) {
+        const hit = en.filter(v => v.name.toLowerCase().includes(n.toLowerCase())).sort((a, b) => score(b) - score(a))[0];
+        if (hit) return hit;
+      }
+      return null;
+    };
+    const female = find(FEMALE_NAMES) || en.find(v => /\bfemale\b/i.test(v.name)) || en[0];
+    const male = find(MALE_NAMES) || en.find(v => /\bmale\b/i.test(v.name) && v !== female) || female;
     return { W: female, N: female, M: male };
   }
 
@@ -159,7 +170,8 @@
       u.rate = 1.05;
       if (voices[who]) u.voice = voices[who];
       // 男女の声が同じになる端末でも聞き分けられるよう、高さを変える
-      if (who === 'M' && voices.M === voices.W) u.pitch = 0.6;
+      // （下げすぎると機械っぽくなるので控えめに）
+      if (who === 'M' && voices.M === voices.W) u.pitch = 0.8;
       if (k === parts.length - 1) {
         u.onend = u.onerror = () => { busy = false; btn.textContent = label; refreshButtons(); };
       }
