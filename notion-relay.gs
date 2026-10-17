@@ -423,14 +423,28 @@ function publish(conf, body) {
   // 次週の課題（レッスンで確定したもの）
   const tasks = blocks.filter(function (b) { return b.type === 'to_do' && blockText(b).indexOf('課題：') === 0; })
     .map(function (b) { return { name: blockText(b).slice(3).trim(), on: !!b.to_do.checked }; });
+  // 次週の独り言で意識すること：見出しの次から、区切り線・見出し・チェック欄の手前までの文
+  const focusIdx = blocks.findIndex(function (b) { return b.type === 'paragraph' && blockText(b).trim() === '次週の独り言で意識すること'; });
+  const focusLines = [];
+  if (focusIdx >= 0) {
+    for (let i = focusIdx + 1; i < blocks.length; i++) {
+      const b = blocks[i];
+      if (['divider', 'heading_1', 'heading_2', 'heading_3', 'to_do'].indexOf(b.type) >= 0) break;
+      const line = blockText(b).trim();
+      if (line) focusLines.push(line);
+    }
+  }
   const teacher = ((drafts[0].properties || {})['担当'] || { rich_text: [] }).rich_text.map(function (t) { return t.plain_text; }).join('');
   const rows = points.map(function (b) {
     const m = blockText(b).match(/^(ポイント\d+)\s*([^：:]*)/);
     return [week, owner, teacher, 'S', m[1] + '：' + m[2].trim(), '', '', '', b.to_do.checked ? 1 : 0, '', ''];
   }).concat(tasks.map(function (t) {
     return [week, owner, teacher, 'T', t.name, '', '', '', t.on ? 1 : 0, '', ''];
-  }));
-  if (rows.length) saveRows(conf.getProperty('SHEET_ID'), week, owner, rows, ['S', 'T']);
+  })).concat(focusLines.length ? [
+    // 毎日の添削で使う。文はK列（講師メモ）に入れる
+    [week, owner, teacher, 'F', '次週の独り言で意識すること', '', '', '', '', '', focusLines.join('\n')]
+  ] : []);
+  if (rows.length) saveRows(conf.getProperty('SHEET_ID'), week, owner, rows, ['S', 'T', 'F']);
   const sp = studentPage(conf, owner);
   const title = week + ' 確認テストのフィードバック';
   // 同じ週のページがすでにあれば、中身だけ入れ替える（生徒に送ったリンクを変えない）
