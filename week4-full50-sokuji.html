@@ -177,256 +177,65 @@
 const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
 
 const DATA = [
-  {
-    "block": 1,
-    "jp": "昨日は普通の一日でした。",
-    "en": "Yesterday was just a normal day."
-  },
-  {
-    "block": 1,
-    "jp": "朝早く起きました。",
-    "en": "I woke up early in the morning."
-  },
-  {
-    "block": 1,
-    "jp": "ベッドの中で動画を見てしまいました。",
-    "en": "I watched videos in bed."
-  },
-  {
-    "block": 1,
-    "jp": "急いで準備しました。",
-    "en": "I got ready in a hurry."
-  },
-  {
-    "block": 1,
-    "jp": "傘を持たずに家を出ました。",
-    "en": "I left home without my umbrella."
-  },
-  {
-    "block": 1,
-    "jp": "外に出ると、雨が降り始めました。",
-    "en": "It started raining when I went outside."
-  },
-  {
-    "block": 1,
-    "jp": "コンビニで傘を買いました。",
-    "en": "I bought an umbrella at a convenience store."
-  },
-  {
-    "block": 1,
-    "jp": "仕事では何度もスマホを見ました。",
-    "en": "I checked my phone many times at work."
-  },
-  {
-    "block": 1,
-    "jp": "昼はフライドチキンを食べました。",
-    "en": "I ate fried chicken for lunch."
-  },
-  {
-    "block": 1,
-    "jp": "夜は動画を見て、ゆっくりしました。",
-    "en": "I watched videos and relaxed at night."
-  },
-  {
-    "block": 2,
-    "jp": "先週末、私は少し変な感じがしました。",
-    "en": "Last weekend, I felt a little strange."
-  },
-  {
-    "block": 2,
-    "jp": "土曜日、私は小さなカフェに行きました。",
-    "en": "On Saturday, I went to a small café."
-  },
-  {
-    "block": 2,
-    "jp": "あなたは先週末どこへ行きましたか？",
-    "en": "Where did you go last weekend?"
-  },
-  {
-    "block": 2,
-    "jp": "私はカフェで友達に会いました。",
-    "en": "I met my friend at a café."
-  },
-  {
-    "block": 2,
-    "jp": "そのあと、家に帰りました。",
-    "en": "After that, I went home."
-  },
-  {
-    "block": 2,
-    "jp": "あなたは先週末何を食べましたか？",
-    "en": "What did you eat last weekend?"
-  },
-  {
-    "block": 2,
-    "jp": "日曜日、私は家でゆっくり過ごしました。",
-    "en": "On Sunday, I stayed home and relaxed."
-  },
-  {
-    "block": 2,
-    "jp": "私は部屋を掃除して、洗濯をしました。",
-    "en": "I cleaned my room and did some laundry."
-  },
-  {
-    "block": 2,
-    "jp": "あなたはどんな映画を見ましたか？",
-    "en": "What kind of movie did you watch?"
-  },
-  {
-    "block": 2,
-    "jp": "誰かが私の部屋にいたような気がしたので、少し怖くなりました。",
-    "en": "I felt a little scared because it felt like someone had been in my room."
-  },
-  {
-    "block": 3,
-    "jp": "私の一番の思い出の一つは、彼女と別れたあとの夜です。",
-    "en": "One of my best memories is the night after my breakup."
-  },
-  {
-    "block": 3,
-    "jp": "私は正直、心が空っぽのように感じていました。",
-    "en": "Honestly, I felt empty."
-  },
-  {
-    "block": 3,
-    "jp": "でも、友達が私に会いに来てくれました。",
-    "en": "But my friends came to see me."
-  },
-  {
-    "block": 3,
-    "jp": "突然、雨が強く降り始めました。",
-    "en": "Suddenly, it started raining hard."
-  },
-  {
-    "block": 3,
-    "jp": "友達の一人が「とりあえず走ろう」と言いました。",
-    "en": "One of my friends said, \"Let's just run.\""
-  },
-  {
-    "block": 3,
-    "jp": "私たちは街の中を走り回りました。",
-    "en": "We ran through the streets."
-  },
-  {
-    "block": 3,
-    "jp": "私たちは全身びしょ濡れになりました。",
-    "en": "We got completely soaked."
-  },
-  {
-    "block": 3,
-    "jp": "そのあと、コンビニで温かい飲み物を買いました。",
-    "en": "After that, we bought hot drinks at a convenience store."
-  },
-  {
-    "block": 3,
-    "jp": "私はもう一人ではないと感じました。",
-    "en": "I didn't feel alone anymore."
-  },
-  {
-    "block": 3,
-    "jp": "その夜は、悲しい思い出ではなく、大切な思い出になりました。",
-    "en": "That night became an important memory, not a sad one."
-  },
-  {
-    "block": 4,
-    "jp": "私が忘れられない家族旅行は、祖母と行った旅行です。",
-    "en": "One family trip I will never forget is the trip I took with my grandmother."
-  },
-  {
-    "block": 4,
-    "jp": "その頃、祖母はだんだん体が弱くなっていました。",
-    "en": "At that time, my grandmother was getting weaker."
-  },
-  {
-    "block": 4,
-    "jp": "祖母は、もう一度みんなで海を見たいと言いました。",
-    "en": "My grandmother said, \"I want to see the ocean with everyone one more time.\""
-  },
-  {
-    "block": 4,
-    "jp": "私たちは静かな海の近くの町へ行きました。",
-    "en": "We went to a quiet town near the sea."
-  },
-  {
-    "block": 4,
-    "jp": "行く途中、父は道に迷いました。",
-    "en": "On the way there, my father got lost."
-  },
-  {
-    "block": 4,
-    "jp": "祖母は笑って、家族旅行は退屈しないと言いました。",
-    "en": "My grandmother laughed and said, \"Family trips are never boring.\""
-  },
-  {
-    "block": 4,
-    "jp": "到着すると、私たちは海辺をゆっくり歩きました。",
-    "en": "When we arrived, we walked slowly along the beach."
-  },
-  {
-    "block": 4,
-    "jp": "夕方、私たちはベンチから夕日を見ました。",
-    "en": "In the evening, we watched the sunset from a bench."
-  },
-  {
-    "block": 4,
-    "jp": "その旅行のあと、祖母は亡くなりました。",
-    "en": "After that trip, my grandmother passed away."
-  },
-  {
-    "block": 4,
-    "jp": "なぜその旅行は特別でしたか？",
-    "en": "Why was the trip special?"
-  },
-  {
-    "block": 5,
-    "jp": "最近、私は新しいアプリの使い方を学びました。",
-    "en": "Recently, I learned how to use a new app."
-  },
-  {
-    "block": 5,
-    "jp": "最初はそのアプリの使い方がよく分かりませんでした。",
-    "en": "At first, I didn't understand how to use the app."
-  },
-  {
-    "block": 5,
-    "jp": "あなたは最近何を学びましたか？",
-    "en": "What did you learn recently?"
-  },
-  {
-    "block": 5,
-    "jp": "私はそのアプリの基本的な機能を覚えました。",
-    "en": "I learned the basic features of the app."
-  },
-  {
-    "block": 5,
-    "jp": "そのおかげで、今は自分のスケジュールを1つの場所で見られます。",
-    "en": "Thanks to that, I can now see my schedule in one place."
-  },
-  {
-    "block": 5,
-    "jp": "前は大事な予定をよく忘れていました。",
-    "en": "Before, I often forgot important plans."
-  },
-  {
-    "block": 5,
-    "jp": "今はタスクを別の日に移動できるようになりました。",
-    "en": "Now I can move tasks to another day."
-  },
-  {
-    "block": 5,
-    "jp": "彼は最近料理を学んだので、今は簡単な料理なら作れます。",
-    "en": "He learned cooking recently, so he can make simple dishes now."
-  },
-  {
-    "block": 5,
-    "jp": "そのスキルを学んでから、私は前より自信を持てるようになりました。",
-    "en": "Since I learned that skill, I've become more confident."
-  },
-  {
-    "block": 5,
-    "jp": "なぜその「最近学んだこと」が大事だと思いますか？",
-    "en": "Why do you think the thing you learned recently is important?"
-  }
+  // ===== 1️⃣ =====
+  {block:1, jp:"数年前の私は、自分の生活をまったく管理できていませんでした。", en:"A few years ago, I couldn't manage my life at all."},
+  {block:1, jp:"ある日、1週間の北海道旅行にサンダルで行ってしまいました。", en:"One morning, I left for a one-week trip to Hokkaido in sandals."},
+  {block:1, jp:"私は、きちんと荷造りをすることができませんでした。", en:"I wasn't able to pack properly."},
+  {block:1, jp:"でも今は、旅行の準備をちゃんとできます。", en:"But now, I can prepare for trips properly."},
+  {block:1, jp:"以前よりも、予定をうまく管理できます。", en:"I can manage my schedule better than before."},
+  {block:1, jp:"仕事では、落ち着いて対応することができます。", en:"At work, I am able to stay calm."},
+  {block:1, jp:"締め切りまでにタスクを終わらせることができます。", en:"I am able to finish tasks before the deadline."},
+  {block:1, jp:"チームとわかりやすくコミュニケーションを取ることができます。", en:"I can communicate clearly with my team."},
+  {block:1, jp:"日常生活では、家を出る前に大事なことを確認できます。", en:"In my daily life, I can check important things before I leave home."},
+  {block:1, jp:"今の自分にできることを見ると、自分の成長を感じられます。", en:"Knowing what I can do now helps me understand how much I've grown."},
+
+  // ===== 2️⃣ =====
+  {block:2, jp:"1年後、私は計画をもっと真剣に考えるべきだと気づきました。", en:"One year later, I realized that I should take planning more seriously."},
+  {block:2, jp:"今では、家を出る前に天気を確認するべきだとわかっています。", en:"Now, I know I should check the weather before I leave home."},
+  {block:2, jp:"私は、朝の寝ぼけた自分の脳を信用しない方がいいです。", en:"I had better not trust my sleepy brain in the morning."},
+  {block:2, jp:"朝早く出発することになっているときは、前日の夜に準備するべきです。", en:"When I'm supposed to leave early, I should prepare the night before."},
+  {block:2, jp:"大事な予定があるときは、きちんと荷造りをするべきです。", en:"When I have an important plan, I should pack properly."},
+  {block:2, jp:"仕事では、注意深く話を聞くべきです。", en:"At work, I should listen carefully."},
+  {block:2, jp:"私は、小さなミスから学ぶべきです。", en:"I should learn from small mistakes."},
+  {block:2, jp:"私たちは、同じ失敗を何度も繰り返さない方がいいです。", en:"We had better not repeat the same mistake again and again."},
+  {block:2, jp:"学校や仕事では、時間を守ることになっています。", en:"At school and work, we are supposed to be on time."},
+  {block:2, jp:"成長するために、私は少しずつ良い習慣を作るべきです。", en:"To grow, I should build better habits little by little."},
+
+  // ===== 3️⃣ =====
+  {block:3, jp:"将来、AI翻訳はおそらくもっと良くなるでしょう。", en:"In the future, AI translation will probably become much better."},
+  {block:3, jp:"英語を話すことは必要なくなると思う人もいるかもしれません。", en:"Some people may think that speaking English will not be necessary."},
+  {block:3, jp:"本物の英語を話せる人は、より価値のある存在になるかもしれません。", en:"People who can speak real English might become more valuable."},
+  {block:3, jp:"AIは完璧なアニメを作るかもしれません。", en:"AI may create perfect animation."},
+  {block:3, jp:"でも、それが人の心を動かすとは限りません。", en:"But it might not always move people's hearts."},
+  {block:3, jp:"技術が進むほど、人間らしさはもっと大切になるかもしれません。", en:"As technology advances, humanity might become more important."},
+  {block:3, jp:"完璧な翻訳だけでは、人の心を動かせないかもしれません。", en:"Perfect translation may not move people's hearts."},
+  {block:3, jp:"その人間らしさは、私たちの最後のフロンティアかもしれません。", en:"That human side may be our last frontier."},
+  {block:3, jp:"私は、日本人学習者がリアルな英語を話せるように手助けしていくつもりです。", en:"I am going to help Japanese learners speak English in a way that feels real."},
+  {block:3, jp:"将来、自然なコミュニケーションは完璧な翻訳よりも大切になるでしょう。", en:"In the future, natural communication will be more important than perfect translation."},
+
+  // ===== 4️⃣ =====
+  {block:4, jp:"私たちは、生活にルールを持たなければなりません。", en:"We must have rules in our lives."},
+  {block:4, jp:"私は毎日、やるべきことを終わらせなければなりません。", en:"I have to finish my tasks every day."},
+  {block:4, jp:"でも、すべてを一人でする必要はありません。", en:"But I don't have to do everything alone."},
+  {block:4, jp:"私たちは、自分の時間を大切にしなければなりません。", en:"We must value our time."},
+  {block:4, jp:"忙しく見せるためだけに、健康を無視してはいけません。", en:"We must not ignore our health just to look busy."},
+  {block:4, jp:"私は、約束を守らなければなりません。", en:"I have to keep my promises."},
+  {block:4, jp:"私たちは、他の人の時間を大切にしなければなりません。", en:"We have to value other people's time."},
+  {block:4, jp:"毎回、完璧にする必要はありません。", en:"We don't have to be perfect every time."},
+  {block:4, jp:"大切でないことに時間を使ってはいけません。", en:"We must not spend time on unimportant things."},
+  {block:4, jp:"よりよく生きるために、私たちは自分のルールを持たなければなりません。", en:"To live well, we must have our own rules."},
+
+  // ===== 5️⃣ =====
+  {block:5, jp:"彼女がどう感じているか聞いてみてもいいと思います。", en:"You could ask how she feels."},
+  {block:5, jp:"でも、急いで関係をはっきりさせるべきではありません。", en:"But you shouldn't rush to make the relationship clear."},
+  {block:5, jp:"早すぎる段階で、深刻に聞こえすぎない方がいいです。", en:"You had better not sound too serious right away."},
+  {block:5, jp:"彼は、自分たちが付き合っているのか判断できませんでした。", en:"He couldn't tell if they were dating."},
+  {block:5, jp:"アメリカでは、はっきりした告白の瞬間がないかもしれません。", en:"In the U.S., there may not be a clear confession moment."},
+  {block:5, jp:"彼は、まず相手の気持ちを確認することができます。", en:"He can check her feelings first."},
+  {block:5, jp:"文化の違いは、誤解を生むかもしれません。", en:"Cultural differences might cause misunderstandings."},
+  {block:5, jp:"彼は、すぐに答えを求める必要はありません。", en:"He doesn't have to ask for an answer right away."},
+  {block:5, jp:"相手を責めるような聞き方をしてはいけません。", en:"You must not ask in a way that sounds blaming."},
+  {block:5, jp:"良いアドバイスは、相手が落ち着いて考える手助けになります。", en:"Good advice helps people think calmly."}
 ];
 
 const Q_SEC = 7;
