@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リピートチェック Week2 確認テスト</title>
+<style>
+  :root {
+    --q-color: #2563eb;
+    --bg: #0f172a;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    font-family: "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { color: #fff; font-size: 20px; margin: 8px 0 16px; text-align: center; }
+  .card { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 10px; }
+  .card p, .card li { font-size: 15px; line-height: 1.8; }
+  .card ol { padding-left: 1.4em; margin: 0; }
+  .q { display: flex; align-items: center; gap: 12px; }
+  .q .no { flex: none; width: 44px; height: 44px; border-radius: 50%; background: #e2e8f0; color: #334155; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .play {
+    flex: 1; border: 0; border-radius: 12px;
+    background: var(--q-color); color: #fff; font-size: 17px; font-weight: 800;
+    padding: 14px; cursor: pointer;
+  }
+  .play:disabled { background: #cbd5e1; cursor: default; }
+  .status { text-align: center; color: var(--muted); font-size: 13px; margin-top: 8px; min-height: 1.5em; font-variant-numeric: tabular-nums; }
+  .status.turn { color: #dc2626; font-weight: 800; font-size: 15px; }
+  .note { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Week2 確認テスト｜リピート</h1>
+
+  <div class="card">
+    <h2>やり方</h2>
+    <ol>
+      <li>録画（または録音）を始めてから、Q1 から順に再生してください。</li>
+      <li>1問につき、ネイティブの英文が<b>2回</b>流れます。</li>
+      <li>英文のあと「ピッ」と鳴ったら、聞こえた英文を<b>そのまままねして</b>声に出してください（1問で2回言います）。</li>
+      <li>各問とも、再生できるのは<b>1回だけ</b>です。5問終わったら、録画（録音）をSlackで提出してください。</li>
+    </ol>
+    <p class="note">英文の文字は表示されません。うまく言えなくても、止めずに次へ進んでください。</p>
+  </div>
+
+  <div class="card" id="list"></div>
+</div>
+
+<script>
+  const COUNT = 5;
+  // 再生したかはこのブラウザに残す（ページを開き直しても、もう一度聞けないように）
+  const PLAY_KEY = 'week2-kakunin-repeat-played';
+  let played = [];
+  try { const v = JSON.parse(localStorage.getItem(PLAY_KEY)); if (Array.isArray(v)) played = v; } catch (e) { /* 保存できない環境でも動かす */ }
+  const savePlayed = () => { try { localStorage.setItem(PLAY_KEY, JSON.stringify(played)); } catch (e) { /* 無視 */ } };
+
+  // 音声の中の並び：0.6秒 → 英文 → ピッ＋ポーズ → 英文 → ピッ＋ポーズ。ポーズ中は「あなたの番」と出す
+  const audios = [];
+  const list = document.getElementById('list');
+  for (let i = 0; i < COUNT; i++) {
+    const row = document.createElement('div');
+    row.style.marginBottom = i < COUNT - 1 ? '18px' : '0';
+    row.innerHTML = `<div class="q"><div class="no">Q${i + 1}</div><button class="play" data-i="${i}">▶ 再生</button></div><div class="status" data-s="${i}"></div>`;
+    list.appendChild(row);
+    const a = new Audio(`audio/week2-repeat-q${i + 1}.mp3`);
+    a.preload = 'auto';
+    audios.push(a);
+  }
+
+  const buttons = [...document.querySelectorAll('.play')];
+  let busy = -1;
+  const status = i => document.querySelector(`[data-s="${i}"]`);
+  // 電話や画面ロックで途中で止まったときだけ、続きから再生できる
+  const paused = [];
+  function refresh() {
+    buttons.forEach((b, i) => {
+      b.disabled = busy >= 0 || (!!played[i] && !paused[i]);
+      if (busy !== i) b.textContent = paused[i] ? '▶ 続きを再生' : played[i] ? '再生しました' : '▶ 再生';
+    });
+  }
+
+  // ピッのあとのポーズ（あなたの番）かどうかを、音の大きさの代わりに再生位置で判断する
+  // 各音声の英文の長さ（秒）。q*.mp3 を作ったときの値
+  const CLIP = [1.45, 1.82, 2.18, 3.38, 5.15];
+  const LEAD = 0.6, BEEP = 0.18;
+  function phase(i, t) {
+    const c = CLIP[i], pause = Math.max(4.0, c * 1.6 + 1.5) - BEEP;
+    const one = c + BEEP + pause;
+    const x = t - LEAD;
+    if (x < 0) return '';
+    const k = Math.floor(x / one), y = x - k * one;
+    if (k > 1) return '';
+    return y < c ? `${k + 1}回目を聞いてください` : 'あなたの番：まねして言ってください';
+  }
+
+  buttons.forEach((btn, i) => btn.addEventListener('click', () => {
+    if (busy >= 0 || (played[i] && !paused[i])) return;
+    const a = audios[i];
+    busy = i;
+    btn.textContent = '再生中…';
+    refresh();
+    if (!paused[i]) a.currentTime = 0;
+    paused[i] = false;
+    a.play().then(() => {
+      played[i] = true; savePlayed();
+    }).catch(() => {
+      busy = -1; refresh();
+      status(i).textContent = '再生できませんでした。もう一度押してください。';
+    });
+  }));
+  audios.forEach((a, i) => {
+    a.addEventListener('timeupdate', () => {
+      const s = phase(i, a.currentTime), el = status(i);
+      el.textContent = s;
+      el.classList.toggle('turn', s.startsWith('あなたの番'));
+    });
+    a.addEventListener('pause', () => {
+      if (a.ended || busy !== i) return;
+      paused[i] = true; busy = -1; refresh();
+    });
+    a.addEventListener('ended', () => {
+      busy = -1;
+      const el = status(i);
+      el.classList.remove('turn');
+      el.textContent = i < COUNT - 1 ? `終わりました。Q${i + 2} へ進んでください。` : '5問終わりました。録画（録音）を止めて、Slackで提出してください。';
+      refresh();
+    });
+  });
+  refresh();
+</script>
+</body>
+</html>

@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>確認テスト 添削ツール</title>
+<style>
+  :root {
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #d1d5db;
+    --accent: #374151;
+    --ok: #15803d;
+    --ok-bg: #dcfce7;
+    --ng: #b91c1c;
+    --ng-bg: #fee2e2;
+    --warn-bg: #fef3c7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .lead { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 18px 20px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 17px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .hint { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+  label.field { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input[type=text], select, textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 14px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 640px) { .row3 { grid-template-columns: 1fr; } }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border-bottom: 1px solid #e5e7eb; padding: 8px 6px; text-align: left; vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; background: #f9fafb; }
+  .tbl-scroll { overflow-x: auto; }
+  .model { color: var(--muted); font-size: 12px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    font: inherit; font-size: 13px;
+    border: none; background: #fff; color: var(--ink);
+    padding: 6px 12px; cursor: pointer; min-width: 40px;
+  }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on-ok { background: var(--ok-bg); color: var(--ok); font-weight: 700; }
+  .seg button.on-ng { background: var(--ng-bg); color: var(--ng); font-weight: 700; }
+  .seg button.on { background: var(--accent); color: #fff; font-weight: 700; }
+  .btn {
+    font: inherit; font-size: 14px; font-weight: 700;
+    border: none; border-radius: 8px;
+    background: var(--accent); color: #fff;
+    padding: 10px 18px; cursor: pointer;
+  }
+  .btn.sub { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  .btn:active { transform: scale(0.98); }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .pill { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.ng { background: var(--ng-bg); color: var(--ng); }
+  .msg { font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-top: 10px; display: none; }
+  .msg.show { display: block; }
+  .msg.err { background: var(--ng-bg); color: var(--ng); }
+  .msg.ok { background: var(--ok-bg); color: var(--ok); }
+  .msg.warn { background: var(--warn-bg); color: #92400e; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 640px) { .summary { grid-template-columns: 1fr; } }
+  .stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat .v { font-size: 20px; font-weight: 700; }
+  .stat .j { font-size: 13px; margin-top: 2px; }
+  pre.out {
+    white-space: pre-wrap; word-break: break-word;
+    background: #f9fafb; border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; font-size: 13px; max-height: 360px; overflow: auto; margin: 8px 0 0;
+  }
+  .subhead { font-size: 14px; font-weight: 700; margin: 16px 0 6px; }
+  input.small { padding: 5px 8px; font-size: 13px; }
+  select.small { padding: 5px 8px; font-size: 13px; width: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>確認テスト 添削ツール</h1>
+  <p class="lead">上から順に入力し、「AI用にコピー」でAIに渡します。AIの返事を貼り戻したら、Notionに下書きを作ります。講師はNotionで下書きを直し、レッスン後に手順7で生徒に公開します。入力内容は生徒ごとにこのブラウザに保存されます。</p>
+
+  <!-- 0. 基本情報 -->
+  <div class="card">
+    <h2><span class="step">0</span>基本情報</h2>
+    <div class="row3">
+      <div><label class="field" for="week">週</label><select id="week"></select></div>
+      <div><label class="field" for="student">生徒名</label>
+        <select id="studentSel" style="display:none"></select>
+        <input type="text" id="student" placeholder="例：田中"></div>
+      <div><label class="field" for="teacher">担当講師</label><input type="text" id="teacher" placeholder="例：佐藤"></div>
+    </div>
+    <div style="margin-top:12px"><label class="field" for="draftSel">入力中の生徒（このツールへの入力を、生徒ごとにこのブラウザに保存しています。ここで生徒を切り替えます）</label>
+      <select id="draftSel" style="max-width:420px"></select></div>
+    <div class="btns"><button class="btn sub" id="resetBtn" type="button">この生徒の下書きを消す</button></div>
+  </div>
+
+  <!-- 1. Part 1 -->
+  <div class="card">
+    <h2><span class="step">1</span><span id="p1title">Part 1：文型チェック</span></h2>
+    <p class="hint" id="p1hint">フォームに回答した生徒を選ぶと、点数と弱点タイプが出ます。生徒名も自動で入ります。</p>
+    <p class="hint">回答の一覧には、すべての週の回答が出ます。選ぶと、週と生徒名がその回答に合わせて切り替わります。</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="p1student" style="max-width:280px"><option value="">（回答を読み込んでいます…）</option></select>
+      <button class="btn sub" id="p1reload" type="button">回答を読み込み直す</button>
+    </div>
+    <details style="margin-top:10px">
+      <summary class="hint" style="cursor:pointer">読み込めないとき：回答シートの行を手で貼る</summary>
+      <textarea id="p1paste" placeholder="回答シートの行をここに貼る（タイムスタンプの列から最後の列まで）" style="margin-top:6px"></textarea>
+    </details>
+    <div class="msg" id="p1msg"></div>
+    <div class="tbl-scroll" id="p1result"></div>
+  </div>
+
+  <!-- 2. Part 2 -->
+  <div class="card">
+    <h2><span class="step">2</span>Part 2：瞬間英作文</h2>
+    <p class="hint">録画を通しで1回見て、各問で「制限時間内に言い切れたか」だけを○×で入れてください。正しいかどうかはAIが判定します。</p>
+    <div class="tbl-scroll"><table id="p2table"></table></div>
+    <div class="subhead">Nottaの文字起こし（Part 2の録画）</div>
+    <textarea id="p2notta" placeholder="Nottaの文字起こし全文をここに貼る"></textarea>
+  </div>
+
+  <!-- 3. Part 3 -->
+  <div class="card">
+    <h2><span class="step">3</span><span id="p3title">Part 3：発音チェック</span></h2>
+    <div id="p3old">
+    <p class="hint">1️⃣ 音読は5観点を 2＝ほぼできている／1＝数か所気になる／0＝全体的にできていない で選びます。崩れていた箇所は「どう崩れていたか」を選びます（選ぶと自動で印がつきます）。選択肢にないときだけ「その他」にしてメモを書きます。2️⃣ 発音記号は最初から「正解」になっているので、つまずいた語だけ変えてください。別の単語になったときは、その単語を英語でメモに書きます。</p>
+    <div class="subhead">1️⃣ 音読：5観点</div>
+    <div class="tbl-scroll"><table id="p3viewpoints"></table></div>
+    <div class="subhead">1️⃣ 音読：崩れていたチェック箇所</div>
+    <div class="tbl-scroll"><table id="p3checks"></table></div>
+    <div class="subhead">2️⃣ 発音記号</div>
+    <div class="tbl-scroll"><table id="p3ipa"></table></div>
+    </div>
+    <div id="p3new" style="display:none">
+    <p class="hint">1️⃣ 音読は、下の評価箇所を録音で聞き、<strong>崩れていたものだけ</strong>チェックして「どう崩れていたか」を選びます（選ぶと自動でチェックが入ります）。選択肢にないときだけ「その他」にしてメモを書きます。観点ごとの点数（各4点・20点満点）はツールが数えます。評価箇所のほかに気になったところは「＋ 追加」で書き足すと、生徒のフィードバックに入ります（点数には入りません）。</p>
+    <details><summary class="hint" style="cursor:pointer">音読の本文を見る</summary><div id="p3passage" class="model" style="font-size:14px;line-height:1.9;margin:6px 0 10px"></div></details>
+    <div class="subhead">1️⃣ 音読：評価箇所（崩れていたものだけチェック）</div>
+    <div class="tbl-scroll"><table id="p3items"></table></div>
+    <div class="subhead">1️⃣ 音読：評価箇所のほかに気になったところ（点数には入りません）</div>
+    <div class="tbl-scroll"><table id="p3extra"></table></div>
+    <div class="btns"><button class="btn sub" id="p3addExtra" type="button">＋ 追加</button></div>
+    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3done"> 音読の録音を最後まで聞いて、採点を終えた</label>
+    <div class="subhead">2️⃣ リピート（ネイティブ音声が2回流れ、そのあとに生徒がまねして言う）</div>
+    <p class="hint">録音を聞き、各かたまりを<strong>言えなかった回だけ</strong>✕にチェックして、理由を選びます（何もチェックしなければ「言えた」です）。1回目で全部言えたら2点、2回目で言えたら1点、どちらもだめなら0点。さらに「詰まった」「言い直した」がなければ各1点（1問4点・20点満点）。点数はツールが数えます。</p>
+    <div class="tbl-scroll"><table id="p3rep"></table></div>
+    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3repDone"> リピートの録音を最後まで聞いて、採点を終えた</label>
+    </div>
+  </div>
+
+  <!-- 4. Part 4 -->
+  <div class="card">
+    <h2><span class="step">4</span>Part 4：自由英作文</h2>
+    <p class="hint">このツールへの入力はありません。ノートの英文はAIが写真から読み取ります。</p>
+    <ol class="hint" style="padding-left:20px;margin-top:0">
+      <li>Slackから生徒のノートの写真を保存しておく</li>
+      <li>手順5でAIに送るとき、<strong>ノートの写真を必ず添付する</strong></li>
+      <li>Notionに下書きを作ったら、下書きのPart 4の表（「あなたの英文」の列）と写真を見比べ、読み取り間違いがあればNotionで直す</li>
+    </ol>
+    <div id="p4theme" class="model"></div>
+  </div>
+
+  <!-- 5. AIへ -->
+  <div class="card">
+    <h2><span class="step">5</span>AIに渡す</h2>
+    <p class="hint">「AI用にコピー」を押してAIに貼り、Part 4のノートの写真を添付して送ってください。</p>
+    <div class="btns"><button class="btn" id="copyPromptBtn" type="button">AI用にコピー</button></div>
+    <div class="msg" id="copyMsg"></div>
+  </div>
+
+  <!-- 6. 結果 -->
+  <div class="card">
+    <h2><span class="step">6</span>AIの返事を貼る</h2>
+    <p class="hint">AIの返事を全部コピーして貼ってください。点数と補助教材の判定はこのツールが計算します。</p>
+    <textarea id="aiReply" placeholder="AIの返事をここに貼る" style="min-height:140px"></textarea>
+    <div class="msg" id="replyMsg"></div>
+
+    <div class="subhead">点数と補助教材（運営用）</div>
+    <div class="summary" id="summary"></div>
+
+    <details style="margin-top:14px">
+      <summary class="hint" style="cursor:pointer">記録シートに入る行を見る（ふだんは不要。下のボタンで自動で書き込まれます）</summary>
+      <pre class="out" id="recordOut"></pre>
+      <div class="btns"><button class="btn sub" id="copyRecordBtn" type="button">記録シート用をコピー（中継が使えず、手で貼るとき）</button></div>
+    </details>
+
+    <div class="subhead">生徒用ページ（Notionに作る内容）</div>
+    <pre class="out" id="fbOut"></pre>
+    <div class="btns">
+      <button class="btn" id="notionBtn" type="button">記録してNotionに下書きを作成</button>
+      <button class="btn sub" id="copyFbBtn" type="button">Notion用にコピー（手で貼る場合）</button>
+    </div>
+    <div class="msg" id="notionMsg"></div>
+    <details style="margin-top:12px">
+      <summary class="hint" style="cursor:pointer">Notion連携の設定（最初に1回だけ）</summary>
+      <div class="row3" style="grid-template-columns:2fr 1fr;margin-top:8px">
+        <div><label class="field" for="relayUrl">中継のURL</label><input type="text" id="relayUrl" placeholder="https://script.google.com/macros/s/…/exec"></div>
+        <div><label class="field" for="relayPass">合言葉</label><input type="text" id="relayPass"></div>
+      </div>
+    </details>
+    <div class="msg" id="outMsg"></div>
+  </div>
+
+  <!-- 7. 公開 -->
+  <div class="card">
+    <h2><span class="step">7</span>レッスン後：生徒に公開</h2>
+    <p class="hint">レッスンで生徒と相談して、Notionの下書きの「課題」のチェックを付け外しします。レッスン後にスピーキングテストの録画を見て、「意識するポイント」のできていたものにチェックをつけ、「次週の独り言で意識すること」を書いてから押してください。課題・ポイント・「次週の独り言で意識すること」は記録シートにも入り、Slackに送る文面ができます。直した内容のまま、その生徒専用のページ（生徒が見られる場所）に入ります。もう一度押すと、同じリンクのまま上書きされます。</p>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="pubStudent" style="max-width:280px"></select>
+      <button class="btn sub" id="pubReload" type="button">一覧を読み込み直す</button>
+      <button class="btn" id="pubBtn" type="button">生徒に公開</button>
+    </div>
+    <div class="msg" id="pubMsg"></div>
+    <div class="msg" id="pubNote"></div>
+    <div id="pubTextBox" style="display:none;margin-top:12px">
+      <div class="subhead">テスト提出部屋に送る文面（必要なら直してから送ってください）</div>
+      <textarea id="pubText" style="min-height:200px"></textarea>
+      <div class="btns"><button class="btn" id="copyPubText" type="button">文面をコピー</button></div>
+      <div class="msg" id="pubTextMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 週ごとのデータ（新しい週はここに追加する）
+// ============================================================
+const WEEKS = {
+  "Week1": {
+    part1SheetId: "1mHVQM1BFiqFX8sG2ObcbrvKvE8Q2H1Ed52fmsXVWFr4", // Part 1のフォームの回答シート
+    focus: "文型（第1〜5文型）／頻度副詞／時間表現／接続詞",
+    part1: [
+      { q: "Birds fly in the sky.", why: "fly のあとに「〜を」にあたる語がないので第1文型（SV）です。in the sky は「どこで」を表す飾り（M）なので、文型には数えません。", type: 1, split: "A", wrong: { B: "M（修飾語）の見分け", C: "M（修飾語）の見分け" } },
+      { q: "She runs every morning.", why: "every morning は「いつ」を表す M です。runs のあとに「〜を」にあたる語がないので第1文型です。every morning を O にしないよう注意しましょう。", type: 1, split: "B", wrong: { A: "M（修飾語）の見分け", C: "語のかたまり" } },
+      { q: "He is a teacher.", why: "He = a teacher が成り立つので、a teacher は主語を説明する C です。be動詞の後ろの名詞はたいてい C で、第2文型（SVC）になります。is a をまとめて V にはしません。", type: 2, split: "C", wrong: { A: "OとCの区別", B: "語のかたまり" } },
+      { q: "This cake tastes sweet.", why: "「このケーキ = 甘い」が成り立つので、sweet は C です。taste・look・feel・sound など「〜に感じる」動詞は、第2文型になりやすいです。", type: 2, split: "A", wrong: { B: "語のかたまり", C: "OとCの区別" } },
+      { q: "I drink coffee every day.", why: "coffee は「何を飲むか」を表す O です。every day は「いつ」の M なので、O には含めません。第3文型（SVO）です。", type: 3, split: "A", wrong: { B: "M（修飾語）の見分け", C: "語のかたまり" } },
+      { q: "She reads many books.", why: "many books はひとかたまりで「たくさんの本を」という O です。many だけを切り離さないのがポイント。第3文型です。", type: 3, split: "B", wrong: { A: "語のかたまり", C: "語のかたまり" } },
+      { q: "I gave him a present.", why: "「彼に（O）」「プレゼントを（O）」と、O が2つ並ぶ第4文型（SVOO）です。him ≠ a present なので、a present は C ではありません。him と a present は別々の O です。", type: 4, split: "C", wrong: { A: "第4・第5文型の混同", B: "第4・第5文型の混同" } },
+      { q: "She wrote me a letter.", why: "「私に（O）」「手紙を（O）」の第4文型です。me ≠ a letter なので C ではありません。wrote me をまとめて V にしないこと。", type: 4, split: "A", wrong: { B: "語のかたまり", C: "第4・第5文型の混同" } },
+      { q: "The news made me happy.", why: "me = happy（私が幸せ）が成り立つので、happy は C です。O のあとに、O を説明する C が来る形が第5文型（SVOC）です。", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } },
+      { q: "We call him our leader.", why: "him = our leader が成り立つので、our leader は C です。「O を C と呼ぶ」の第5文型です。", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } },
+      { q: "My mother made me a delicious dinner.", why: "me ≠ a delicious dinner なので、O が2つの第4文型です（「私に」「おいしい夕食を」）。Q9と同じ made でも、後ろの形で文型が変わります。", type: 4, split: "B", wrong: { A: "第4・第5文型の混同", C: "語のかたまり" } },
+      { q: "The movie made everyone cry.", why: "「everyone が cry する（泣く）」という関係があるので、everyone が O、cry が C の第5文型です。made A cry で「A を泣かせる」です。", type: 5, split: "A", wrong: { B: "第4・第5文型の混同", C: "語のかたまり" } }
+    ],
+    part2: [
+      { jp: "私は毎朝シャワーを浴びます。", en: "I take a shower every morning." },
+      { jp: "彼女はよくピアノを弾きます。", en: "She often plays the piano." },
+      { jp: "私たちはめったに外食しません。", en: "We rarely eat out." },
+      { jp: "彼は毎晩日記を書きます。", en: "He writes in his diary every night." },
+      { jp: "私は朝食を食べたあと、歯を磨きます。", en: "I brush my teeth after I eat breakfast." },
+      { jp: "彼女は忙しいですが、いつも笑顔です。", en: "She is busy, but she is always smiling." },
+      { jp: "疲れていたので、私は早く寝ました。", en: "I went to bed early because I was tired." },
+      { jp: "私は宿題をする前に、部屋を掃除します。", en: "I clean my room before I do my homework." },
+      { jp: "彼はテレビを見ながら、夕食を食べます。", en: "He eats dinner while he watches TV." },
+      { jp: "私は毎週日曜日に、家族と教会に行きます。", en: "I go to church with my family every Sunday." }
+    ],
+    part3viewpoints: [
+      "読み間違い・飛ばし",
+      "母音・子音",
+      "語尾（余計な母音がつかない）",
+      "リズム・強弱",
+      "流暢さ"
+    ],
+    part3checks: [
+      { spot: "six thirty / healthy", look: "th（/θ/）がsになっていないか", type: "th", sounds: ["th"], words: ["thirty", "healthy"] },
+      { spot: "with my family", look: "th（/ð/）、familyの/æ/", type: "th", sounds: ["th", "/æ/"], words: ["with", "family"] },
+      { spot: "happy / classmates", look: "/æ/が日本語の「ア」になっていないか", type: "/æ/", sounds: ["/æ/"], words: ["happy", "classmate"] },
+      { spot: "club / but", look: "/ʌ/", type: "/ʌ/", sounds: ["/ʌ/"], words: ["club", "but"] },
+      { spot: "breakfast", look: "「ブレイク」と綴りで読んでいないか", type: "綴り読み", sounds: ["綴り読み"], words: ["breakfast"] },
+      { spot: "walk / school / book", look: "語尾に母音がついていないか", type: "語尾の母音", sounds: ["語尾の母音"], words: ["walk", "school", "book"] },
+      { spot: "listen / often", look: "tを読んでいないか", type: "読まない文字（t・l）", sounds: ["読まない文字（t・l）"], words: ["listen", "often"] },
+      { spot: "afternoon / activities", look: "アクセントの位置", type: "アクセント", sounds: ["アクセント"], words: ["afternoon", "activity"] },
+      { spot: "early", look: "/ɜːr/", type: "その他", sounds: ["/ɜːr/"], words: ["early"] }
+    ],
+    part3ipa: [
+      { ipa: "/kæt/", word: "cat", type: "/æ/" },
+      { ipa: "/dɒg/", word: "dog", type: "その他", drill: "dog ⇔ duck／hot ⇔ hut／not ⇔ nut を、交互に5回", tip: "/ɒ/ は口を縦に大きく開けた短い「オ」です。dog は「ドッグ」に近い音で、/ʌ/（duck の「ア」）とは別の音です。" },
+      { ipa: "/bʊk/", word: "book", type: "/ʊ/と/uː/" },
+      { ipa: "/haʊs/", word: "house", type: "二重母音" },
+      { ipa: "/pleɪ/", word: "play", type: "二重母音" },
+      { ipa: "/ʃuː/", word: "shoe", type: "/ʃ/" },
+      { ipa: "/ðɪs/", word: "this", type: "th" }
+    ],
+    part4theme: "平日の1日（平日の朝から夜までの流れ／学校生活で毎日すること）",
+    // テストのPDFの「意識するポイント」（Part 4とスピーキングテストで共通）。講師が録画を見て、達成をNotionの下書きでチェックする
+    speakingPoints: [
+      { title: "「いつ」を入れる", detail: "頻度副詞（usually など）と時間表現（at 7 / in the morning / before・after）で、1日の流れを順に言う" },
+      { title: "文型を使い分ける", detail: "5文型のうち3種類以上を使う（SVC・SVO・SVOO・SVOC など）" },
+      { title: "文をつなぐ", detail: "because / when / while / if などで、理由・時間・条件を1文にまとめる" },
+      { title: "見直す", detail: "各文のSとVを見つけて、Mを外し、第何文型か説明できる" }
+    ],
+    weakTypes: {
+      grammar: "正解／頻度副詞の位置／接続詞の後の主語・動詞／三単現／時制／語順（日本語の順）／be動詞の抜け・重複／冠詞・所有格／前置詞／二重否定／語彙／未回答／その他",
+      pattern: "M（修飾語）の見分け／OとCの区別／第4・第5文型の混同／語のかたまり／文型の番号と形",
+      sound: "th／/æ/／/ʌ/／/ʊ/と/uː/／二重母音／/ʃ/／語尾の母音／読まない文字（t・l）／アクセント／綴り読み／記号が読めない／その他"
+    }
+  },
+  "Week2": {
+    part1SheetId: "1QmKNqpNdto09N1tQQx1nZmVMo5ow8E7a1F2NmNSi29w", // Part 1・3②のフォームの回答シート
+    focus: "不定詞（〜すること・〜するための・〜するべき）／動名詞／let・make・see・hear＋人＋動詞／tell・want＋人＋to＋動詞",
+    // Part 1：和文英訳。1問ごとに問う文法（target）を決め、それが正しく使えていれば1点（単語・冠詞などのミスは点を引かず、FBで直す）
+    part1Mode: "translate",
+    part1: [
+      { jp: "私は新しいスポーツに挑戦したいです。", target: "want to＋動詞", en: "I want to try a new sport." },
+      { jp: "音楽を聴くことは、私をリラックスさせます。", target: "動名詞の主語（〜すること）", en: "Listening to music relaxes me." },
+      { jp: "彼は将来、医者になることを夢見ています。", target: "dream of＋動名詞", en: "He dreams of becoming a doctor in the future." },
+      { jp: "私は宿題を終えるために、図書館に行きました。", target: "目的の to（〜するために）", en: "I went to the library to finish my homework." },
+      { jp: "彼女は英語を話すのが得意です。", target: "be good at＋動名詞", en: "She is good at speaking English." },
+      { jp: "私たちは、もっと練習することに決めました。", target: "decide to＋動詞", en: "We decided to practice more." },
+      { jp: "彼は新しい言語を学ぶことを楽しんでいます。", target: "enjoy＋動名詞", en: "He enjoys learning a new language." },
+      { jp: "友達は私に彼の新しい自転車に乗らせてくれました。", target: "let＋人＋動詞の原形", en: "My friend let me ride his new bike." },
+      { jp: "父は私に毎朝犬を散歩させました。", target: "make＋人＋動詞の原形", en: "My father made me walk the dog every morning." },
+      { jp: "私の夢は、有名な歌手になることです。", target: "be to＋動詞（〜すること）", en: "My dream is to become a famous singer." },
+      { jp: "彼女は毎朝走ることを続けています。", target: "keep＋動名詞", en: "She keeps running every morning." },
+      { jp: "何か新しいことに挑戦するのは怖いことがあります。", target: "動名詞の主語（〜すること）", en: "Trying something new can be scary." },
+      { jp: "私には、今日やるべきことがたくさんあります。", target: "名詞＋to（〜するべき）", en: "I have a lot of things to do today." },
+      { jp: "私は将来、留学することを望んでいます。", target: "hope to＋動詞", en: "I hope to study abroad in the future." },
+      { jp: "彼は嘘をつくことをやめました。", target: "stop＋動名詞", en: "He stopped telling lies." },
+      { jp: "先生は私に毎日英語の日記を書くように言いました。", target: "tell＋人＋to＋動詞", en: "My teacher told me to write an English diary every day." },
+      { jp: "私は子どもたちが公園でサッカーをしているのを見ました。", target: "see＋人＋動詞の-ing", en: "I saw children playing soccer in the park." },
+      { jp: "彼らはパーティーを開くことを計画しています。", target: "plan to＋動詞", en: "They are planning to have a party." },
+      { jp: "私は新しいことを学ぶことに興味があります。", target: "前置詞＋動名詞（interested in）", en: "I am interested in learning new things." },
+      { jp: "彼には話す相手がいません。", target: "名詞＋to＋動詞＋前置詞（話す相手）", en: "He has no one to talk to." },
+      { jp: "私は宿題を終えたことを覚えています。", target: "remember＋動名詞", en: "I remember finishing my homework." },
+      { jp: "私はその知らせを聞いて驚きました。", target: "感情の原因の to（〜して驚く）", en: "I was surprised to hear the news." },
+      { jp: "私は誰かが私の名前を呼ぶのを聞きました。", target: "hear＋人＋動詞の原形", en: "I heard someone call my name." },
+      { jp: "私は彼に手伝ってほしいです。", target: "want＋人＋to＋動詞", en: "I want him to help me." }
+    ],
+    part2: [
+      { jp: "私は新しい趣味を見つけたいです。", en: "I want to find a new hobby." },
+      { jp: "走ることは、私の健康に役立ちます。", en: "Running is good for my health." },
+      { jp: "彼女はお菓子を作るのが好きです。", en: "She likes making sweets." },
+      { jp: "私は英語を練習するために、毎日ラジオを聞きます。", en: "I listen to the radio every day to practice English." },
+      { jp: "彼らは新しい店を開くことに決めました。", en: "They decided to open a new shop." },
+      { jp: "母は私に皿を洗わせました。", en: "My mother made me wash the dishes." },
+      { jp: "彼は朝早く起きるのが苦手です。", en: "He is not good at getting up early." },
+      { jp: "私の目標は、世界中を旅することです。", en: "My goal is to travel around the world." },
+      { jp: "私は彼が歌うのを聞きました。", en: "I heard him sing." },
+      { jp: "何かを最後までやり遂げるのは大変なことがあります。", en: "Finishing something can be hard." }
+    ],
+    // Part 3 1️⃣ 音読：評価箇所から逆算した本文。5観点×4項目（1項目1点・20点満点）。生徒には評価箇所を知らせない
+    reading: {
+      passage: "I like trying new things. Last month, my brother let me use his old guitar, so I decided to learn to play it. At first, it was very difficult, so I got up early every day to practice. My mother told me to think about a small goal. It took a lot of time, but now I can play one song for my family. I also enjoy cooking with my sister on weekends. Last Sunday, we made a delicious pizza and ate it together. Trying new things makes me happy, and I want to find out what I can do next.",
+      viewpoints: [
+        { name: "流暢さ", target: "Last month, my brother let me use his old guitar, so I decided to learn to play it.", items: [
+          { label: "止まらない", look: "途中で2秒以上止まらずに読めたか", groups: ["流暢さ"], syms: ["fl-stop"] },
+          { label: "言い直さない", look: "戻って読み直していないか", groups: ["流暢さ"], syms: ["fl-redo"] },
+          { label: "正しく読む", look: "読み間違い・飛ばし・付け足しがないか", groups: ["流暢さ"], syms: ["fl-miss", "fl-skip"] },
+          { label: "かたまりで読む", look: "Last month ／ my brother let me use his old guitar ／ so I decided ／ to learn to play it", groups: ["流暢さ"], syms: ["fl-word", "fl-chunk"] }
+        ] },
+        { name: "個別の音", items: [
+          { label: "think", look: "th（/θ/）", groups: ["th"], syms: ["th-s", "th-t"], words: ["think"] },
+          { label: "mother", look: "th（/ð/）", groups: ["th"], syms: ["th-z", "th-t"], words: ["mother"] },
+          { label: "very", look: "v（下唇に上の歯を当てる）", groups: ["v"], syms: ["v-b"], words: ["very"] },
+          { label: "happy", look: "/æ/", groups: ["/æ/"], syms: ["ae-a", "ae-e"], words: ["happy"] }
+        ] },
+        { name: "リンキング", items: [
+          { label: "got up", look: "t と u をつなげる（ガタップ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["got", "up"] },
+          { label: "a lot of", look: "t と o をつなげる（アラタヴ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["lot"] },
+          { label: "ate it", look: "t と i をつなげる（エイティット）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["ate"] },
+          { label: "find out", look: "d と ou をつなげる（ファインダウト）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["find", "out"] }
+        ] },
+        { name: "アクセント", items: [
+          { label: "difficult", look: "DIF を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["difficult"], tip: "difficult は最初の DIF を強く読みます（ˈdɪfɪkəlt）。「ディフィカルト」と平らに読まず、DIF を大きく高く言いましょう。" },
+          { label: "family", look: "FAM を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["family"], tip: "family は最初の FAM を強く読みます（ˈfæməli）。後ろの -ily は弱く短く言いましょう。" },
+          { label: "delicious", look: "LI を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["delicious"], tip: "delicious は真ん中の LI を強く読みます（dɪˈlɪʃəs）。最初の de は弱く短く「ディ」と言います。" },
+          { label: "together", look: "GE を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["together"], tip: "together は真ん中の GE を強く読みます（təˈɡeðər）。最初の to は弱く「タ」くらいで言いましょう。" }
+        ] },
+        { name: "リズム・抑揚", target: "I also enjoy cooking with my sister on weekends.", items: [
+          { label: "大事な語を強く", look: "enjoy・cooking・sister・weekends を強く", groups: ["リズム"], syms: ["rh-weak"] },
+          { label: "小さな語を弱く", look: "with・my・on を弱く短く", groups: ["リズム"], syms: ["rh-strong"] },
+          { label: "かたまりで区切る", look: "I also enjoy cooking ／ with my sister ／ on weekends", groups: ["リズム"], syms: ["rh-chunk"] },
+          { label: "文末を下げる", look: "weekends で下げて終わる", groups: ["リズム"], syms: ["rh-up"] }
+        ] }
+      ]
+    },
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声から各デイ1文（Q1〜Q3は短め・文の一部）。
+    // ネイティブ音声が2回流れ、そのあとのポーズで生徒がまねして言う。chunks は講師がチェックするかたまり
+    repeat: [
+      { day: "Day8", text: "I like trying new recipes,", chunks: ["I like", "trying new recipes,"] },
+      { day: "Day10", text: "He moved his head from side to side,", chunks: ["He moved his head", "from side to side,"] },
+      { day: "Day12", text: "I still remember seeing his proud face.", chunks: ["I still remember", "seeing his proud face."] },
+      { day: "Day9", text: "I study English to talk with people from other countries.", chunks: ["I study English", "to talk with people", "from other countries."] },
+      { day: "Day11", text: "I want to become a teacher because words can change how students see themselves.", chunks: ["I want to become a teacher", "because words can change", "how students see themselves."] }
+    ],
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
+    part4theme: "挑戦していること（今挑戦していること・挑戦したいこと／何を、なぜ、どうやって／きっかけ）",
+    speakingPoints: [
+      { title: "「〜すること」を2通りで", detail: "不定詞（to＋動詞）と動名詞（動詞＋ing）の両方を使う" },
+      { title: "人に〜させる・言われる", detail: "let / make / tell＋人＋動詞 を1回以上使う" },
+      { title: "動詞に合わせて使い分ける", detail: "want / decide / hope のあとは to〜、enjoy / finish / stop のあとは 〜ing" },
+      { title: "見直す", detail: "to のあとは動詞の原形か、前置詞のあとは 〜ing か確認する" }
+    ],
+    weakTypes: {
+      grammar: "正解／to＋動詞にする動詞（want・decide・hope など）／-ing にする動詞（enjoy・keep・stop など）／前置詞の後ろの -ing／〜すること（主語・補語）／〜するために（目的の to）／名詞＋to（〜するべき・〜する相手）／感情の原因の to／let・make＋人＋動詞の原形／see・hear＋人＋動詞／tell・want＋人＋to＋動詞／動詞の形（原形・-ing・to）／時制／三単現／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
+      pattern: "",
+      sound: "流暢さ／th／v／/æ/／リンキング／アクセント／リズム／リピート／その他"
+    }
+  }
+};
+
+// 補助教材のライン（この点数以下なら「あり」）
+const LATEST_WEEK = Object.keys(WEEKS)[Object.keys(WEEKS).length - 1]; // 問題データが入っている一番新しい週
+const SUPPORT_LINE = { part2: 17, part3: 15 }; // 9割未満（Part 2：18/20未満、Part 3：15.3/17未満）
+const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", "第5文型"];
+
+// 生徒用FBに自動で入る解説（AIを通さない部分。週をまたいで使う）
+const PATTERN_TIPS = {
+  "M（修飾語）の見分け": "「いつ・どこで・どのように」を表す語（every morning・in the sky など）は M です。M は文型に数えないので、先に（ ）でくくってから S・V・O・C を探すと見分けやすくなります。",
+  "OとCの区別": "動詞の後ろの語が「主語 = □」になれば C、ならなければ O です。be動詞や look・taste などの後ろは C になることが多いです。",
+  "第4・第5文型の混同": "動詞の後ろに2つ語が並んだら、「1つ目 = 2つ目」または「1つ目が2つ目する」が成り立つかを見ます。成り立てば第5文型（SVOC）、成り立たなければ第4文型（SVOO）です。",
+  "語のかたまり": "many books・a present のような意味のまとまりは、切らずに1つの要素として扱います。V は動詞（made・gave など）だけで、後ろの語を混ぜません。",
+  "文型の番号と形": "第1文型 SV／第2文型 SVC／第3文型 SVO／第4文型 SVOO／第5文型 SVOC。まず V の後ろに何がいくつあるかを数えると、番号を決めやすくなります。",
+  "未回答": "空欄のままだと点数になりません。迷ったら、V の後ろの語の数から考えて、どれかを選んでみましょう。"
+};
+const SOUND_TIPS = {
+  "th": "th は、舌先を上の前歯に軽く当てて（かむようにして）息を出す音です。サ行・ザ行にならないよう、鏡で舌先が見えているか確かめながら練習しましょう。（例：thirty, with, this）",
+  "/æ/": "/æ/ は「ア」と「エ」の間の音です。「エ」の口の形のまま、口を横に大きく開いて「ア」と言うイメージです。（例：cat, happy, family）",
+  "/ʌ/": "/ʌ/ は口をあまり開けずに、短く「アッ」と言う音です。力を抜いて、のどの奥から軽く出します。（例：club, but, cup）",
+  "/ʊ/と/uː/": "/ʊ/ は力を抜いた短い「ウ」、/uː/ は唇を丸めて伸ばす「ウー」です。book は短い /ʊ/、school は長い /uː/ です。",
+  "二重母音": "/aʊ/ /eɪ/ などは、2つの音をなめらかにつなげます。house は「ハウス」、play は「プレイ」と、後ろの音まで言いましょう。「プレー」と伸ばさないこと。",
+  "/ʃ/": "/ʃ/ は唇を少し前に突き出して「シュッ」と息を出す音です。「シ」にならないようにします。（例：shoe, she）",
+  "語尾の母音": "英語の単語は子音で終わることが多いです。walk を「ウォーク」、book を「ブック」と最後に「ウ」をつけず、k の音で止めましょう。",
+  "読まない文字（t・l）": "listen の t、often の t（読まないことが多い）、walk の l は発音しません。綴りではなく、音で覚えましょう。",
+  "アクセント": "英語は強く読む場所が決まっています。afternoon は最後の noon、activities は tiv を強く読みます。強いところを大きく・長く言うと英語らしくなります。",
+  "綴り読み": "綴りどおりに読むと違う音になる単語があります。breakfast は「ブレックファスト」に近い音です。新しい単語は、音声を聞いてから読みましょう。",
+  "記号が読めない": "発音記号は、まず母音の記号（æ・ʌ・ʊ・ɒ など）から覚えると読めるようになります。記号表で1つずつ確認しましょう。",
+  "流暢さ": "意味のかたまりごとに区切り、かたまりの中は止めずにつなげて読みましょう。読む前の黙読も効果的です。",
+  "v": "v は上の前歯を下唇に軽く当てて声を出す音です。b にならないよう、唇どうしを合わせないようにしましょう。",
+  "リンキング": "子音で終わる語のあとに母音で始まる語が来たら、つなげて1語のように読みます（got up → ガタップ）。",
+  "リズム": "大事な語は強く、小さな語（with・my・on など）は弱く短く読みます。文の終わりは下げて終わりましょう。",
+  "リピート": "文字を思い浮かべるより、聞こえた音のかたまりをそのまままねる意識で言いましょう。シャドーイングの音声で、1文ずつ止めてリピートする練習が効果的です。",
+  "その他":"お手本の音声をよく聞き、口の形を意識しながら何度か声に出してみましょう。"
+};
+const VIEW_TIPS = {
+  "読み間違い・飛ばし": "読む前に一度黙読して、知らない単語の読み方を確認しておきましょう。指で文を追いながら読むと、飛ばしが減ります。",
+  "母音・子音": "上の「気になった音と直し方」を中心に、口の形を意識して練習しましょう。",
+  "語尾（余計な母音がつかない）": "単語の最後に「ウ」「オ」をつけず、子音で止める意識を持ちましょう。",
+  "リズム・強弱": "名詞・動詞など大事な語を強く、the・a・to などは弱く短く読みます。全部を同じ強さで読まないのがコツです。",
+  "流暢さ": "意味のかたまり（I usually get up / at six thirty）ごとに区切って読むと、つっかえにくくなります。お手本の音声に重ねて読む練習が効果的です。"
+};
+
+// 発音：崩れ方の選択肢（講師はカタカナを書かずに、これを選ぶ）。say＝生徒に伝える文、tip＝直し方
+const SYMPTOMS = {
+  "th": [
+    { id: "th-s", label: "s（サ行）になった", say: "th が s（サ行）の音になっていました。", tip: "舌先を上の前歯に軽く当て（かむようにして）、すき間から息を出します。s は舌が歯の裏に隠れますが、th は舌先が少し見えます。鏡で確かめながら練習しましょう。" },
+    { id: "th-z", label: "z（ザ行）になった", say: "th が z（ザ行）の音になっていました。", tip: "this・with の th は、舌先を前歯に当てたまま声を出す音です。舌を歯の裏につけるとザ行になるので、舌先を前に出しましょう。" },
+    { id: "th-t", label: "t・d（タ・ダ行）になった", say: "th が t・d（タ・ダ行）の音になっていました。", tip: "舌で歯の裏をはじくと t・d になります。舌先を前歯に当てたまま、息（声）を流し続けましょう。" }
+  ],
+  "/æ/": [
+    { id: "ae-a", label: "日本語の「ア」になった", say: "/æ/ が日本語の「ア」になっていました。", tip: "「エ」の口の形のまま、口を横に大きく開いて「ア」と言います。「ア」と「エ」の間の音です。" },
+    { id: "ae-e", label: "「エ」に近くなった", say: "/æ/ が「エ」に近い音になっていました。", tip: "あごをもう少し下げて口を縦にも開け、「ア」を混ぜるように言いましょう。" }
+  ],
+  "/ʌ/": [
+    { id: "uh-a", label: "口を大きく開けた「ア」になった", say: "/ʌ/ が口を大きく開けた「ア」になっていました。", tip: "/ʌ/ は口をあまり開けずに、短く「アッ」と言う音です。力を抜いて、のどの奥から軽く出します。" },
+    { id: "uh-o", label: "「オ」に近くなった", say: "/ʌ/ が「オ」に近い音になっていました。", tip: "唇を丸めずに、口の力を抜いて短く「アッ」と言いましょう。" }
+  ],
+  "語尾の母音": [
+    { id: "end-u", label: "最後に「ウ」がついた", say: "単語の最後に「ウ」の音がついていました（例：book が「ブック」）。", tip: "最後の子音（k・l など）で音を止め、そのあとに息を出さないようにします。" },
+    { id: "end-o", label: "最後に「オ」がついた", say: "単語の最後に「オ」の音がついていました。", tip: "最後の子音で音を止め、そのあとに息を出さないようにします。" }
+  ],
+  "読まない文字（t・l）": [
+    { id: "silent-t", label: "t を読んだ", say: "listen・often の t を読んでいました。", tip: "listen は「リスン」、often は「オフン」に近い音です。綴りではなく、音で覚えましょう。" }
+  ],
+  "アクセント": [
+    { id: "acc-pos", label: "強く読む場所が違った", say: "強く読む場所がずれていました。", tip: "afternoon は最後の noon、activities は tiv を強く読みます。強いところを大きく・高く・長く言いましょう。" },
+    { id: "acc-flat", label: "全部同じ強さだった", say: "単語の中で、強弱がついていませんでした。", tip: "英語の単語には、強く読む場所が1か所あります。辞書で ˈ の印がある場所を確かめて、そこを大きく言いましょう。" }
+  ],
+  "綴り読み": [
+    { id: "spell", label: "綴りどおりに読んだ", say: "breakfast を綴りどおり「ブレイクファスト」と読んでいました。", tip: "breakfast は「ブレックファスト」に近い音です。知らない単語は、音声を聞いてから読みましょう。" }
+  ],
+  "/ɜːr/": [
+    { id: "er-a", label: "口を大きく開けた「アー」になった", say: "early の /ɜːr/ が「アー」になっていました。", tip: "口を少しだけ開け、舌を奥に引いて「アー」と「ウー」の間のこもった音を出します。" }
+  ],
+  // ここから Week2 以降の音読（評価箇所を決めて○×で見る形）で使う
+  "流暢さ": [
+    { id: "fl-stop", label: "途中で止まった（2秒以上）", say: "文の途中で、2秒以上止まってしまいました。", tip: "読む前に一度黙読して、知らない単語の読み方を確かめておきましょう。止まりそうになっても、意味のかたまりの切れ目まで読み切ってから息をつぐと、なめらかになります。" },
+    { id: "fl-redo", label: "言い直した", say: "途中で戻って、読み直していました。", tip: "多少読み間違えても、戻らずにそのまま最後まで読み切る練習をしましょう。言い直しが減ると、聞いている人に内容が伝わりやすくなります。" },
+    { id: "fl-miss", label: "読み間違えた", say: "単語を別の単語に読み間違えていました。", tip: "読む前に一度黙読して、知らない単語や似た形の単語（let と left など）を確かめておきましょう。" },
+    { id: "fl-skip", label: "飛ばした・付け足した", say: "単語を飛ばしたり、書いていない単語を足したりしていました。", tip: "指で文を追いながら読むと、飛ばしや付け足しが減ります。to や a などの小さな語も読みましょう。" },
+    { id: "fl-word", label: "1語ずつ区切った", say: "1語ずつ区切って読んでいました。", tip: "Last month ／ my brother let me use his old guitar のように、意味のかたまりごとにまとめて読みましょう。かたまりの中は止めずにつなげます。" },
+    { id: "fl-chunk", label: "かたまりの途中で切った", say: "意味のかたまりの途中で区切っていました。", tip: "区切るのは、意味のかたまりの切れ目（カンマや so・to の前など）だけにしましょう。my brother ／ let me use のように、かたまりの途中で切らないようにします。" }
+  ],
+  "v": [
+    { id: "v-b", label: "b（バ行）になった", say: "v が b（バ行）の音になっていました。", tip: "v は、上の前歯を下唇に軽く当てて、そのすき間から声を出す音です。唇どうしを合わせると b になります。very を「ベリー」ではなく、歯を唇に当てたまま「ヴェリー」と言いましょう。" }
+  ],
+  "リンキング": [
+    { id: "ln-cut", label: "切って読んだ", say: "2つの単語を切って、別々に読んでいました。", tip: "前の語が子音（t・d など）で終わり、次の語が母音で始まるときは、つなげて1語のように読みます。got up は「ガタップ」、find out は「ファインダウト」のイメージです。" },
+    { id: "ln-vowel", label: "間に母音を入れた（「ト」「ド」など）", say: "前の語の最後に「ト」「ド」などの母音を入れていました。", tip: "最後の t・d のあとに「オ」の音を入れず、そのまま次の語の母音につなげます。ゆっくり「got-up」と言ってから、だんだん速くしてつなげる練習をしましょう。" }
+  ],
+  "リズム": [
+    { id: "rh-weak", label: "大事な語が弱かった（全部同じ強さ）", say: "大事な語（名詞・動詞など）が、ほかの語と同じ強さでした。", tip: "意味を伝える語（enjoy・cooking・sister・weekends など）は、大きく・はっきり・少し長めに読みましょう。" },
+    { id: "rh-strong", label: "小さな語を強く読んだ", say: "with・my・on などの小さな語を、強く読んでいました。", tip: "with・my・on・to・a などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。" },
+    { id: "rh-chunk", label: "かたまりの途中で切った", say: "意味のかたまりの途中で区切っていました。", tip: "I also enjoy cooking ／ with my sister ／ on weekends のように、意味のかたまりの切れ目で区切りましょう。" },
+    { id: "rh-up", label: "文末が上がった", say: "文の終わりが上がっていました。", tip: "ふつうの文（疑問文でない文）は、最後の大事な語で声を下げて終わります。上げると質問しているように聞こえます。" }
+  ],
+  // リピート（Part 3②）：ネイティブの音声をどこまで再現できたか
+  "リピート": [
+    { id: "rp-none", label: "言えなかった（止まった）", say: "このかたまりは、声に出して言えませんでした。", tip: "意味を思い出そうとするより、聞こえた音のかたまりをそのまま口に出すことを優先しましょう。1文ずつ止めて聞き、すぐにまねする練習が効果的です。" },
+    { id: "rp-skip", label: "語が抜けた", say: "かたまりの中の語が抜けていました。", tip: "to・the・with などの小さな語は、弱く短く読まれるので聞き落としやすいです。音声を何度か聞いて、弱く聞こえる語も小さくまねして入れましょう。" },
+    { id: "rp-word", label: "別の語になった", say: "聞こえた語が、別の語になっていました。", tip: "似た音の語に置きかわっていました。英文の意味を思い浮かべながら聞くと、聞き間違いが減ります。" },
+    { id: "rp-sound", label: "音がちがった（カタカナになった）", say: "音が、お手本とちがう（カタカナのような）音になっていました。", tip: "文字の読み方ではなく、聞こえたままの音をまねしましょう。聞こえた音をカタカナで書き出してから、お手本と比べると違いに気づけます。" },
+    { id: "rp-link", label: "つながりが切れた", say: "お手本ではつながっている音を、切って言っていました。", tip: "子音で終わる語と母音で始まる語はつなげて言います（make it → メイキッ）。お手本の音のつながりを、そのまままねしましょう。" },
+    { id: "rp-rhythm", label: "リズム・抑揚がちがった", say: "強弱や上げ下げが、お手本とちがっていました。", tip: "大事な語を強く、小さな語を弱く言うリズムをまねしましょう。手をたたきながら、強いところだけ合わせる練習も効果的です。" }
+  ]
+};
+const SYMPTOM_BY_ID = {};
+Object.keys(SYMPTOMS).forEach(g => SYMPTOMS[g].forEach(x => { SYMPTOM_BY_ID[x.id] = Object.assign({ group: g }, x); }));
+// 記録シートの弱点タイプ（一覧にない音は「その他」）
+const recSound = g => (g === "/ɜːr/" ? "その他" : g);
+
+// 発音：音ごとのペア練習（生徒のページの「今週やること」にも入る）
+const DRILLS = {
+  "th": "think ⇔ sink／three ⇔ tree／they ⇔ day を、言い分けられるまで交互に5回",
+  "/æ/": "cat ⇔ cut／bad ⇔ bud／hat ⇔ hut を、交互に5回",
+  "/ʌ/": "cup ⇔ cap／luck ⇔ lock／bus ⇔ boss を、交互に5回",
+  "/ʊ/と/uː/": "full ⇔ fool／pull ⇔ pool／look ⇔ Luke を、交互に5回",
+  "二重母音": "late ⇔ let／house ⇔ horse／coat ⇔ caught を、交互に5回",
+  "/ʃ/": "she ⇔ see／shoe ⇔ sue／ship ⇔ sip を、交互に5回",
+  "語尾の母音": "walk・book・good・school を、最後の子音で止めて5回ずつ",
+  "読まない文字（t・l）": "listen・often・walk・talk を、t・l を読まずに5回ずつ",
+  "アクセント": "afternoon・activities・breakfast を、強いところで手をたたきながら5回ずつ",
+  "綴り読み": "breakfast・Wednesday・vegetable を、お手本の音声をまねして5回ずつ",
+  "/ɜːr/": "early・girl・work・first を、口を小さく開けたまま5回ずつ",
+  "記号が読めない": "母音の記号（æ・ʌ・ʊ・ɒ・ə）を、例の単語と一緒に毎日1回声に出す",
+  "流暢さ": "音読の本文を、意味のかたまりごとに区切って3回、止まらずに通して3回読む",
+  "v": "very ⇔ berry／vest ⇔ best／vote ⇔ boat を、交互に5回",
+  "リンキング": "got up・a lot of・find out・pick it up を、ゆっくり→速くの順でつなげて5回ずつ",
+  "リズム": "I also enjoy cooking with my sister on weekends. を、大事な語で手をたたきながら5回",
+  "リピート": "Week2 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）",
+  "その他": "お手本の音声をまねして、5回ずつ声に出す"
+};
+// お手本の音声（Cambridge辞書の発音ページ）
+const audioLinks = words => "🔊 お手本：" + words.map(w => `[${w}](https://dictionary.cambridge.org/ja/dictionary/english/${encodeURIComponent(w)})`).join("・");
+const IPA_CHOICES = [
+  { v: "正解", label: "正解" },
+  { v: "別の単語", label: "別の単語になった" },
+  { v: "音が日本語", label: "日本語の音になった" },
+  { v: "記号が読めない", label: "記号が読めなかった" }
+];
+
+
+// ============================================================
+// 状態と保存
+// ============================================================
+const STORE_KEY = "tensaku-tool-v2";      // { current: キー, drafts: { "週|生徒": 入力内容 } }
+const OLD_STORE_KEY = "tensaku-tool-v1";  // 1人分だけ保存していたころの形
+const RELAY_KEY = "tensaku-tool-relay";
+let lastSummary = {};
+
+function blankState() {
+  return {
+    week: LATEST_WEEK, student: "", teacher: "",
+    p1paste: "", p2speed: {}, p2notta: "",
+    p3view: {}, p3checks: {}, p3ipa: {},
+    // Week2以降：音読の評価箇所（"観点番号-項目番号": {on, sym, note}）、評価箇所のほかの気づき、採点を終えたか
+    p3read: {}, p3extra: [], p3done: false,
+    // Week2以降：リピート（"問-かたまり-回": 言えなかった、"問-かたまり": {sym, note}、問: {stop, redo}）、採点を終えたか
+    p3rep: {}, p3repq: {}, p3repDone: false,
+    // Week2以降：Part 1 和文英訳の判定を講師が直したもの（問番号: 1 or 0）
+    p1judge: {},
+    p1from: "", // 回答シートに書かれていた名前（名簿の名前にそろえたとき、元の名前を覚えておく）
+    aiReply: "", status: ""
+  };
+}
+const draftKey = s => s.week + "|" + s.student;
+const normalizeName = n => String(n || "").replace(/[\s\u3000]+/g, "");
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+    const old = localStorage.getItem(OLD_STORE_KEY);
+    if (old) {
+      const s = Object.assign(blankState(), JSON.parse(old));
+      return { current: draftKey(s), drafts: { [draftKey(s)]: s } };
+    }
+  } catch (e) { /* 保存できない環境でも動かす */ }
+  return { current: "", drafts: {} };
+}
+function saveState() {
+  store.drafts[draftKey(state)] = state;
+  store.current = draftKey(state);
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) { /* 無視 */ }
+  renderDrafts();
+}
+// 別の生徒（または週）の下書きに切り替える。今の入力はそのまま保存しておく
+function switchDraft(week, student) {
+  const teacher = state.teacher;
+  saveState();
+  const saved = store.drafts[week + "|" + student];
+  state = saved ? Object.assign(blankState(), saved) : Object.assign(blankState(), { week, student, teacher });
+  if (!state.teacher) state.teacher = teacher;
+  hideMsg("notionMsg"); hideMsg("pubMsg"); hideMsg("pubNote");
+  saveState();
+  renderAll();
+}
+// 名前のない下書きに名前をつける、または名前を直す
+function renameDraft(student) {
+  if (student === state.student) return;
+  if (store.drafts[state.week + "|" + student]) {
+    if (confirm(`${student}さんの下書きがすでにあります。そちらを開きますか？`)) switchDraft(state.week, student);
+    else $("student").value = state.student;
+    return;
+  }
+  delete store.drafts[draftKey(state)];
+  state.student = student;
+  saveState();
+  renderPart1(); renderPart3(); renderResults(); markP1Select();
+}
+const STATUS_LABEL = { notion: "Notionに下書きあり", published: "公開済み" };
+function draftStatus(d) {
+  return STATUS_LABEL[d.status] || (d.aiReply && d.aiReply.trim() ? "AIの返事あり" : "入力中");
+}
+function renderDrafts() {
+  const sel = $("draftSel");
+  if (!sel) return;
+  const keys = Object.keys(store.drafts).filter(k => store.drafts[k].student).sort();
+  sel.innerHTML = `<option value="">＋ 新しい生徒</option>` + keys.map(k => {
+    const d = store.drafts[k];
+    return `<option value="${esc(k)}" ${k === draftKey(state) ? "selected" : ""}>${esc(d.week)}　${esc(d.student)}（${draftStatus(d)}）</option>`;
+  }).join("");
+  if (!state.student) sel.value = "";
+}
+let store = loadStore();
+let state = Object.assign(blankState(), store.drafts[store.current] || {});
+
+const $ = id => document.getElementById(id);
+const W = () => WEEKS[state.week];
+// Week2以降の形かどうか（Week1は前の形のまま動かす）
+const isTranslate = () => W().part1Mode === "translate"; // Part 1 が和文英訳
+const isReading = () => !!W().reading;                    // Part 3 の音読が評価箇所の○×＋リピート
+const SL = () => W().supportLine || SUPPORT_LINE;          // 補助教材のライン（週ごとに変えられる）
+
+// AIの返事は何度も読むので、同じ文章なら1回だけ解析する
+let aiCache = { text: null, val: null };
+function aiParsed() {
+  if (aiCache.text !== state.aiReply) aiCache = { text: state.aiReply, val: state.aiReply.trim() ? parseReply(state.aiReply) : null };
+  return aiCache.val;
+}
+// 週・生徒・担当は、AIが書いたものではなくツールの値を使う（名前の揺れで記録がずれないように）
+function aiRowsNow() {
+  const r = aiParsed();
+  if (!r || r.error) return [];
+  return r.rows.map(c => [state.week, state.student, state.teacher, ...c.slice(3)]);
+}
+const rowOf = (rows, part, q) => rows.find(c => (c[3] || "").trim() === part && String(c[4] || "").replace(/\s/g, "").toUpperCase() === q) || null;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function showMsg(id, text, kind) {
+  const el = $(id);
+  el.textContent = text;
+  el.className = "msg show " + kind;
+}
+function hideMsg(id) { $(id).className = "msg"; }
+
+// ============================================================
+// Part 1：回答シートの行を読み取る
+// ============================================================
+function parseType(text) {
+  const t = String(text || "");
+  const circled = "①②③④⑤".indexOf(t.trim().charAt(0));
+  if (circled >= 0) return circled + 1;
+  const m = t.match(/第\s*([1-5１-５])\s*文型/);
+  if (m) return "１２３４５".includes(m[1]) ? "１２３４５".indexOf(m[1]) + 1 : Number(m[1]);
+  return null;
+}
+function parseSplit(text) {
+  const m = String(text || "").trim().match(/^([ABCＡＢＣ])/);
+  if (!m) return null;
+  return { "Ａ": "A", "Ｂ": "B", "Ｃ": "C" }[m[1]] || m[1];
+}
+
+
+function analyzePart1() {
+  const raw = state.p1paste.trim();
+  if (!raw) return null;
+  const cells = raw.split("\n")[0].split("\t");
+  const qs = W().part1;
+  if (isTranslate()) {
+    // 和文英訳：タイムスタンプ・名前・Q1〜Qn の順（後ろに前のリスニングの列が残っていても使わない）
+    const need = 2 + qs.length;
+    if (cells.length < need) {
+      return { error: `列の数が足りません（${cells.length}列。${need}列必要です）。回答シートの行を、タイムスタンプの列から最後の列まで選んでコピーしてください。` };
+    }
+    return {
+      mode: "translate", name: normalizeName(cells[1]), time: cells[0].trim(),
+      answers: qs.map((_, i) => (cells[2 + i] || "").trim())
+    };
+  }
+  const need = 2 + qs.length * 2;
+  if (cells.length < need) {
+    return { error: `列の数が足りません（${cells.length}列。${need}列必要です）。回答シートの行を、タイムスタンプの列から最後の列まで選んでコピーしてください。` };
+  }
+  const name = normalizeName(cells[1]);
+  const items = qs.map((q, i) => {
+    const typeAns = parseType(cells[2 + i * 2]);
+    const splitAns = parseSplit(cells[3 + i * 2]);
+    const typeOk = typeAns === q.type;
+    const splitOk = splitAns === q.split;
+    const weak = [];
+    if (!splitOk && splitAns && q.wrong[splitAns]) weak.push(q.wrong[splitAns]);
+    if (!typeOk && typeAns) {
+      const pair = [typeAns, q.type].sort().join("");
+      if (pair === "45") weak.push("第4・第5文型の混同");
+      else if (pair === "23") weak.push("OとCの区別");
+      else if (pair === "13" || pair === "12") weak.push("M（修飾語）の見分け");
+      else weak.push("文型の番号と形");
+    }
+    if ((!typeOk && !typeAns) || (!splitOk && !splitAns)) weak.push("未回答");
+    return {
+      no: i + 1, q: q.q, typeAns, splitAns, typeOk, splitOk,
+      correct: `${TYPE_NAMES[q.type]}・${q.split}`,
+      score: (typeOk ? 1 : 0) + (splitOk ? 1 : 0),
+      weak: [...new Set(weak)]
+    };
+  });
+  const score = items.reduce((s, x) => s + x.score, 0);
+  return { name, time: cells[0].trim(), items, score, max: qs.length * 2 };
+}
+
+// 和文英訳の判定：AIの【A】の Part 1 の行に、講師が直した判定を重ねる。未回答は自動で0点
+function translateItems(p1) {
+  const rows = aiRowsNow();
+  const items = W().part1.map((q, i) => {
+    const r = rowOf(rows, "1", `Q${i + 1}`);
+    const v = r ? String(r[8]).trim() : "";
+    const ai = v === "1" ? 1 : v === "0" ? 0 : null;
+    const ov = state.p1judge[i];
+    const ans = p1.answers[i];
+    const edited = ov === 0 || ov === 1;
+    const score = !ans ? 0 : edited ? ov : ai;
+    // 点数が1でも、問う文法以外のミスを直した文があれば、そのミスの弱点タイプを残す
+    const weak = !ans ? "未回答" : ((r && r[9]) || (score === 1 ? "正解" : ""));
+    return { no: i + 1, jp: q.jp, target: q.target, model: q.en, ans, fix: (r && r[6]) || "", ai, score, edited, weak };
+  });
+  const done = items.filter(x => x.score !== null);
+  return {
+    items, score: done.reduce((s, x) => s + x.score, 0), max: items.length,
+    complete: done.length === items.length, waiting: items.length - done.length
+  };
+}
+// リピート：1問4点（言えた回 2＝1回目で全部言えた／1＝2回目で言えた／0＝言えなかった、詰まりなし 1、言い直しなし 1）
+const REP_TRY = ["1回目で言えた", "2回目で言えた", "言えなかった"];
+function repeatScore() {
+  const R = W().repeat;
+  if (!R) return null;
+  const miss = (qi, ci, t) => !!state.p3rep[`${qi}-${ci}-${t}`];
+  const items = R.map((q, qi) => {
+    const f = state.p3repq[qi] || {};
+    const m1 = q.chunks.map((_, ci) => miss(qi, ci, 1)), m2 = q.chunks.map((_, ci) => miss(qi, ci, 2));
+    const tryNo = !m1.some(Boolean) ? 0 : !m2.some(Boolean) ? 1 : 2;
+    const score = [2, 1, 0][tryNo] + (f.stop ? 0 : 1) + (f.redo ? 0 : 1);
+    const bad = q.chunks.map((c, ci) => {
+      const s = state.p3rep[`${qi}-${ci}`] || {};
+      return { ci, chunk: c, m1: m1[ci], m2: m2[ci], s, x: checkSymptom(s) };
+    }).filter(b => b.m1 || b.m2);
+    return { no: qi + 1, q, tryNo, stop: !!f.stop, redo: !!f.redo, score, max: 4, bad };
+  });
+  return { items, total: items.reduce((s, x) => s + x.score, 0), max: items.length * 4, complete: !!state.p3repDone };
+}
+// かたまりの言えなかった様子（「1回目✕・2回目◯：語が抜けた（メモ）」）
+const repDesc = b => `1回目${b.m1 ? "✕" : "◯"}・2回目${b.m2 ? "✕" : "◯"}` +
+  (b.x ? `：${b.x.label}${b.s.note ? `（${b.s.note}）` : ""}` : b.s.note ? `：${b.s.note}` : "");
+const repFlags = x => [x.stop ? "詰まった" : "", x.redo ? "言い直した" : ""].filter(Boolean).join("・");
+
+// 回答の日時（例：2026/10/03 10:00:00）が何日前か。読めなければ null
+function daysAgo(text) {
+  const m = String(text || "").match(/(\d{4})[\/\-年](\d{1,2})[\/\-月](\d{1,2})/);
+  if (!m) return null;
+  const t = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return Math.floor((Date.now() - t.getTime()) / 86400000);
+}
+
+function renderPart1() {
+  const r = analyzePart1();
+  const box = $("p1result");
+  if (!r) { box.innerHTML = ""; hideMsg("p1msg"); return; }
+  if (r.error) { box.innerHTML = ""; showMsg("p1msg", r.error, "err"); return; }
+  const days = daysAgo(r.time);
+  if (state.student && r.name && r.name !== state.student && r.name !== state.p1from) {
+    showMsg("p1msg", `回答シートの名前は「${r.name}」です。生徒名と合っているか確認してください。`, "warn");
+  } else if (state.student && r.name && r.name !== state.student) {
+    showMsg("p1msg", `回答シートの名前「${r.name}」を、名簿の「${state.student}」さんとして入力しています。`, "ok");
+  } else if (days !== null && days > 9) {
+    showMsg("p1msg", `この回答は${days}日前のものです（${r.time}）。週（いまは${state.week}）は合っていますか？`, "warn");
+  } else if (r.mode === "translate") {
+    const t = translateItems(r);
+    showMsg("p1msg", `読み取りました（${r.name || "名前なし"}）。` +
+      (t.complete ? `判定：${t.score} / ${t.max}点` : "判定は、手順6でAIの返事を貼ると入ります（○×は押して直せます）。"), "ok");
+  } else {
+    showMsg("p1msg", `読み取りました（${r.name || "名前なし"}）：${r.score} / ${r.max}点`, "ok");
+  }
+  if (!state.student && r.name) { renameDraft(r.name); $("student").value = state.student; }
+  if (r.mode === "translate") {
+    const t = translateItems(r);
+    let h = "<table><tr><th>問</th><th>日本語（問う文法）</th><th>生徒の英文</th><th>判定</th><th>直した文・弱点タイプ</th></tr>";
+    t.items.forEach((x, i) => {
+      const who = !x.ans ? "未回答" : x.edited ? "講師" : x.ai === null ? "" : "AI";
+      h += `<tr><td>Q${x.no}</td><td>${esc(x.jp)}<div class="model">${esc(x.target)}／${esc(x.model)}</div></td>` +
+        `<td>${esc(x.ans || "（未回答）")}</td>` +
+        `<td><div class="seg" data-p1j="${i}">` +
+        `<button type="button" data-v="1" class="${x.score === 1 ? "on-ok" : ""}">○</button>` +
+        `<button type="button" data-v="0" class="${x.score === 0 ? "on-ng" : ""}">×</button>` +
+        `</div><div class="model">${who}</div></td>` +
+        `<td>${esc(x.fix)}<div class="model">${esc(x.score === 1 ? "" : x.weak)}</div></td></tr>`;
+    });
+    box.innerHTML = h + "</table>";
+    return;
+  }
+  let html = "<table><tr><th>問</th><th>生徒の回答</th><th>正解</th><th>点</th><th>弱点タイプ</th></tr>";
+  r.items.forEach(x => {
+    const ans = `${x.typeAns ? TYPE_NAMES[x.typeAns] : "？"}・${x.splitAns || "？"}`;
+    html += `<tr><td>Q${x.no}</td><td>${esc(ans)}</td><td>${esc(x.correct)}</td>` +
+      `<td><span class="pill ${x.score === 2 ? "ok" : "ng"}">${x.score}</span></td>` +
+      `<td>${esc(x.weak.join("、") || "―")}</td></tr>`;
+  });
+  box.innerHTML = html + "</table>";
+}
+
+// ============================================================
+// Part 2：瞬発力
+// ============================================================
+function renderPart2() {
+  let html = "<tr><th>問</th><th>問題と模範解答</th><th>瞬発力</th></tr>";
+  W().part2.forEach((q, i) => {
+    const v = state.p2speed[i];
+    html += `<tr><td>Q${i + 1}</td><td>${esc(q.jp)}<div class="model">${esc(q.en)}</div></td>` +
+      `<td><div class="seg" data-p2="${i}">` +
+      `<button type="button" data-v="1" class="${v === 1 ? "on-ok" : ""}">○</button>` +
+      `<button type="button" data-v="0" class="${v === 0 ? "on-ng" : ""}">×</button>` +
+      `</div></td></tr>`;
+  });
+  $("p2table").innerHTML = html;
+}
+
+// ============================================================
+// Part 3
+// ============================================================
+// 選択肢の一覧（評価箇所のほかの気づき用）：音のグループごと
+function symptomOptions(selected) {
+  return Object.keys(SYMPTOMS).filter(g => g !== "/ɜːr/").map(g =>
+    `<optgroup label="${esc(g)}">` + SYMPTOMS[g].map(x =>
+      `<option value="${x.id}" ${selected === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("") + "</optgroup>").join("");
+}
+const MARKS = "①②③④⑤⑥⑦⑧⑨";
+
+function renderReading() {
+  const w = W(), R = w.reading;
+  $("p3passage").textContent = R.passage;
+  let html = "<tr><th>崩れていた</th><th>評価箇所</th><th>どう崩れていたか</th><th>メモ（その他のとき）</th></tr>";
+  const sc = readingScore();
+  R.viewpoints.forEach((vp, vi) => {
+    html += `<tr><td colspan="4" style="background:#f9fafb"><strong>${MARKS[vi]} ${esc(vp.name)}</strong>　${sc.views[vi].score} / ${sc.views[vi].max}点` +
+      (vp.target ? `<div class="model">対象の文：${esc(vp.target)}</div>` : "") + "</td></tr>";
+    vp.items.forEach((it, ii) => {
+      const k = `${vi}-${ii}`, s = state.p3read[k] || {};
+      html += `<tr><td><input type="checkbox" data-p3r="${k}" ${s.on ? "checked" : ""}></td>` +
+        `<td>${esc(it.label)}<div class="model">${esc(it.look)}</div></td>` +
+        `<td><select class="small" data-p3rsym="${k}"><option value="">（選ぶ）</option>` +
+        it.syms.map(id => SYMPTOM_BY_ID[id]).filter(Boolean).map(x =>
+          `<option value="${x.id}" ${s.sym === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("") +
+        `<option value="other" ${s.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
+        `<td><input type="text" class="small" data-p3rnote="${k}" value="${esc(s.note || "")}" placeholder="例：音が短すぎた"></td></tr>`;
+    });
+  });
+  $("p3items").innerHTML = html;
+
+  html = "<tr><th>語・文</th><th>どう崩れていたか</th><th>メモ</th><th></th></tr>";
+  state.p3extra.forEach((x, i) => {
+    html += `<tr><td><input type="text" class="small" data-p3xtext="${i}" value="${esc(x.text || "")}" placeholder="例：breakfast"></td>` +
+      `<td><select class="small" data-p3xsym="${i}"><option value="">（選ぶ）</option>${symptomOptions(x.sym)}` +
+      `<option value="other" ${x.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
+      `<td><input type="text" class="small" data-p3xnote="${i}" value="${esc(x.note || "")}" placeholder="生徒に伝えること"></td>` +
+      `<td><button type="button" class="btn sub" style="padding:4px 10px" data-p3xdel="${i}">消す</button></td></tr>`;
+  });
+  if (!state.p3extra.length) html += `<tr><td colspan="4" class="model">（なし）</td></tr>`;
+  $("p3extra").innerHTML = html;
+  $("p3done").checked = !!state.p3done;
+  renderRepeat();
+}
+
+function renderRepeat() {
+  const RS = repeatScore();
+  if (!RS) { $("p3rep").innerHTML = ""; return; }
+  let html = "<tr><th>かたまり</th><th>1回目<br>言えなかった</th><th>2回目<br>言えなかった</th><th>理由</th><th>メモ</th></tr>";
+  RS.items.forEach((x, qi) => {
+    html += `<tr><td colspan="5" style="background:#f9fafb"><strong>Q${x.no}（${esc(x.q.day)}）</strong>　${x.score} / ${x.max}点（${REP_TRY[x.tryNo]}）` +
+      `<div class="model">${esc(x.q.text)}</div>` +
+      `<label style="margin-right:14px;font-size:13px"><input type="checkbox" data-p3rq="${qi}" data-f="stop" ${x.stop ? "checked" : ""}> 詰まった</label>` +
+      `<label style="font-size:13px"><input type="checkbox" data-p3rq="${qi}" data-f="redo" ${x.redo ? "checked" : ""}> 言い直した</label></td></tr>`;
+    x.q.chunks.forEach((c, ci) => {
+      const k = `${qi}-${ci}`, s = state.p3rep[k] || {};
+      html += `<tr><td>${esc(c)}</td>` +
+        [1, 2].map(t => `<td style="text-align:center"><input type="checkbox" data-p3rep="${k}-${t}" ${state.p3rep[`${k}-${t}`] ? "checked" : ""}></td>`).join("") +
+        `<td><select class="small" data-p3repsym="${k}"><option value="">（選ぶ）</option>` +
+        SYMPTOMS["リピート"].map(y => `<option value="${y.id}" ${s.sym === y.id ? "selected" : ""}>${esc(y.label)}</option>`).join("") +
+        `<option value="other" ${s.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
+        `<td><input type="text" class="small" data-p3repnote="${k}" value="${esc(s.note || "")}" placeholder="例：make pasta がつながらない"></td></tr>`;
+    });
+  });
+  $("p3rep").innerHTML = html;
+  $("p3repDone").checked = !!state.p3repDone;
+}
+
+// 音読：観点ごとに、崩れた項目の数を引いて点数にする
+function readingScore() {
+  const R = W().reading;
+  const views = R.viewpoints.map((vp, vi) => {
+    const bad = vp.items.filter((_, ii) => (state.p3read[`${vi}-${ii}`] || {}).on).length;
+    return { name: vp.name, score: vp.items.length - bad, max: vp.items.length };
+  });
+  return { views, total: views.reduce((s, v) => s + v.score, 0), max: views.reduce((s, v) => s + v.max, 0) };
+}
+
+function renderPart3() {
+  const w = W();
+  $("p3old").style.display = isReading() ? "none" : "";
+  $("p3new").style.display = isReading() ? "" : "none";
+  if (isReading()) { renderReading(); return; }
+  let html = "<tr><th>観点</th><th>点</th></tr>";
+  w.part3viewpoints.forEach((name, i) => {
+    const v = state.p3view[i];
+    html += `<tr><td>${esc(name)}</td><td><div class="seg" data-p3v="${i}">` +
+      [2, 1, 0].map(n => `<button type="button" data-v="${n}" class="${v === n ? "on" : ""}">${n}</button>`).join("") +
+      `</div></td></tr>`;
+  });
+  $("p3viewpoints").innerHTML = html;
+
+  html = "<tr><th>崩れていた</th><th>箇所</th><th>どう崩れていたか</th><th>メモ（その他のとき）</th></tr>";
+  w.part3checks.forEach((c, i) => {
+    const s = state.p3checks[i] || {};
+    html += `<tr><td><input type="checkbox" data-p3c="${i}" ${s.on ? "checked" : ""}></td>` +
+      `<td>${esc(c.spot)}<div class="model">${esc(c.look)}</div></td>` +
+      `<td><select class="small" data-p3csym="${i}"><option value="">（選ぶ）</option>` +
+      (c.sounds || [c.type]).flatMap(g => SYMPTOMS[g] || []).map(x =>
+        `<option value="${x.id}" ${s.sym === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("") +
+      `<option value="other" ${s.sym === "other" ? "selected" : ""}>その他（メモに書く）</option></select></td>` +
+      `<td><input type="text" class="small" data-p3cnote="${i}" value="${esc(s.note || "")}" placeholder="例：音が短すぎた"></td></tr>`;
+  });
+  $("p3checks").innerHTML = html;
+
+  html = "<tr><th>記号</th><th>答え</th><th>判定</th><th>メモ</th></tr>";
+  w.part3ipa.forEach((x, i) => {
+    const s = state.p3ipa[i] || {};
+    html += `<tr><td>${esc(x.ipa)}</td><td>${esc(x.word)}</td><td>` +
+      `<select class="small" data-p3i="${i}">` +
+      IPA_CHOICES.map(o =>
+        `<option value="${o.v}" ${(s.v || "正解") === o.v ? "selected" : ""}>${o.label}</option>`).join("") +
+      `</select></td><td><input type="text" class="small" data-p3inote="${i}" value="${esc(s.note || "")}" placeholder="別の単語のとき：例 duck"></td></tr>`;
+  });
+  $("p3ipa").innerHTML = html;
+}
+
+function part3Score() {
+  const w = W();
+  if (isReading()) {
+    // 音読（とリピート）の採点を終えたと講師がチェックするまでは点数を出さない（最初は全部「できた」になっているため）。
+    // 補助教材の判定は、音読とリピートの合計で行う
+    const s = readingScore(), RS = repeatScore();
+    const missing = [state.p3done ? "" : "音読", RS && !RS.complete ? "リピート" : ""].filter(Boolean);
+    return { view: s.total, ipa: 0, read: s.total, readMax: s.max, views: s.views, rep: RS,
+      total: s.total + (RS ? RS.total : 0), max: s.max + (RS ? RS.max : 0),
+      complete: !missing.length, missing };
+  }
+  let view = 0;
+  const missing = [];
+  w.part3viewpoints.forEach((name, i) => {
+    if (typeof state.p3view[i] === "number") view += state.p3view[i];
+    else missing.push(name);
+  });
+  let ipa = 0;
+  w.part3ipa.forEach((_, i) => {
+    if (((state.p3ipa[i] || {}).v || "正解") === "正解") ipa++;
+  });
+  return {
+    view, ipa, total: view + ipa,
+    max: w.part3viewpoints.length * 2 + w.part3ipa.length,
+    complete: missing.length === 0, missing
+  };
+}
+
+// ============================================================
+// AIに渡す文章
+// ============================================================
+function buildPrompt() {
+  const w = W();
+  const p1 = analyzePart1();
+  const p3 = part3Score();
+  const lines = [];
+
+  lines.push(`あなたは英語スクールの「確認テスト」の添削アシスタントです。
+下のルールに従い、【A】記録シートに貼る行 と 【B】生徒用の文字フィードバック の2つを作ってください。
+添削の目的は点数をつけることではなく、生徒の弱点を特定して、原因と対策まで伝えることです。
+
+# 今週の情報
+- 週：${state.week}
+- 今週の学習項目：${w.focus}
+${isTranslate()
+    ? `- Part 1（和文英訳）の問題・問う文法・模範解答：\n${w.part1.map((q, i) => `Q${i + 1} ${q.jp}［問う文法：${q.target}］→ ${q.en}`).join("\n")}`
+    : `- Part 1 の正解：${w.part1.map((q, i) => `Q${i + 1} ${TYPE_NAMES[q.type]}・${q.split}`).join("／")}`}
+- Part 2 の問題と模範解答：
+${w.part2.map((q, i) => `Q${i + 1} ${q.jp} → ${q.en}`).join("\n")}
+${isReading() ? "" : `- Part 3 2️⃣ の正解：${w.part3ipa.map(x => `${x.ipa} ${x.word}`).join("／")}\n`}- Part 4 のテーマ：${w.part4theme}
+- 弱点タイプのリスト（この中から選ぶ）：
+文法：${w.weakTypes.grammar}
+${w.weakTypes.pattern ? `文型：${w.weakTypes.pattern}\n` : ""}発音：${w.weakTypes.sound}
+
+# 生徒
+- 生徒：${state.student || "（未入力）"}　担当：${state.teacher || "（未入力）"}`);
+
+  // Part 1
+  if (p1 && !p1.error && p1.mode === "translate") {
+    lines.push(`
+# Part 1（和文英訳）の生徒の回答（採点はあなたが行う）
+${p1.answers.map((a, i) => `Q${i + 1}：${a || "（未回答）"}`).join("\n")}`);
+  } else if (p1 && !p1.error) {
+    const wrong = p1.items.filter(x => x.score < 2);
+    lines.push(`
+# Part 1 の結果（採点済み）
+- 点数：${p1.score} / ${p1.max}
+- 間違えた問題：
+${wrong.length ? wrong.map(x => `Q${x.no} ${x.q}　生徒：${x.typeAns ? TYPE_NAMES[x.typeAns] : "未回答"}・${x.splitAns || "未回答"}　正解：${x.correct}　弱点タイプ：${x.weak.join("、")}`).join("\n") : "なし（全問正解）"}`);
+  } else {
+    lines.push(`
+# Part 1 の結果
+- 未提出または未入力`);
+  }
+
+  // Part 2
+  lines.push(`
+# Part 2 の瞬発力（講師が判定済み。1＝時間内に言い切れた、0＝言い切れなかった）
+${w.part2.map((_, i) => `Q${i + 1}：${state.p2speed[i] === 1 ? 1 : state.p2speed[i] === 0 ? 0 : "未入力"}`).join("\n")}
+
+# Part 2 の録画をNottaで文字起こししたもの
+${state.p2notta.trim() || "（未入力）"}`);
+
+  // Part 3
+  if (isReading()) {
+    const bad = readBadList();
+    const RS = repeatScore();
+    lines.push(`
+# Part 3 の結果（講師・ツールが採点済み）
+- Part 3 の合計（音読＋リピート）：${p3.total} / ${p3.max}
+- 音読：${p3.read} / ${p3.readMax}（${p3.views.map(v => `${v.name} ${v.score}/${v.max}`).join("／")}）
+- 音読で崩れていた箇所：${bad.length ? bad.map(b => `${b.where}→${b.desc}`).join("／") : "なし"}
+- 評価箇所のほかに講師が気づいたこと：${state.p3extra.filter(x => x.text).length ? state.p3extra.filter(x => x.text).map(x => `${x.text}→${extraDesc(x)}`).join("／") : "なし"}
+- リピート（ネイティブ音声を聞いて1文まねする×5問）：${RS && RS.complete ? `${RS.total} / ${RS.max}（${RS.items.map(x => `Q${x.no} ${REP_TRY[x.tryNo]}${repFlags(x) ? "・" + repFlags(x) : ""}${x.bad.length ? `［${x.bad.map(b => `「${b.chunk}」${repDesc(b)}`).join("／")}］` : ""}`).join("／")}）` : "未採点"}
+
+# Part 4
+添付のノートの写真を読み取って使う。`);
+  } else {
+  const checks = w.part3checks.map((c, i) => ({ c, s: state.p3checks[i] || {} })).filter(x => x.s.on);
+  const ipaBad = w.part3ipa.map((x, i) => ({ x, s: state.p3ipa[i] || {} })).filter(o => o.s.v && o.s.v !== "正解");
+  lines.push(`
+# Part 3 の結果（講師が採点済み）
+- 点数：${p3.total} / ${p3.max}（音読 ${p3.view} / ${w.part3viewpoints.length * 2}、発音記号 ${p3.ipa} / ${w.part3ipa.length}）
+- 音読の5観点：${w.part3viewpoints.map((n, i) => `${n} ${typeof state.p3view[i] === "number" ? state.p3view[i] : "未入力"}`).join("／")}
+- 崩れていた箇所：${checks.length ? checks.map(o => `${o.c.spot}（${o.c.look}）→ ${checkDesc(o.c, o.s)}`).join("／") : "なし"}
+- 発音記号でつまずいた語：${ipaBad.length ? ipaBad.map(o => `${o.x.ipa} ${o.x.word}：${(IPA_CHOICES.find(c => c.v === o.s.v) || { label: o.s.v }).label}${o.s.note ? `（${o.s.note}）` : ""}`).join("／") : "なし"}
+
+# Part 4
+添付のノートの写真を読み取って使う。`);
+  }
+
+  const tr = isTranslate();
+  lines.push(`
+# 作業のルール${tr ? `
+## Part 1（和文英訳）
+- 点数：その問題の「問う文法」が正しく使えていれば1、使えていない・形が間違っていれば0。模範解答と違う表現でも、問う文法が正しく使えていれば1。
+- 単語・スペル・冠詞・時制など、問う文法以外のミスは点数に影響させない。ただし「直した文」では直す。
+- 未回答は0、弱点タイプは「未回答」。
+- 点数が0の問題は、直した文と弱点タイプ（リストから1つ）を書く。点数が1でも問う文法以外のミスがあれば、直した文を書き、弱点タイプはそのミスのものにする。ミスがなければ直した文は空欄、弱点タイプは「正解」。
+- 回答に書かれている通りに判定する。推測で誤りを作らない。
+` : ""}
+## Part 2（瞬間英作文）
+- 文字起こしを、問題文の意味と照らしてQ1〜Q10の答えに切り分ける。どの問の答えか分からないものは、弱点タイプを「その他」にし、講師メモに「要確認」と書く。
+- 言い直しがある場合は、最後に言い切った文を答えとする。
+- 正確性：文法的に正しければ1、誤りがあれば0。模範解答と違う表現でも正しければ1。何も言っていなければ0。
+- 時間切れの後に言い切った文も、文法が正しければ正確性は1。
+- 誤りがあれば、直した文と弱点タイプ（リストから1つ）を書く。
+- 瞬発力は上の値をそのまま写す。変えない。
+- 文字起こしに書かれている通りに判定する。推測で誤りを作らない。
+
+## Part 4（自由英作文）
+- 写真から英文を1文ずつ読み取る。読めない語は「[?]」と書く。
+- 読み取りでは、スペルや文法の誤りも直さず、書いてある通りに書き写す（これを「生徒の回答」の列に入れる）。直すのは「直した文」の列だけ。
+- 直すもの：①今週の学習項目に関わる誤りはすべて ②それ以外は、意味が通じない誤りと、同じ誤りの繰り返しだけ。それ以外は直さない。
+- 誤りではないがもっと自然な言い方があるものは、直した文には入れず、【B】の「もっと自然な言い方」に書く。
+- 今週の学習項目を一度も使っていない場合は、それも弱点として扱い、使った文の例を示す。
+
+## 総合診断
+- Part 1〜4で同じ弱点タイプが出ているものを、ひとつの弱点にまとめる。
+- 優先順位：①2つ以上のPartに出ている ②今週の学習項目に関わる ③意味が通じなくなる ④その他。上位2つを「今週の重点」にする。
+- Part 2で「瞬発力0・正確性1」が多い場合は「知っているが、まだ口からすぐ出ない」状態として伝える。Part 4で正しく書けているのにPart 2で間違えている場合も同じ。
+
+# 出力（この2つだけを、この見出しで出す）
+## 【A】
+- ${tr ? "Part 1・Part 2・Part 4" : "Part 2とPart 4"}の行だけを、1行に1つずつ、列を「｜」（全角の縦線）で区切って、見出し行なしでコードブロックに出す。空欄の列も「｜」は省かない。
+- 例：${state.week}｜田中｜佐藤｜2｜Q2｜She plays often the piano.｜She often plays the piano.｜1｜0｜頻度副詞の位置｜
+- 列の順：週、生徒、担当、Part、問、生徒の回答、直した文、瞬発力、点数、弱点タイプ、講師メモ${tr ? `
+- Part 1：Q1〜Q${w.part1.length}の${w.part1.length}行。Partは「1」、問は「Q1」の形、瞬発力は空欄、点数＝問う文法が正しく使えていれば1・そうでなければ0。` : ""}
+- Part 2：Q1〜Q10の10行。Partは「2」、問は「Q1」の形、点数＝正確性。
+- Part 4：1文を1行。Partは「4」、問は「1文目」の形、瞬発力と点数は空欄。誤りのない文は弱点タイプを「正解」にする。
+- 講師メモは空欄（要確認の場合のみ「要確認」）。
+
+## 【B】
+生徒が読むNotionページのうち、解説の部分を書く。点数・${tr ? "" : "Part 1・"}Part 3・表・模範解答はツールが自動で入れるので書かない。
+次の見出し（### から始まる${tr ? "8" : "7"}つ）を、この順番・この名前のまま出す（コードブロックには入れない）。
+
+### 診断
+（2〜3文。今の状態をひとことで。何ができていて、どこを直すと伸びるか）
+
+### 重点1：（弱点を生徒に分かる言葉で短く。例：often などの位置）
+| | あなたの英文 | 正しい英文 |
+|---|---|---|
+| Part 2 Q2 | ✕ （生徒の実際の英文） | ◯ （正しい英文。直したところを **太字**） |
+（この弱点が出ているものを全部、1行ずつ。Part 1の場合は「あなたの答え」「正解」を書く）
+
+**📖 解説**
+（このルールを3〜4文で。必要なら「| 形 | 置く場所 | 例 |」のような表を使う）
+
+**🔍 なぜ間違えやすい？**
+（この生徒の実際の英文を使って、なぜそうなったかを2〜3文で。日本語との違いなど）
+
+**💡 コツ**
+（話すとき・書くときに崩れないための具体的なコツを2〜3文で）
+
+**✏️ 確認問題**
+1. （日本語の文。今週の内容で、この弱点を練習できるもの）
+2. （同じ）
+3. （同じ）
+
+### 重点2：（同じ形）
+（重点1と同じ形）
+
+### よかったところ
+- （どの問題で、何ができていたか。理由も1文。2〜3個）
+${tr ? `
+### Part1の解説
+**分かったこと**：（今週の文法をどれだけ使えていたか、全体の傾向を2文で）
+- **Q○**：（点数0の問題と、直した文がある問題ごとに、何がどう違うか・どう直すかを2〜3文で。重点で詳しく説明した問題は「重点①を見てください」と1文でよい）
+` : ""}
+### Part 2の解説
+**分かったこと**：（Part 2全体の傾向を2文で。瞬発力0・正確性1の問題があれば「知っているが、まだ口からすぐ出ない」状態として触れる）
+- **Q○**：（正確性0の問題ごとに、何がどう違うか・どう直すかを2〜3文で。重点で詳しく説明した問題は「重点①を見てください」と1文でよい）
+
+### Part 4の解説
+**分かったこと**：（今週の学習項目をどれだけ使えていたか、全体の傾向を2文で）
+- **○文目**：（直した文ごとに、何がどう違うかを2〜3文で）
+- **○文目（もっと自然に）**：（誤りではないが、もっと自然な言い方があるもの。「◯◯ → ◯◯」と理由1文）
+
+### 確認問題の答え
+- 重点1：1. （英文）／2. （英文）／3. （英文）
+- 重点2：1. （英文）／2. （英文）／3. （英文）
+
+書き方のルール：
+- 中高生にも分かるやさしい日本語で書く。専門用語（症状・原因・対策など）は使わない。文法用語（主語・動詞・接続詞など）は使ってよい。
+- 弱点は必ず生徒の実際の英文を「✕」で見せ、すぐ横に「◯」を置く。
+- 解説は、生徒が読んで「なぜ間違えたか」「次にどうすればいいか」が分かる量を書く。短くしすぎない。
+- 正解した問題について「${tr ? "Part1の解説」「" : ""}Part 2の解説」「Part 4の解説」には書かない。
+- 「不合格」「ダメ」など合否を感じさせる言葉は使わない。
+- 渡された情報にないことを推測で書かない。`);
+
+  return lines.join("\n");
+}
+
+// ============================================================
+// AIの返事を読む → 記録シート用・生徒用FB・点数
+// ============================================================
+function parseReply(text) {
+  const t = text.replace(/\r/g, "");
+  const ai = t.indexOf("【A】");
+  const bi = t.indexOf("【B】");
+  if (ai < 0 || bi < 0 || bi < ai) return { error: "返事の中に「【A】」と「【B】」が見つかりません。AIの返事を最初から最後までコピーして貼ってください。" };
+  const aPart = t.slice(ai, bi);
+  let bPart = t.slice(bi + 3);
+  bPart = bPart.replace(/^[\s#]*\n/, "").replace(/```[a-z]*\n?/g, "").trim();
+  const rows = aPart.split("\n").map(splitRow).filter(c => c && c.length >= 5).map(c => {
+    c = c.slice(0, 11);
+    while (c.length < 11) c.push("");
+    return c;
+  });
+  return { rows, sections: parseSections(bPart) };
+}
+
+// 【A】の1行を列に分ける。「｜」区切り（今の形）・タブ区切り（前の形）・Markdownの表のどれでも読む
+function splitRow(line) {
+  const l = line.replace(/^\s+|\s+$/g, "");
+  if (!l || l.startsWith("```") || l.includes("【A】")) return null;
+  let cells;
+  if (l.includes("｜")) cells = l.split("｜");
+  else if (l.includes("\t")) cells = l.split("\t");
+  else if (l.startsWith("|")) {
+    cells = l.replace(/^\|/, "").replace(/\|$/, "").split("|");
+    if (cells.every(c => /^\s*:?-{2,}:?\s*$/.test(c))) return null; // 表の区切り線
+  } else return null;
+  cells = cells.map(c => c.trim());
+  if (cells[0] === "週") return null; // 見出し行
+  return cells;
+}
+
+// 【B】を「### 見出し」ごとに分ける
+function parseSections(text) {
+  const out = {};
+  let key = null;
+  text.split("\n").forEach(line => {
+    const m = line.match(/^###\s+(.+?)\s*$/);
+    if (m) { key = m[1]; out[key] = []; }
+    else if (key) out[key].push(line);
+  });
+  Object.keys(out).forEach(k => { out[k] = out[k].join("\n").trim(); });
+  return out;
+}
+const findSection = (secs, prefix) => Object.keys(secs).find(k => k.replace(/\s/g, "").startsWith(prefix));
+
+// 音読（Week2以降）：崩れていた評価箇所の一覧
+function readBadList() {
+  const R = W().reading, out = [];
+  R.viewpoints.forEach((vp, vi) => vp.items.forEach((it, ii) => {
+    const s = state.p3read[`${vi}-${ii}`] || {};
+    if (!s.on) return;
+    const x = readSymptom(it, s);
+    out.push({ vi, ii, vp, it, s, x, where: `${vp.name}：${it.label}`,
+      desc: x ? x.label + (s.note ? `（${s.note}）` : "") : (s.note || `${it.label}ができていなかった`),
+      group: x ? x.group : it.groups[0] });
+  }));
+  return out;
+}
+// 評価箇所の崩れ方。選択肢が1つしかない項目は、チェックだけでもその崩れ方にする
+const readSymptom = (it, s) => checkSymptom(s) || (s.sym !== "other" && it.syms.length === 1 ? SYMPTOM_BY_ID[it.syms[0]] : null);
+const extraDesc = x => { const y = checkSymptom(x); return y ? y.label + (x.note ? `（${x.note}）` : "") : (x.note || "記録なし"); };
+
+function part1Rows(p1) {
+  if (!p1 || p1.error) return [];
+  if (p1.mode === "translate") {
+    const t = translateItems(p1);
+    return t.items.map(x => [state.week, state.student, state.teacher, "1", `Q${x.no}`,
+      x.ans || "未回答", x.fix || (x.score === 0 ? x.model : ""), "", x.score === null ? "" : String(x.score), x.weak, x.edited ? "講師が判定を変更" : ""]);
+  }
+  return p1.items.map(x => [
+    state.week, state.student, state.teacher, "1", `Q${x.no}`,
+    `${x.typeAns ? TYPE_NAMES[x.typeAns] : "未回答"}・${x.splitAns || "未回答"}`,
+    x.correct, "", String(x.score), x.weak.join("、") || "正解", ""
+  ]);
+}
+// チェック箇所で講師が選んだ崩れ方（なければ null）
+function checkSymptom(s) { return s && s.sym && SYMPTOM_BY_ID[s.sym] ? SYMPTOM_BY_ID[s.sym] : null; }
+function checkDesc(c, s) {
+  const x = checkSymptom(s);
+  if (x) return x.label + (s.note ? `（${s.note}）` : "");
+  return s.note ? s.note : "記録なし";
+}
+
+function part3Rows() {
+  const w = W();
+  const rows = [];
+  if (isReading()) {
+    const R = w.reading, base = [state.week, state.student, state.teacher, "3"];
+    readingScore().views.forEach(v => rows.push([...base, `音読：${v.name}`, "", "", "", String(v.score), "", ""]));
+    R.viewpoints.forEach((vp, vi) => vp.items.forEach((it, ii) => {
+      const s = state.p3read[`${vi}-${ii}`] || {};
+      const x = readSymptom(it, s);
+      rows.push([...base, `音読：${vp.name}／${it.label}`, s.on ? (x ? x.label + (s.note ? `（${s.note}）` : "") : s.note || "崩れていた") : "できた",
+        "", "", s.on ? "0" : "1", s.on ? recSound(x ? x.group : it.groups[0]) : "正解", ""]);
+    }));
+    state.p3extra.filter(x => x.text).forEach(x => {
+      const y = checkSymptom(x);
+      rows.push([...base, `音読（追加）：${x.text}`, extraDesc(x), "", "", "", y ? recSound(y.group) : "その他", "評価箇所外"]);
+    });
+    const RS = repeatScore();
+    if (RS && RS.complete) RS.items.forEach(x => {
+      rows.push([...base, `リピート：Q${x.no}`, REP_TRY[x.tryNo] + (repFlags(x) ? `・${repFlags(x)}` : ""), x.q.text, "", String(x.score), x.score === x.max ? "正解" : "リピート", ""]);
+      x.bad.forEach(b => rows.push([...base, `リピート：Q${x.no}／${b.chunk}`, repDesc(b), "", "", "", "リピート", ""]));
+    });
+    return rows;
+  }
+  w.part3viewpoints.forEach((n, i) => {
+    const v = state.p3view[i];
+    rows.push([state.week, state.student, state.teacher, "3", `音読：${n}`, "", "", "", typeof v === "number" ? String(v) : "", "", ""]);
+  });
+  w.part3checks.forEach((c, i) => {
+    const s = state.p3checks[i] || {};
+    const x = checkSymptom(s);
+    if (s.on) rows.push([state.week, state.student, state.teacher, "3", `音読：${c.spot}`, checkDesc(c, s), "", "", "", x ? recSound(x.group) : c.type, ""]);
+  });
+  w.part3ipa.forEach((x, i) => {
+    const s = state.p3ipa[i] || {};
+    const v = s.v || "正解";
+    const type = v === "正解" ? "正解" : v === "記号が読めない" ? "記号が読めない" : x.type;
+    const said = v === "正解" ? "正解" : (IPA_CHOICES.find(o => o.v === v) || { label: v }).label + (s.note ? `（${s.note}）` : "");
+    rows.push([state.week, state.student, state.teacher, "3", `記号：${x.ipa}`, said, x.word, "", v === "正解" ? "1" : "0", type, ""]);
+  });
+  return rows;
+}
+
+// ============================================================
+// 生徒用ページ（Notion）を組み立てる：点数・表・Part 1/3の解説・模範解答はツール、解説の文章はAI
+// ============================================================
+const bar = (score, max) => { const n = Math.round(score / max * 10); return "■".repeat(n) + "□".repeat(10 - n) + " " + Math.round(score / max * 100) + "%"; };
+const cell = v => String(v == null ? "" : v).replace(/\|/g, "／").replace(/\n/g, " ").trim();
+// 次週の課題（チェック欄）。「課題：」で始まる行を中継が読み、公開時に記録シートへ入れる
+const TASK_PREFIX = "課題：";
+const TASKS_BASE = ["Step1", "Step2", "Step3"];
+// 課題の教材リンク（課題をやる週ごと）。教材ができたらURLを入れる。空のままならリンクは出ない
+const TASK_LINKS = {
+  "Week2": { steps: "", sokuji: "", hatsuon: "" },
+  "Week3": { steps: "", sokuji: "", hatsuon: "" }
+};
+const taskLink = (wk, name) => {
+  const l = TASK_LINKS[wk] || {};
+  if (/^Step/.test(name)) return l.steps || "";
+  if (/瞬間英作文/.test(name)) return l.sokuji || "";
+  if (/発音/.test(name)) return l.hatsuon || "";
+  return "";
+};
+const nextWeekOf = wk => { const n = Number(String(wk).replace(/\D/g, "")); return n ? `Week${n + 1}` : "次週"; };
+const SPEAKING_PLACEHOLDER = "（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）";
+const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "確認問題の答え"];
+
+function buildStudentPage(d) {
+  const w = W(), sec = d.sections, L = [];
+  const get = prefix => { const k = findSection(sec, prefix); return k ? { title: k, body: sec[k] } : null; };
+  const focusTitle = t => t.replace(/^重点\s*\d\s*[：:]?\s*/, "");
+  const hasP1 = d.p1 && !d.p1.error;
+  const n2 = w.part2.length;
+
+  // 点数
+  const s2 = d.p2total === null ? "―" : (d.p2total <= SL().part2 ? "**あり**" : "なし");
+  const s3 = !d.p3.complete ? "―" : (d.p3.total <= SL().part3 ? "**あり**" : "なし");
+  // Part 1 の点数（和文英訳はAIと講師の判定から）
+  const tr = hasP1 && d.p1.mode === "translate" ? translateItems(d.p1) : null;
+  const p1s = !hasP1 ? null : tr ? (tr.complete ? tr.score : null) : d.p1.score;
+  const p1m = !hasP1 ? 0 : tr ? tr.max : d.p1.max;
+  const RS = isReading() ? repeatScore() : null;
+  L.push(`## ${state.week} 確認テストのフィードバック`, "",
+    "| | 点数 | 達成度 | 次週の補助教材 |", "|---|---|---|---|",
+    `| 📘 ${isTranslate() ? "文法（和文英訳）" : "文型"} | ${p1s === null ? (hasP1 ? "―" : "未提出") : `**${p1s} / ${p1m}**`} | ${p1s === null ? "" : bar(p1s, p1m)} | ― |`,
+    `| 🗣 瞬間英作文 | ${d.p2total === null ? "―" : `**${d.p2total} / 20**`} | ${d.p2total === null ? "" : bar(d.p2total, 20)} | ${s2} |`,
+    isReading()
+      ? `| 🎙 音読 | ${state.p3done ? `**${d.p3.read} / ${d.p3.readMax}**` : "―"} | ${state.p3done ? bar(d.p3.read, d.p3.readMax) : ""} | ${RS ? "↓" : s3} |`
+      : `| 🎧 発音 | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
+  if (RS) L.push(`| 🔁 リピート | ${RS.complete ? `**${RS.total} / ${RS.max}**` : "―"} | ${RS.complete ? bar(RS.total, RS.max) : ""} | ↓ |`,
+    `| 🎧 音読＋リピート | ${d.p3.complete ? `**${d.p3.total} / ${d.p3.max}**` : "―"} | ${d.p3.complete ? bar(d.p3.total, d.p3.max) : ""} | ${s3} |`);
+  if (d.p2total !== null) L.push("", `瞬間英作文の内訳：すぐ言えた ${d.speed} / ${n2}・正しく言えた ${d.acc} / ${n2}`);
+
+  const diag = get("診断");
+  if (diag && diag.body) L.push("", "> 💡 **今週のひとこと診断**", ...diag.body.split("\n").filter(x => x.trim()).map(x => "> " + x.trim()));
+
+  // 重点
+  const focus = [get("重点1"), get("重点2")].filter(Boolean);
+  if (focus.length) {
+    L.push("", "---", "## 🎯 今週の重点はこの2つ", ...focus.map((f, i) => `${i + 1}. ${focusTitle(f.title)}`));
+    focus.forEach((f, i) => L.push("", `### ${"①②"[i]} ${focusTitle(f.title)}`, f.body));
+  }
+  const good = get("よかったところ");
+  if (good && good.body) L.push("", "---", "## 🌟 よかったところ", good.body);
+
+  L.push("", "---", "## 📊 Partごとの結果", "（▶ を押すと開きます）", "");
+
+  // Part 1
+  if (tr) {
+    L.push(`▶ **Part 1　文法チェック（和文英訳）　${p1s === null ? "―" : p1s} / ${p1m}**`,
+      "| 問 | 日本語 | あなたの英文 | 正しい英文 | |", "|---|---|---|---|---|");
+    tr.items.forEach(x => L.push(`| Q${x.no} | ${cell(x.jp)} | ${cell(x.ans) || "（未回答）"} | ${x.score === 1 && !x.fix ? "◯" : cell(x.fix || x.model)} | ${x.score === 1 ? "◯" : x.score === 0 ? "✕" : ""} |`));
+    L.push("", "◯✕は、その問題で確認している今週の文法が正しく使えたかどうかです。それ以外の小さなミスは「正しい英文」で直しています。");
+    const ex = get("Part1の解説");
+    if (ex && ex.body) L.push("", ex.body);
+    L.push("◀", "");
+  } else if (hasP1) {
+    L.push(`▶ **Part 1　文型チェック　${d.p1.score} / ${d.p1.max}**`,
+      "| 問 | 英文 | あなたの答え | 正解 | |", "|---|---|---|---|---|");
+    d.p1.items.forEach(x => L.push(`| Q${x.no} | ${cell(x.q)} | ${x.typeAns ? TYPE_NAMES[x.typeAns] : "未回答"}・${x.splitAns || "未回答"} | ${x.correct} | ${["✕", "△", "◯"][x.score]} |`));
+    const wrong = d.p1.items.filter(x => x.score < 2);
+    if (wrong.length) {
+      L.push("", "**間違えた問題の解説**");
+      wrong.forEach(x => {
+        L.push("", `**Q${x.no} ${x.q}**　あなた：${x.typeAns ? TYPE_NAMES[x.typeAns] : "未回答"}・${x.splitAns || "未回答"} → 正解：**${x.correct}**`);
+        if (w.part1[x.no - 1].why) L.push(w.part1[x.no - 1].why);
+      });
+      const types = [...new Set(wrong.flatMap(x => x.weak))].filter(t => PATTERN_TIPS[t]);
+      if (types.length) L.push("", "**📌 まとめ：見分け方**", ...types.map(t => `- **${t}**：${PATTERN_TIPS[t]}`));
+    } else {
+      L.push("", "全問正解です！文型の見分けはしっかりできています。");
+    }
+    L.push("◀", "");
+  } else {
+    L.push(`**Part 1　${isTranslate() ? "文法チェック" : "文型チェック"}**：未提出`, "");
+  }
+
+  // Part 2
+  const p2rows = d.aiRows.filter(c => (c[3] || "").trim() === "2");
+  if (d.p2total !== null) {
+    L.push(`▶ **Part 2　瞬間英作文　${d.p2total} / 20**`,
+      "| 問 | すぐ言えた | 正しく言えた | あなたの英文 | 正しい英文 |", "|---|---|---|---|---|");
+    w.part2.forEach((q, i) => {
+      const r = p2rows.find(c => c[4].replace(/\s/g, "").toUpperCase() === `Q${i + 1}`) || [];
+      const ok = String(r[8] || "").trim() === "1";
+      L.push(`| Q${i + 1} | ${state.p2speed[i] === 1 ? "◯" : "✕"} | ${ok ? "◯" : "✕"} | ${cell(r[5]) || "（なし）"} | ${ok ? "◯" : cell(r[6]) || cell(q.en)} |`);
+    });
+    const ex = get("Part2の解説");
+    if (ex && ex.body) L.push("", ex.body);
+    L.push("◀", "");
+  }
+
+  // Part 3
+  const drillKeys = [];
+  const drillText = keys => [...new Set(keys)].map(k => k.startsWith("word:")
+    ? (w.part3ipa.find(x => x.word === k.slice(5)) || {}).drill
+    : DRILLS[k] || DRILLS["その他"]).filter(Boolean);
+  if (isReading() && state.p3done) {
+    const R = w.reading;
+    L.push(`▶ **Part 3　音読　${d.p3.read} / ${d.p3.readMax}**`, "| 観点 | 点数 |", "|---|---|");
+    d.p3.views.forEach((v, i) => L.push(`| ${MARKS[i]} ${v.name} | ${"●".repeat(v.score)}${"○".repeat(v.max - v.score)} ${v.score} / ${v.max} |`));
+    // 評価したところ（観点ごとに○✕）
+    L.push("", "**チェックしたところ**");
+    R.viewpoints.forEach((vp, vi) => {
+      const marks = vp.items.map((it, ii) => `${it.label} ${(state.p3read[`${vi}-${ii}`] || {}).on ? "✕" : "◯"}`).join("／");
+      L.push(`- **${MARKS[vi]} ${vp.name}**${vp.target ? `（「${vp.target}」）` : ""}：${marks}`);
+    });
+    // 崩れていたところと、講師が追加した気づき
+    const used = new Set();
+    const tipOnce = (key, text) => { if (used.has(key)) return "直し方は上と同じです。"; used.add(key); return text; };
+    const sounds = [];
+    readBadList().forEach(b => {
+      const tip = b.it.tip || (b.x ? b.x.tip : SOUND_TIPS[b.group] || SOUND_TIPS["その他"]);
+      const say = b.x ? b.x.say : (b.s.note ? `${b.s.note}。` : `「${b.it.label}」（${b.it.look}）ができていませんでした。`);
+      sounds.push(`- **${b.it.label}**（${b.vp.name}）：${say}${b.x && b.s.note ? `（${b.s.note}）` : ""}**直し方**：${tipOnce(b.it.tip ? "item:" + b.it.label : (b.x ? b.x.id : "g:" + b.group), tip)}` +
+        (b.it.words ? `　${audioLinks(b.it.words)}` : ""));
+      drillKeys.push(b.group);
+    });
+    state.p3extra.filter(x => x.text).forEach(x => {
+      const y = checkSymptom(x);
+      const g = y ? y.group : "その他";
+      const say = y ? y.say : (x.note ? `${x.note}。` : "気になる読み方がありました。");
+      const isWord = /^[A-Za-z'’-]+(\s+[A-Za-z'’-]+){0,2}$/.test(x.text.trim());
+      sounds.push(`- **${x.text}**：${say}${y && x.note ? `（${x.note}）` : ""}**直し方**：${tipOnce(y ? y.id : "g:" + g, y ? y.tip : SOUND_TIPS[g] || SOUND_TIPS["その他"])}` +
+        (isWord ? `　${audioLinks(x.text.trim().split(/\s+/))}` : ""));
+      drillKeys.push(g);
+    });
+    if (sounds.length) L.push("", "**気になったところと直し方**", ...sounds);
+    else L.push("", "チェックしたところは、すべてよく読めていました！");
+    const drills = drillText(drillKeys);
+    if (drills.length) L.push("", "**ペア練習**", ...drills.map(t => "- " + t));
+    L.push("◀", "");
+  }
+  if (isReading()) {
+    if (RS && RS.complete) {
+      L.push(`▶ **Part 3②　リピート　${RS.total} / ${RS.max}**`, "| 問 | 英文 | 言えた回 | 詰まらずに | 言い直さずに | 点数 |", "|---|---|---|---|---|---|");
+      RS.items.forEach(x => L.push(`| Q${x.no} | ${cell(x.q.text)} | ${["1回目 ◯", "2回目 ◯", "✕"][x.tryNo]} | ${x.stop ? "✕" : "◯"} | ${x.redo ? "✕" : "◯"} | ${x.score} / ${x.max} |`));
+      // 言えなかったかたまりと直し方（同じ直し方は2回目から「上と同じ」）
+      const used = new Set(), lines = [];
+      RS.items.forEach(x => x.bad.forEach(b => {
+        const y = b.x;
+        const say = y ? y.say : (b.s.note ? `${b.s.note}。` : "このかたまりが、お手本のように言えていませんでした。");
+        const key = y ? y.id : "rp-other";
+        const tip = used.has(key) ? "直し方は上と同じです。" : (used.add(key), y ? y.tip : SOUND_TIPS["リピート"]);
+        lines.push(`- **Q${x.no}「${b.chunk}」**（1回目${b.m1 ? "✕" : "◯"}・2回目${b.m2 ? "✕" : "◯"}）：${say}${y && b.s.note ? `（${b.s.note}）` : ""}**直し方**：${tip}`);
+      }));
+      if (lines.length) L.push("", "**言えなかったところと直し方**", ...lines);
+      else L.push("", "5問とも、お手本の音声をしっかり再現できていました！");
+      if (RS.items.some(x => x.stop || x.redo)) L.push("", "**詰まり・言い直しについて**", "途中で止まったり言い直したりしたところがありました。完ぺきに言えなくても、聞こえた音のまま最後まで言い切ることを優先しましょう。");
+      L.push("", "**ペア練習**", "- " + DRILLS["リピート"]);
+      L.push("◀", "");
+    }
+  } else if (d.p3.complete) {
+    L.push(`▶ **Part 3　発音チェック　${d.p3.total} / ${d.p3.max}**`, "| 観点 | 点数 |", "|---|---|");
+    w.part3viewpoints.forEach((n, i) => { const v = state.p3view[i]; L.push(`| ${n} | ${"●".repeat(v)}${"○".repeat(2 - v)} ${v} / 2 |`); });
+    L.push(`| 発音記号 | ${d.p3.ipa} / ${w.part3ipa.length} |`);
+    // 同じ直し方は2回目から「上と同じ」にする
+    const used = new Set();
+    const tipOnce = (key, text) => {
+      if (used.has(key)) return "直し方は上と同じです。";
+      used.add(key);
+      return text;
+    };
+    const sounds = [];
+    w.part3checks.forEach((c, i) => {
+      const s = state.p3checks[i] || {};
+      if (!s.on) return;
+      const x = checkSymptom(s);
+      let line;
+      if (x) {
+        line = `${x.say}${s.note ? `（${s.note}）` : ""}**直し方**：${tipOnce(x.id, x.tip)}`;
+        drillKeys.push(x.group);
+      } else {
+        const g = (c.sounds || [c.type])[0];
+        line = `${s.note ? `${s.note}。` : `${c.look.replace(/か$/, "")}の音が気になりました。`}**直し方**：${tipOnce("g:" + g, c.tip || SOUND_TIPS[g] || SOUND_TIPS["その他"])}`;
+        drillKeys.push(g);
+      }
+      sounds.push(`- **${c.spot}**：${line}　${audioLinks(c.words || [])}`);
+    });
+    w.part3ipa.forEach((x, i) => {
+      const s = state.p3ipa[i] || {};
+      if (!s.v || s.v === "正解") return;
+      let said, tip;
+      if (s.v === "記号が読めない") {
+        said = "記号が読めていませんでした。";
+        tip = tipOnce("ipa:symbol", SOUND_TIPS["記号が読めない"]);
+        drillKeys.push("記号が読めない");
+      } else {
+        said = s.v === "別の単語" ? (s.note ? `${s.note} と読んでいました（別の単語になっています）。` : "別の単語になっていました。")
+          : (s.note ? `「${s.note}」と読んでいました（日本語の音になっています）。` : "日本語の音（カタカナの音）になっていました。");
+        tip = tipOnce("ipa:" + x.word, x.tip || SOUND_TIPS[x.type] || SOUND_TIPS["その他"]);
+        drillKeys.push(x.drill ? "word:" + x.word : x.type);
+      }
+      sounds.push(`- **${x.ipa}（${x.word}）**：${said}**直し方**：${tip}　${audioLinks([x.word])}`);
+    });
+    if (sounds.length) L.push("", "**気になった音と直し方**", ...sounds);
+    const drills = drillText(drillKeys);
+    if (drills.length) L.push("", "**ペア練習**", ...drills.map(t => "- " + t));
+    const low = w.part3viewpoints.map((n, i) => ({ n, v: state.p3view[i] })).filter(o => o.v <= 1 && VIEW_TIPS[o.n]);
+    if (low.length) L.push("", "**読み方のアドバイス**", ...low.map(o => `- **${o.n}（${o.v} / 2）**：${VIEW_TIPS[o.n]}`));
+    L.push("◀", "");
+  }
+
+  // Part 4
+  const p4rows = d.aiRows.filter(c => (c[3] || "").trim() === "4");
+  if (p4rows.length) {
+    L.push(`▶ **Part 4　自由英作文（テーマ：${w.part4theme.replace(/（.*$/, "")}）**`,
+      "| | あなたの英文 | 直した文 |", "|---|---|---|");
+    p4rows.forEach((r, i) => L.push(`| ${i + 1} | ${cell(r[5])} | ${cell(r[6]) || "◯"} |`));
+    const ex = get("Part4の解説");
+    if (ex && ex.body) L.push("", ex.body);
+    L.push("◀", "");
+  }
+
+  // 次週の課題：Step1〜3は全員に、補助教材はテスト結果で最初からチェックを入れておく。
+  // 講師がレッスンで生徒の生活に合わせて付け外しし、「生徒に公開」で確定する（記録シートにも入る）
+  const need2 = d.p2total !== null && d.p2total <= SL().part2;
+  const need3 = d.p3.complete && d.p3.total <= SL().part3;
+  const tasks = [...TASKS_BASE.map(n => [n, true]), ["補助教材：瞬間英作文", need2], ["補助教材：発音", need3]];
+  // スピーキングテスト（レッスン中）のFB。講師がNotionの下書きに書く
+  L.push("---", "## 🗣 スピーキングテストのフィードバック");
+  if ((w.speakingPoints || []).length) {
+    // 講師がレッスン後に録画を見て、できていたものにチェックする（公開すると記録シートにも入る）
+    L.push("**意識するポイント**（できていたものに ✅）",
+      ...w.speakingPoints.map((x, i) => `- [ ] ポイント${i + 1}　${x.title}：${x.detail}`), "");
+  }
+  L.push("**次週の独り言で意識すること**", SPEAKING_PLACEHOLDER, "");
+  L.push("---", `## 📚 ${nextWeekOf(state.week)}の課題`, "レッスンで相談して決めた課題です（✅ ＝ 今週取り組むもの）。",
+    ...tasks.map(([n, on]) => `- [${on ? "x" : " "}] ${TASK_PREFIX}${n}`));
+  // 教材リンク（チェック欄の文字は記録に使うので、リンクは別の行に出す）
+  const nw = nextWeekOf(state.week), links = [];
+  [["Step1〜3", "Step1"], ["補助教材：瞬間英作文", "補助教材：瞬間英作文"], ["補助教材：発音", "補助教材：発音"]].forEach(([label, key]) => {
+    const u = taskLink(nw, key);
+    if (u) links.push(`- [${label}の教材](${u})`);
+  });
+  if (links.length) L.push("", "**教材はこちら**", ...links);
+
+
+
+  // 模範解答
+  L.push("", "---", "▶ **📘 模範解答・確認問題の答え**", "**Part 1**",
+    ...(isTranslate()
+      ? w.part1.map((q, i) => `${i + 1}. ${q.jp} → ${q.en}`)
+      : w.part1.map((q, i) => `- Q${i + 1} ${q.q} → ${TYPE_NAMES[q.type]}・${q.split}`)),
+    "", "**Part 2**", ...w.part2.map((q, i) => `${i + 1}. ${q.jp} → ${q.en}`));
+  if (isReading()) {
+    if (w.repeat) L.push("", "**Part 3② リピートの英文**", ...w.repeat.map((q, i) => `${i + 1}. ${q.text}（${q.day}）`));
+  } else {
+    L.push("", "**Part 3 発音記号**", ...w.part3ipa.map(x => `- ${x.ipa} → ${x.word}`));
+  }
+  const ans = get("確認問題の答え");
+  if (ans && ans.body) L.push("", "**確認問題の答え**", ans.body);
+  L.push("◀");
+  return L.join("\n");
+}
+
+function renderResults() {
+  const p1 = analyzePart1();
+  const p3 = part3Score();
+  const speed = W().part2.reduce((s, _, i) => s + (state.p2speed[i] === 1 ? 1 : 0), 0);
+  const speedDone = W().part2.every((_, i) => state.p2speed[i] === 0 || state.p2speed[i] === 1);
+
+  let aiRows = [], sections = null, acc = null;
+  hideMsg("replyMsg");
+  if (state.aiReply.trim()) {
+    const r = parseReply(state.aiReply);
+    if (r.error) {
+      showMsg("replyMsg", r.error, "err");
+    } else {
+      // 週・生徒・担当は、AIが書いたものではなくツールの値を使う（名前の揺れで記録がずれないように）
+      aiRows = r.rows.map(c => [state.week, state.student, state.teacher, ...c.slice(3)]);
+      sections = r.sections;
+      const p2rows = aiRows.filter(c => (c[3] || "").trim() === "2");
+      acc = p2rows.reduce((s, c) => s + (String(c[8]).trim() === "1" ? 1 : 0), 0);
+      if (p2rows.length !== W().part2.length) {
+        showMsg("replyMsg", `Part 2の行が${p2rows.length}行しかありません（${W().part2.length}行のはず）。` + (p2rows.length ? "AIの返事を確認してください。" : "【A】の列の区切り（｜）が読めませんでした。AIに「【A】を｜区切りで出し直して」と頼んでください。"), "warn");
+      } else {
+        const names = isTranslate() ? [...SECTION_NAMES.slice(0, 4), "Part1の解説", ...SECTION_NAMES.slice(4)] : SECTION_NAMES;
+        const p1n = aiRows.filter(c => (c[3] || "").trim() === "1").length;
+        const lack = names.filter(n => !findSection(sections, n));
+        if (isTranslate() && p1 && !p1.error && p1n !== W().part1.length) lack.push(`Part 1の行（${p1n}行。${W().part1.length}行のはず）`);
+        if (lack.length) showMsg("replyMsg", `AIの返事に次の見出しが見つかりません：${lack.join("、")}。そのまま進めると、その部分は生徒用ページに入りません。`, "warn");
+        else showMsg("replyMsg", "読み取りました。下の内容を確認してください。", "ok");
+      }
+    }
+  }
+
+  // 点数と補助教材
+  const p2total = acc === null ? null : speed + acc;
+  const support2 = p2total === null ? "AIの返事待ち" : (p2total <= SL().part2 ? "瞬間英作文：あり" : "瞬間英作文：なし");
+  // 音読の採点がそろうまでは点数を出さない（初期値だけで点数が見えてしまうため）
+  const p3started = isReading() ? false : p3.missing.length < W().part3viewpoints.length;
+  const support3 = !p3.complete ? (isReading() ? `${p3.missing.join("・")}の採点待ち（手順3のチェック）` : p3started ? `音読があと${p3.missing.length}項目` : "音読の採点待ち") : (p3.total <= SL().part3 ? "発音：あり" : "発音：なし");
+  // Part 1 の点数（和文英訳はAIと講師の判定から）
+  const tr = p1 && !p1.error && p1.mode === "translate" ? translateItems(p1) : null;
+  const p1score = !p1 || p1.error ? null : tr ? (tr.complete ? tr.score : null) : p1.score;
+  const p1max = !p1 || p1.error ? 0 : tr ? tr.max : p1.max;
+  const RS = isReading() ? repeatScore() : null;
+  lastSummary = {
+    part1: p1score,
+    part2: p2total,
+    part3: p3.complete ? p3.total : null,
+    support2: p2total === null ? "" : (p2total <= SL().part2 ? "あり" : "なし"),
+    support3: !p3.complete ? "" : (p3.total <= SL().part3 ? "あり" : "なし")
+  };
+  $("summary").innerHTML =
+    `<div class="stat"><div class="k">Part 1</div><div class="v">${p1score !== null ? `${p1score} / ${p1max}` : "―"}</div><div class="j">${tr && !tr.complete ? `AIの判定待ち（${tr.waiting}問）` : "判定には使わない"}</div></div>` +
+    `<div class="stat"><div class="k">Part 2（瞬発力 ${speedDone ? speed : "入力途中"} ＋ 正確性 ${acc === null ? "―" : acc}）</div><div class="v">${p2total === null ? "―" : `${p2total} / 20`}</div><div class="j">${support2}</div></div>` +
+    `<div class="stat"><div class="k">Part 3${RS ? "（音読＋リピート）" : isReading() ? " 音読" : ""}</div><div class="v">${p3.complete ? `${p3.total} / ${p3.max}` : "―"}</div><div class="j">${support3}${RS ? `<br>音読 ${state.p3done ? `${p3.read} / ${p3.readMax}` : "―"}・リピート ${RS.complete ? `${RS.total} / ${RS.max}` : "―"}` : ""}</div></div>`;
+
+  // 記録シート用（Part 1・3はツール、Part 2・4はAI）
+  // 記録シート用の行は、AIの返事を読み取れてから出す（それまでは入力途中で、Part 3の初期値などが混ざるため）
+  const all = aiRows.length
+    ? [...part1Rows(p1), ...aiRows.filter(c => (c[3] || "").trim() === "2"), ...part3Rows(), ...aiRows.filter(c => (c[3] || "").trim() === "4")]
+    : [];
+  $("recordOut").textContent = all.map(c => c.join("\t")).join("\n");
+  $("fbOut").textContent = sections ? buildStudentPage({ p1, p3, speed, acc, p2total, aiRows, sections }) : "";
+}
+
+// ============================================================
+// コピー
+// ============================================================
+async function copyText(text, msgId, okText) {
+  if (!text) { showMsg(msgId, "コピーする内容がありません。", "err"); return; }
+  try {
+    await navigator.clipboard.writeText(text);
+    showMsg(msgId, okText, "ok");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+    document.body.removeChild(ta);
+    showMsg(msgId, ok ? okText : "コピーできませんでした。手動でコピーしてください。", ok ? "ok" : "err");
+  }
+}
+
+// ============================================================
+// 画面の組み立てとイベント
+// ============================================================
+function renderAll() {
+  $("week").innerHTML = Object.keys(WEEKS).map(k => `<option ${k === state.week ? "selected" : ""}>${k}</option>`).join("");
+  $("student").value = state.student;
+  $("teacher").value = state.teacher;
+  $("p1paste").value = state.p1paste;
+  $("p2notta").value = state.p2notta;
+  $("aiReply").value = state.aiReply;
+  $("p4theme").textContent = "テーマ：" + W().part4theme;
+  $("p1title").textContent = isTranslate() ? "Part 1：文法チェック（和文英訳）" : "Part 1：文型チェック";
+  $("p1hint").textContent = isTranslate()
+    ? "フォームに回答した生徒を選ぶと、英文が出ます。○×（その問題の文法が正しく使えたか）は、手順6でAIの返事を貼ると自動で入ります。違うと思ったら押して直してください。生徒名も自動で入ります。"
+    : "フォームに回答した生徒を選ぶと、点数と弱点タイプが出ます。生徒名も自動で入ります。";
+  $("p3title").textContent = isReading() ? "Part 3：音読・リピート" : "Part 3：発音チェック";
+  renderDrafts();
+  if (typeof renderRoster === "function") renderRoster();
+  if (typeof markP1Select === "function" && p1Students.length) markP1Select();
+  if ($("pubStudent").options.length) markPubSelect();
+  renderPart1();
+  renderPart2();
+  renderPart3();
+  renderResults();
+}
+
+$("week").addEventListener("change", e => switchDraft(e.target.value, state.student));
+$("student").addEventListener("change", e => { const n = normalizeName(e.target.value); e.target.value = n; renameDraft(n); renderRoster(); });
+$("draftSel").addEventListener("change", e => {
+  const d = store.drafts[e.target.value];
+  if (d) switchDraft(d.week, d.student);
+  else switchDraft(LATEST_WEEK, "");
+});
+$("teacher").addEventListener("input", e => { state.teacher = e.target.value.trim(); saveState(); renderResults(); });
+// Part 1：回答シートを中継から読み込む
+// 回答の一覧：すべての週の回答シートを読む。{ week, name, row, known, similar }
+let p1Students = [];
+// 名簿（講師だけが見る）：中継が返す、生徒ページと記録シートにある名前。中継が古くて返さないときは null（生徒名は手入力）
+let roster = null;
+async function loadPart1() {
+  const relay = loadRelay();
+  const sel = $("p1student");
+  if (!relay.url || !relay.pass) {
+    sel.innerHTML = '<option value="">（先に手順6の「Notion連携の設定」を入れてください）</option>';
+    return;
+  }
+  const weeks = Object.keys(WEEKS).filter(k => WEEKS[k].part1SheetId).reverse(); // 新しい週から
+  sel.innerHTML = '<option value="">（回答を読み込んでいます…）</option>';
+  const list = [], fails = [];
+  for (const wk of weeks) {
+    try {
+      const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "part1", sheetId: WEEKS[wk].part1SheetId }) });
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      if (json.known) roster = json.known;
+      (json.students || []).forEach(s => list.push(Object.assign({ week: wk }, s)));
+    } catch (e) { fails.push(`${wk}：${e.message}`); }
+  }
+  p1Students = list;
+  const opt = (s, i) => `<option value="${i}">${esc(s.week)}　${esc(s.name)}（${esc(String(s.row[0] || "").replace(/^\d{4}\//, "").replace(/:\d{2}$/, ""))}回答）${s.known === false ? "　※名簿にない名前" : ""}</option>`;
+  sel.innerHTML = `<option value="">回答を選ぶ（${list.length}件）</option>` +
+    weeks.map(wk => `<optgroup label="${esc(wk)}">` + list.map((s, i) => s.week === wk ? opt(s, i) : "").join("") + "</optgroup>").join("");
+  markP1Select();
+  renderRoster();
+  if (fails.length) showMsg("p1msg", "読み込めなかった回答シートがあります：" + fails.join("／") + "　下の「手で貼る」も使えます。", list.length ? "warn" : "err");
+}
+function markP1Select() {
+  const i = p1Students.findIndex(s => s.week === state.week && (s.name === state.student || s.name === state.p1from));
+  $("p1student").value = i >= 0 ? String(i) : "";
+}
+// 回答の名前を名簿の名前にそろえる。名簿にあればそのまま、似た名前があれば講師に聞く。やめたら null
+function rosterName(s) {
+  if (!roster || s.known !== false) return s.name;
+  return askSameStudent(s.name, s.similar || []) === null ? null : (askSameStudent.last || s.name);
+}
+$("p1student").addEventListener("change", e => {
+  const s = p1Students[Number(e.target.value)];
+  if (!s) return;
+  const name = rosterName(s);
+  if (name === null) { markP1Select(); return; }
+  // 選んだ回答の週と生徒の下書きに切り替える（前の生徒の入力が混ざらないように）
+  if (s.week !== state.week || name !== state.student) {
+    if (state.student || s.week !== state.week || store.drafts[s.week + "|" + name]) switchDraft(s.week, name);
+    else renameDraft(name);
+  }
+  state.p1from = s.name;
+  state.p1paste = s.row.join("\t");
+  $("p1paste").value = state.p1paste;
+  $("student").value = state.student;
+  saveState(); renderPart1(); renderPart3(); renderResults(); markP1Select(); renderRoster();
+});
+$("p1reload").addEventListener("click", () => { hideMsg("p1msg"); loadPart1(); });
+$("week").addEventListener("change", () => { markP1Select(); loadPubList(); });
+$("relayUrl").addEventListener("change", loadPart1);
+$("relayPass").addEventListener("change", loadPart1);
+loadPart1();
+
+// 手順0の生徒名：名簿があれば選ぶ。名簿にない生徒だけ「新しい生徒」で名前を打つ
+function renderRoster() {
+  const sel = $("studentSel"), inp = $("student");
+  if (!roster) { sel.style.display = "none"; inp.style.display = ""; return; }
+  const names = [...new Set([...roster, ...(state.student ? [state.student] : [])])].sort((a, b) => a.localeCompare(b, "ja"));
+  const typing = sel.value === "__new__" && !state.student;
+  sel.innerHTML = `<option value="">生徒を選ぶ（名簿：${roster.length}人）</option>` +
+    names.map(n => `<option value="${esc(n)}" ${n === state.student ? "selected" : ""}>${esc(n)}${roster.includes(n) ? "" : "（名簿にない）"}</option>`).join("") +
+    `<option value="__new__" ${typing ? "selected" : ""}>＋ 名簿にない新しい生徒（名前を入力）</option>`;
+  sel.style.display = "";
+  inp.style.display = typing ? "" : "none";
+}
+$("studentSel").addEventListener("change", e => {
+  const v = e.target.value;
+  if (v === "__new__") { $("student").style.display = ""; $("student").value = ""; $("student").focus(); return; }
+  $("student").style.display = "none";
+  if (!v || v === state.student) return;
+  renameDraft(v);
+  $("student").value = state.student;
+  renderRoster();
+});
+
+$("p1paste").addEventListener("input", e => { state.p1paste = e.target.value; saveState(); renderPart1(); renderPart3(); renderResults(); });
+$("p2notta").addEventListener("input", e => { state.p2notta = e.target.value; saveState(); });
+$("aiReply").addEventListener("input", e => { state.aiReply = e.target.value; saveState(); if (isTranslate()) renderPart1(); renderResults(); });
+// Part 3（Week2以降）：評価箇所のほかの気づき・採点を終えたチェック
+$("p3addExtra").addEventListener("click", () => { state.p3extra.push({ text: "", sym: "", note: "" }); saveState(); renderPart3(); });
+$("p3done").addEventListener("change", e => { state.p3done = e.target.checked; saveState(); renderResults(); });
+$("p3repDone").addEventListener("change", e => { state.p3repDone = e.target.checked; saveState(); renderResults(); });
+
+document.addEventListener("click", e => {
+  const del = e.target.closest("button[data-p3xdel]");
+  if (del) {
+    state.p3extra.splice(Number(del.dataset.p3xdel), 1);
+    saveState(); renderPart3(); renderResults();
+    return;
+  }
+  const b = e.target.closest("button[data-v]");
+  if (!b) return;
+  const seg = b.parentElement;
+  const v = Number(b.dataset.v);
+  if (seg.dataset.p1j !== undefined) {
+    // 和文英訳の判定を講師が直す。AIと同じ判定に戻したら、直した記録は消す
+    const i = seg.dataset.p1j;
+    const p1 = analyzePart1();
+    const ai = p1 && !p1.error ? translateItems(p1).items[i].ai : null;
+    if (state.p1judge[i] === v || ai === v) delete state.p1judge[i];
+    else state.p1judge[i] = v;
+    saveState(); renderPart1(); renderResults();
+  } else if (seg.dataset.p2 !== undefined) {
+    const i = seg.dataset.p2;
+    state.p2speed[i] = state.p2speed[i] === v ? undefined : v;
+    saveState(); renderPart2(); renderResults();
+  } else if (seg.dataset.p3v !== undefined) {
+    const i = seg.dataset.p3v;
+    state.p3view[i] = state.p3view[i] === v ? undefined : v;
+    saveState(); renderPart3(); renderResults();
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.p3r !== undefined) {
+    const k = t.dataset.p3r;
+    state.p3read[k] = Object.assign({}, state.p3read[k], { on: t.checked });
+    saveState(); renderPart3(); renderResults();
+    return;
+  } else if (t.dataset.p3rsym !== undefined) {
+    // 崩れ方を選んだら、自動で「崩れていた」にする
+    const k = t.dataset.p3rsym;
+    state.p3read[k] = Object.assign({}, state.p3read[k], { sym: t.value });
+    if (t.value) state.p3read[k].on = true;
+    saveState(); renderPart3(); renderResults();
+    return;
+  } else if (t.dataset.p3rep !== undefined) {
+    // リピート：かたまりを言えなかった回
+    if (t.checked) state.p3rep[t.dataset.p3rep] = true; else delete state.p3rep[t.dataset.p3rep];
+    saveState(); renderRepeat(); renderResults();
+    return;
+  } else if (t.dataset.p3repsym !== undefined) {
+    // 理由を選んだのに✕がどちらにもなければ、1回目を✕にする
+    const k = t.dataset.p3repsym;
+    state.p3rep[k] = Object.assign({}, state.p3rep[k], { sym: t.value });
+    if (t.value && !state.p3rep[`${k}-1`] && !state.p3rep[`${k}-2`]) state.p3rep[`${k}-1`] = true;
+    saveState(); renderRepeat(); renderResults();
+    return;
+  } else if (t.dataset.p3rq !== undefined) {
+    const qi = t.dataset.p3rq;
+    state.p3repq[qi] = Object.assign({}, state.p3repq[qi], { [t.dataset.f]: t.checked });
+    saveState(); renderRepeat(); renderResults();
+    return;
+  } else if (t.dataset.p3xsym !== undefined) {
+    const i = t.dataset.p3xsym;
+    state.p3extra[i] = Object.assign({}, state.p3extra[i], { sym: t.value });
+  } else if (t.dataset.p3c !== undefined) {
+    const i = t.dataset.p3c;
+    state.p3checks[i] = Object.assign({}, state.p3checks[i], { on: t.checked });
+  } else if (t.dataset.p3csym !== undefined) {
+    const i = t.dataset.p3csym;
+    state.p3checks[i] = Object.assign({}, state.p3checks[i], { sym: t.value });
+    if (t.value) {
+      state.p3checks[i].on = true;
+      const cb = document.querySelector(`input[data-p3c="${i}"]`);
+      if (cb) cb.checked = true;
+    }
+  } else if (t.dataset.p3i !== undefined) {
+    const i = t.dataset.p3i;
+    state.p3ipa[i] = Object.assign({}, state.p3ipa[i], { v: t.value });
+  } else return;
+  saveState(); renderResults();
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.p3rnote !== undefined) {
+    // メモを書いたら、自動で「崩れていた」にする（入力中に表を描き直さないよう、チェックだけ付ける）
+    const k = t.dataset.p3rnote;
+    state.p3read[k] = Object.assign({}, state.p3read[k], { note: t.value });
+    if (t.value && !state.p3read[k].on) {
+      state.p3read[k].on = true;
+      const cb = document.querySelector(`input[data-p3r="${k}"]`);
+      if (cb) cb.checked = true;
+    }
+  } else if (t.dataset.p3repnote !== undefined) {
+    // メモだけ書いたときも、✕がなければ1回目を✕にする（入力中に表を描き直さないよう、チェックだけ付ける）
+    const k = t.dataset.p3repnote;
+    state.p3rep[k] = Object.assign({}, state.p3rep[k], { note: t.value });
+    if (t.value && !state.p3rep[`${k}-1`] && !state.p3rep[`${k}-2`]) {
+      state.p3rep[`${k}-1`] = true;
+      const cb = document.querySelector(`input[data-p3rep="${k}-1"]`);
+      if (cb) cb.checked = true;
+    }
+  } else if (t.dataset.p3xtext !== undefined) {
+    state.p3extra[t.dataset.p3xtext] = Object.assign({}, state.p3extra[t.dataset.p3xtext], { text: t.value });
+  } else if (t.dataset.p3xnote !== undefined) {
+    state.p3extra[t.dataset.p3xnote] = Object.assign({}, state.p3extra[t.dataset.p3xnote], { note: t.value });
+  } else if (t.dataset.p3cnote !== undefined) {
+    const i = t.dataset.p3cnote;
+    state.p3checks[i] = Object.assign({}, state.p3checks[i], { note: t.value });
+    if (t.value && !state.p3checks[i].on) {
+      state.p3checks[i].on = true;
+      const cb = document.querySelector(`input[data-p3c="${i}"]`);
+      if (cb) cb.checked = true;
+    }
+  } else if (t.dataset.p3inote !== undefined) {
+    const i = t.dataset.p3inote;
+    state.p3ipa[i] = Object.assign({}, state.p3ipa[i], { note: t.value });
+  } else return;
+  saveState(); renderResults();
+});
+
+$("copyPromptBtn").addEventListener("click", () => {
+  const missing = [];
+  if (!state.student) missing.push("生徒名");
+  if (!W().part2.every((_, i) => state.p2speed[i] === 0 || state.p2speed[i] === 1)) missing.push("Part 2の瞬発力");
+  if (!state.p2notta.trim()) missing.push("Nottaの文字起こし");
+  if (!part3Score().complete) missing.push("Part 3の音読（" + part3Score().missing.join("、") + "）");
+  copyText(buildPrompt(), "copyMsg",
+    missing.length ? `コピーしました。ただし未入力があります：${missing.join("、")}` : "コピーしました。AIに貼って、Part 4の写真を添付して送ってください。");
+});
+$("copyRecordBtn").addEventListener("click", () => copyText($("recordOut").textContent, "outMsg", "記録シート用をコピーしました。記録シートの一番下の行に貼ってください。"));
+// ============================================================
+// Notionにページを作成（中継のApps Script経由）
+// ============================================================
+function loadRelay() {
+  try { return JSON.parse(localStorage.getItem(RELAY_KEY) || "{}"); } catch (e) { return {}; }
+}
+function saveRelay() {
+  try { localStorage.setItem(RELAY_KEY, JSON.stringify({ url: $("relayUrl").value.trim(), pass: $("relayPass").value })); } catch (e) { /* 無視 */ }
+}
+(function initRelay() {
+  const r = loadRelay();
+  $("relayUrl").value = r.url || "";
+  $("relayPass").value = r.pass || "";
+  $("relayUrl").addEventListener("input", saveRelay);
+  $("relayPass").addEventListener("input", saveRelay);
+})();
+
+function focusFromFb(fb) {
+  const lines = fb.split("\n");
+  const start = lines.findIndex(l => l.includes("今週の重点"));
+  if (start < 0) return "";
+  const items = [];
+  for (let i = start + 1; i < lines.length; i++) {
+    const m = lines[i].match(/^\s*\d+[.．]\s*(.+)$/);
+    if (m) items.push(m[1].trim());
+    else if (items.length && lines[i].trim()) break;
+  }
+  return items.join("／");
+}
+
+$("notionBtn").addEventListener("click", async () => {
+  const fb = $("fbOut").textContent.trim();
+  const relay = loadRelay();
+  if (!fb) { showMsg("notionMsg", "生徒用FBがまだありません。先にAIの返事を貼ってください。", "err"); return; }
+  if (!relay.url || !relay.pass) { showMsg("notionMsg", "下の「Notion連携の設定」に、中継のURLと合言葉を入れてください。", "err"); return; }
+  if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
+  if ((state.status === "notion" || state.status === "published") &&
+      !confirm("この生徒のNotionの下書きはすでにあります。作り直すと、Notionで直した内容とスピーキングテストのフィードバックは消えます（公開済みのページはそのままです）。作り直しますか？")) return;
+  if (!confirm(`【${state.week}】${state.student}さんの下書きをNotionに作ります。\n\n週と生徒は合っていますか？`)) return;
+  const payload = Object.assign({
+    pass: relay.pass,
+    title: `${state.week} ${state.student}`,
+    week: state.week, student: state.student, teacher: state.teacher,
+    focus: focusFromFb(fb), markdown: fb,
+    rows: $("recordOut").textContent.split("\n").filter(l => l.trim()).map(l => l.split("\t"))
+  }, lastSummary);
+  $("notionBtn").disabled = true;
+  showMsg("notionMsg", "記録シートに書き込み、Notionに下書きを作っています…", "warn");
+  let who = draftKey(state);
+  try {
+    let json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
+    if (json.needConfirm) {
+      const same = askSameStudent(payload.student, json.similar);
+      if (same === null) { showMsg("notionMsg", "やめました。生徒名を確認してから、もう一度押してください。", "warn"); return; }
+      if (same) {
+        // すでにいる生徒の名前にそろえる
+        if (store.drafts[state.week + "|" + same]) {
+          showMsg("notionMsg", `「${same}」の下書きがこのツールにすでにあります。手順0の下書き一覧から開いて確認してください。`, "warn");
+          return;
+        }
+        renameDraft(same);
+        if (state.student !== same) { showMsg("notionMsg", "やめました。生徒名を確認してから、もう一度押してください。", "warn"); return; }
+        $("student").value = same;
+        renderResults();
+        payload.student = same; payload.title = `${state.week} ${same}`;
+        payload.rows = $("recordOut").textContent.split("\n").filter(l => l.trim()).map(l => l.split("\t"));
+      }
+      payload.confirmNew = true;
+      json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
+    }
+    if (json.needOverwrite) {
+      if (!confirm(`Notionの下書きは ${fmtTime(json.edited)} に講師が直しています。\n作り直すと、直した内容とスピーキングテストのフィードバックが消えます（Notionのゴミ箱から30日間は戻せます）。\n\n作り直しますか？`)) {
+        showMsg("notionMsg", "やめました。Notionの下書きはそのままです。", "warn");
+        return;
+      }
+      payload.confirmNew = true;
+      payload.overwrite = true;
+      json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(payload) })).json();
+    }
+    if (json.error) throw new Error(json.error);
+    const el = $("notionMsg");
+    el.className = "msg show ok";
+    el.innerHTML = `記録シートに${json.rows || 0}行を記録し、Notionに下書きを作りました：<a href="${esc(json.url)}" target="_blank" rel="noopener">下書きを開く</a><br>` +
+      `<strong>まだ生徒には見えません。</strong>Notionで内容を確認・修正してください。レッスンではこの下書きを画面共有し、スピーキングテストのあとに「スピーキングテストのフィードバック」を書いてから、手順7の「生徒に公開」を押してください。`;
+    who = draftKey(state);
+    if (store.drafts[who]) { store.drafts[who].status = "notion"; if (who === draftKey(state)) state.status = "notion"; saveState(); }
+    loadPubList();
+  } catch (e) {
+    showMsg("notionMsg", "作成できませんでした：" + e.message, "err");
+  } finally {
+    $("notionBtn").disabled = false;
+  }
+});
+
+$("copyFbBtn").addEventListener("click", () => copyText($("fbOut").textContent, "outMsg", "コピーしました。Notionのページに貼って使ってください。"));
+$("resetBtn").addEventListener("click", () => {
+  if (!confirm("この生徒の下書き（このツールの入力）を消します。Notionや記録シートに送った内容は消えません。よろしいですか？")) return;
+  delete store.drafts[draftKey(state)];
+  const week = state.week, teacher = state.teacher;
+  state = Object.assign(blankState(), { week, teacher });
+  saveState(); renderAll();
+});
+
+const fmtTime = iso => { const d = new Date(iso); return isNaN(d) ? String(iso) : `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; };
+
+// 似た名前の生徒がいるときに聞く。同じ人ならその名前、別の人なら ""、やめるなら null
+function askSameStudent(name, similar) {
+  askSameStudent.last = "";
+  for (const s of similar) {
+    if (confirm(`「${name}」と似た名前の生徒がいます：「${s}」\n\n同じ人ですか？\nOK：同じ人（「${s}」として記録する）\nキャンセル：違う人`)) { askSameStudent.last = s; return s; }
+  }
+  return confirm(`「${name}」を新しい生徒として記録します。よろしいですか？`) ? "" : null;
+}
+
+// ============================================================
+// 手順7：レッスン後に生徒に公開
+// ============================================================
+let pubStudents = [];
+function markPubSelect() {
+  if (pubStudents.includes(state.student)) $("pubStudent").value = state.student;
+}
+async function loadPubList() {
+  const relay = loadRelay();
+  const sel = $("pubStudent");
+  if (!relay.url || !relay.pass) { sel.innerHTML = '<option value="">（先に手順6の「Notion連携の設定」を入れてください）</option>'; return; }
+  sel.innerHTML = '<option value="">（読み込んでいます…）</option>';
+  try {
+    const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "drafts", week: state.week }) });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+    pubStudents = json.students || [];
+    sel.innerHTML = `<option value="">生徒を選ぶ（${esc(state.week)}の下書き：${pubStudents.length}人）</option>` +
+      pubStudents.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    markPubSelect();
+  } catch (e) {
+    sel.innerHTML = '<option value="">（読み込めませんでした）</option>';
+    showMsg("pubMsg", "下書きの一覧を読み込めませんでした：" + e.message, "err");
+  }
+}
+function slackMessage(week, url, tasks) {
+  const lines = [`${week} 確認テストのフィードバックです！`, url, "", `【${nextWeekOf(week)}の課題】`];
+  const nw = nextWeekOf(week);
+  tasks.forEach(t => {
+    if (t.on) lines.push(`✅ ${t.name}`);
+    else if (/^Step/.test(t.name)) lines.push(`➖ ${t.name}（今週はお休みでOK）`);
+  });
+  if (!tasks.length) lines.push("（Notionのページの「課題」を見てください）");
+  // 取り組む課題の教材リンク（Step1〜3は1つのリンク）
+  const links = [];
+  if (tasks.some(t => t.on && /^Step/.test(t.name)) && taskLink(nw, "Step1")) links.push(`Step1〜3：${taskLink(nw, "Step1")}`);
+  tasks.filter(t => t.on && !/^Step/.test(t.name)).forEach(t => { const u = taskLink(nw, t.name); if (u) links.push(`${t.name.replace(/^補助教材：/, "")}：${u}`); });
+  if (links.length) lines.push("", "【教材】", ...links);
+  lines.push("", "まずはFBの「今週の重点」を読んでから、課題に取り組んでみてください。");
+  return lines.join("\n");
+}
+$("copyPubText").addEventListener("click", () => copyText($("pubText").value, "pubTextMsg", "コピーしました。テスト提出部屋に貼って送ってください。"));
+$("pubReload").addEventListener("click", () => { hideMsg("pubMsg"); loadPubList(); });
+$("relayUrl").addEventListener("change", loadPubList);
+$("relayPass").addEventListener("change", loadPubList);
+$("pubBtn").addEventListener("click", async () => {
+  const student = $("pubStudent").value;
+  const week = state.week;
+  const relay = loadRelay();
+  hideMsg("pubNote");
+  $("pubTextBox").style.display = "none";
+  if (!student) { showMsg("pubMsg", "公開する生徒を選んでください。", "err"); return; }
+  if (!confirm(`${week} ${student}さんのFBを公開します。Notionの下書きの確認と「スピーキングテストのフィードバック」は済んでいますか？`)) return;
+  $("pubBtn").disabled = true;
+  showMsg("pubMsg", "生徒のページに入れています…（少し時間がかかります）", "warn");
+  try {
+    const req = { pass: relay.pass, action: "publish", week, student };
+    let json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(req) })).json();
+    if (json.needConfirm) {
+      const same = askSameStudent(student, json.similar);
+      if (same === null) { showMsg("pubMsg", "やめました。", "warn"); return; }
+      if (same) req.asStudent = same;
+      req.confirmNew = true;
+      json = await (await fetch(relay.url, { method: "POST", body: JSON.stringify(req) })).json();
+    }
+    if (json.error) throw new Error(json.error);
+    const el = $("pubMsg");
+    el.className = "msg show ok";
+    el.innerHTML = `${json.updated ? "公開済みのページを上書きしました（リンクは前と同じです）" : "公開しました"}：<a href="${esc(json.url)}" target="_blank" rel="noopener">${esc(json.url)}</a> ` +
+      `<button class="btn sub" type="button" id="copyPubUrl" style="padding:4px 10px;margin-left:6px">リンクをコピー</button><br>このリンクをテスト提出部屋に送ってください。` +
+      (json.skipped ? `<br>※ 画像など${json.skipped}個はコピーできませんでした。必要なら生徒のページに直接入れてください。` : "");
+    $("copyPubUrl").addEventListener("click", () => navigator.clipboard && navigator.clipboard.writeText(json.url));
+    // 講師がSlackに送る文面（FBのリンク＋レッスンで確定した課題）
+    $("pubText").value = slackMessage(week, json.url, json.tasks || []);
+    $("pubTextBox").style.display = "";
+    if (json.newStudent) {
+      const note = $("pubNote");
+      note.className = "msg show warn";
+      note.innerHTML = `<strong>${esc(student)}さんの専用ページを新しく作りました。このままでは生徒が開けません。</strong><br>` +
+        `<a href="${esc(json.studentUrl)}" target="_blank" rel="noopener">専用ページを開き</a>、右上の「共有」→「Web公開」→「公開」を押してください。` +
+        `そのあと「編集を許可」「複製を許可」「検索エンジンのインデックス作成」をすべてオフにします（この生徒については最初の1回だけです）。`;
+    }
+    const k = week + "|" + student;
+    if (store.drafts[k]) { store.drafts[k].status = "published"; if (k === draftKey(state)) state.status = "published"; saveState(); }
+  } catch (e) {
+    showMsg("pubMsg", "公開できませんでした：" + e.message, "err");
+  } finally {
+    $("pubBtn").disabled = false;
+  }
+});
+loadPubList();
+
+renderAll();
+</script>
+</body>
+</html>
