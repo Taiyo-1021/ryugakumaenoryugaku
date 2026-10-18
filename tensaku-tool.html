@@ -1986,6 +1986,9 @@ $("notionBtn").addEventListener("click", async () => {
   if (!fb) { showMsg("notionMsg", "生徒用FBがまだありません。先にAIの返事を貼ってください。", "err"); return; }
   if (!relay.url || !relay.pass) { showMsg("notionMsg", "下の「Notion連携の設定」に、中継のURLと合言葉を入れてください。", "err"); return; }
   if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
+  // Part 3 の「採点を終えた」がないと、発音の点数・結果・補助教材の判定が入らない
+  const p3 = part3Score();
+  if (!p3.complete && !confirm(`Part 3 の採点が終わっていません（${(p3.missing || []).join("・") || "未入力"}）。\n手順3の「採点を終えた」にチェックを入れないと、発音の点数・結果・補助教材の判定がNotionに入りません。\n\nこのまま作りますか？`)) return;
   if ((state.status === "notion" || state.status === "published") &&
       !confirm("この生徒のNotionの下書きはすでにあります。作り直すと、Notionで直した内容とスピーキングテストのフィードバックは消えます（公開済みのページはそのままです）。作り直しますか？")) return;
   if (!confirm(`【${state.week}】${state.student}さんの下書きをNotionに作ります。\n\n週と生徒は合っていますか？`)) return;
