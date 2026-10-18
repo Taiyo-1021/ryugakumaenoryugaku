@@ -3,8 +3,6 @@
 // 使い方：script.google.com で新しいプロジェクトを作り、この中身を貼り付けて createWeek2Form を実行する。
 // 実行後、「実行ログ」にフォームのURL（生徒用）と回答シートのIDが出る。
 
-const WEEK2_FOLDER_ID = '1n6Ym3XUtQ_eEC6vRiGRMftNcD2ufi3bG'; // Week2 フォルダ
-
 const PART1 = [
   '私は新しいスポーツに挑戦したいです。',
   '音楽を聴くことは、私をリラックスさせます。',
@@ -57,13 +55,8 @@ function createWeek2Form() {
   const ss = SpreadsheetApp.create('Week2 確認テスト｜Part1 和文英訳（回答）');
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
 
-  try {
-    const folder = DriveApp.getFolderById(WEEK2_FOLDER_ID);
-    DriveApp.getFileById(form.getId()).moveTo(folder);
-    DriveApp.getFileById(ss.getId()).moveTo(folder);
-  } catch (e) {
-    Logger.log('Week2フォルダへの移動はできませんでした（マイドライブに作成済み）：' + e);
-  }
+  // フォームと回答シートはマイドライブに置いたままにする。
+  // 生徒が見る教材フォルダ（リンクを知っている人は閲覧可）に入れると、全員の名前と回答が見えてしまうため
 
   Logger.log('生徒用フォームURL：' + form.getPublishedUrl());
   Logger.log('フォーム編集URL：' + form.getEditUrl());
