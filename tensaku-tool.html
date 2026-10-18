@@ -1763,6 +1763,14 @@ async function loadPart1() {
 function markP1Select() {
   const i = p1Students.findIndex(s => s.week === state.week && (s.name === state.student || s.name === state.p1from));
   $("p1student").value = i >= 0 ? String(i) : "";
+  // 名簿や下書き一覧から生徒を選んだときも、その生徒の回答があれば読み込む
+  // （一覧に名前が選ばれて見えるのに、回答が入っておらず「未提出」になるのを防ぐ）
+  if (i >= 0 && !state.p1paste.trim()) {
+    state.p1from = p1Students[i].name;
+    state.p1paste = p1Students[i].row.join("\t");
+    $("p1paste").value = state.p1paste;
+    saveState(); renderPart1(); renderPart3(); renderResults();
+  }
 }
 // 回答の名前を名簿の名前にそろえる。名簿にあればそのまま、似た名前があれば講師に聞く。やめたら null
 function rosterName(s) {
