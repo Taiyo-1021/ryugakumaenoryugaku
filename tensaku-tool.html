@@ -1771,7 +1771,9 @@ function markP1Select() {
   $("p1student").value = i >= 0 ? String(i) : "";
   // 名簿や下書き一覧から生徒を選んだときも、その生徒の回答があれば読み込む
   // （一覧に名前が選ばれて見えるのに、回答が入っておらず「未提出」になるのを防ぐ）
-  if (i >= 0 && !state.p1paste.trim()) {
+  // 貼り付け欄に読めない内容（途中までの貼り付けなど）が残っているときも、回答で置きかえる
+  const cur = state.p1paste.trim() ? analyzePart1() : null;
+  if (i >= 0 && (!cur || cur.error)) {
     state.p1from = p1Students[i].name;
     state.p1paste = p1Students[i].row.join("\t");
     $("p1paste").value = state.p1paste;
