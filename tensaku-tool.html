@@ -1636,7 +1636,13 @@ function renderResults() {
         const p1n = aiRows.filter(c => (c[3] || "").trim() === "1").length;
         const lack = names.filter(n => !findSection(sections, n));
         if (isTranslate() && p1 && !p1.error && p1n !== W().part1.length) lack.push(`Part 1の行（${p1n}行。${W().part1.length}行のはず）`);
-        if (lack.length) showMsg("replyMsg", `AIの返事に次の見出しが見つかりません：${lack.join("、")}。そのまま進めると、その部分は生徒用ページに入りません。`, "warn");
+        // 回答を読み込む前に作った依頼文をAIに送ると、書いてある英文まで「未回答」にされる
+        const stale = isTranslate() && p1 && !p1.error && p1.answers.filter((a, i) => {
+          const r = rowOf(aiRows, "1", `Q${i + 1}`);
+          return a && r && /未回答/.test(r[9] || "");
+        }).length;
+        if (stale) showMsg("replyMsg", `AIの返事では、生徒が書いた ${stale} 問が「未回答」になっています。Part 1 の回答を読み込む前の依頼文をAIに送ったようです。手順5の依頼文をコピーし直してAIに送り、新しい返事を貼り直してください。`, "err");
+        else if (lack.length) showMsg("replyMsg", `AIの返事に次の見出しが見つかりません：${lack.join("、")}。そのまま進めると、その部分は生徒用ページに入りません。`, "warn");
         else showMsg("replyMsg", "読み取りました。下の内容を確認してください。", "ok");
       }
     }
@@ -1994,6 +2000,13 @@ $("notionBtn").addEventListener("click", async () => {
   if (!fb) { showMsg("notionMsg", "生徒用FBがまだありません。先にAIの返事を貼ってください。", "err"); return; }
   if (!relay.url || !relay.pass) { showMsg("notionMsg", "下の「Notion連携の設定」に、中継のURLと合言葉を入れてください。", "err"); return; }
   if (!state.student) { showMsg("notionMsg", "生徒名を入れてください。", "err"); return; }
+  // Part 1 の回答が入っていない／AIの返事が回答を読み込む前のもの、のまま送らないように
+  const p1now = analyzePart1();
+  if (!p1now || p1now.error) {
+    if (!confirm("Part 1 の回答が入っていないので、Notionでは「未提出」になります。\nフォームに回答している生徒なら、手順1の「回答を選ぶ」から回答を選び、手順5の依頼文をAIに送り直してください。\n\nこのまま作りますか？")) return;
+  } else if ($("replyMsg").classList.contains("err")) {
+    if (!confirm($("replyMsg").textContent + "\n\nこのまま作りますか？")) return;
+  }
   // Part 3 の「採点を終えた」がないと、発音の点数・結果・補助教材の判定が入らない
   const p3 = part3Score();
   if (!p3.complete && !confirm(`Part 3 の採点が終わっていません（${(p3.missing || []).join("・") || "未入力"}）。\n手順3の「採点を終えた」にチェックを入れないと、発音の点数・結果・補助教材の判定がNotionに入りません。\n\nこのまま作りますか？`)) return;
