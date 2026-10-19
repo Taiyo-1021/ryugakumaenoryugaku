@@ -441,11 +441,130 @@ const WEEKS = {
       pattern: "",
       sound: "流暢さ／th／v／/æ/／リンキング／アクセント／リズム／リピート／その他"
     }
+  },
+  "Week3": {
+    part1SheetId: "", // フォームを作ったら回答シートのIDを入れる（入れるまでは、新しい下書きの週は Week2 のまま）
+    focus: "時制の使い分け（現在形・現在進行形／過去形・過去進行形／will・be going to・予定の進行形／when・while・be about to・未来進行形／used to・could・was able to・had to・was going to）",
+    part1Mode: "translate",
+    part1: [
+      { jp: "私はふだん自転車で通勤しています。", target: "現在形（習慣）", en: "I usually go to work by bike." },
+      { jp: "母は毎週日曜日に教会に行きます。", target: "現在形（三単現・習慣）", en: "My mother goes to church every Sunday." },
+      { jp: "最近、私は毎晩英語のポッドキャストを聞いています。", target: "現在進行形（最近・一時的）", en: "These days, I'm listening to English podcasts every night." },
+      { jp: "今、雨が強く降っています。", target: "現在進行形（今）", en: "It's raining hard now." },
+      { jp: "私は彼の名前を知りません。", target: "状態動詞（進行形にしない）", en: "I don't know his name." },
+      { jp: "私は昨日、新しい靴を買いました。", target: "過去形（不規則動詞）", en: "I bought new shoes yesterday." },
+      { jp: "彼女は昨夜、パーティーに来ませんでした。", target: "過去の否定（didn't＋原形）", en: "She didn't come to the party last night." },
+      { jp: "あなたは週末、どこに行きましたか？", target: "過去の疑問（did＋原形）", en: "Where did you go on the weekend?" },
+      { jp: "昨日はとても寒かったです。", target: "was・were", en: "It was very cold yesterday." },
+      { jp: "昨夜10時、私は宿題をしていました。", target: "過去進行形", en: "At ten last night, I was doing my homework." },
+      { jp: "明日の夜、私は友達と夕食を食べることになっています。", target: "現在進行形（決まった予定）", en: "I'm having dinner with my friends tomorrow night." },
+      { jp: "来年、私は海外で働くつもりです。", target: "be going to（前から決めた予定）", en: "I'm going to work abroad next year." },
+      { jp: "（荷物を見て）重そうだね。私が持つよ。", target: "will（その場で決めたこと）", en: "That looks heavy. I'll carry it." },
+      { jp: "あの空を見て。雪が降りそうだ。", target: "be going to（そうなりそう）", en: "Look at the sky. It's going to snow." },
+      { jp: "最終バスは11時に出ます。", target: "現在形（時刻表）", en: "The last bus leaves at eleven." },
+      { jp: "私が駅に着いたとき、電車はちょうど出発するところでした。", target: "be about to", en: "The train was about to leave when I arrived at the station." },
+      { jp: "料理をしている間に、指を切ってしまいました。", target: "while＋過去進行形", en: "While I was cooking, I cut my finger." },
+      { jp: "友達から電話があったとき、私はお風呂に入っていました。", target: "過去進行形＋when", en: "I was taking a bath when my friend called me." },
+      { jp: "明日の今ごろ、私は試験を受けているでしょう。", target: "未来進行形（will be ～ing）", en: "This time tomorrow, I'll be taking the exam." },
+      { jp: "私は以前、毎朝コーヒーを飲んでいました（今は飲みません）。", target: "used to", en: "I used to drink coffee every morning." },
+      { jp: "子どもの頃は辛い食べ物が食べられませんでしたが、今は食べられます。", target: "couldn't → can", en: "When I was a child, I couldn't eat spicy food, but now I can." },
+      { jp: "最初は緊張しましたが、なんとか発表を最後までやり終えることができました。", target: "was able to（1回やり遂げた）", en: "I was nervous at first, but I was able to finish my presentation." },
+      { jp: "昨日、私は遅くまで働かなければなりませんでした。", target: "had to", en: "I had to work late yesterday." },
+      { jp: "タクシーに乗るつもりでしたが、歩くことにしました。", target: "was going to（実現しなかった予定）", en: "I was going to take a taxi, but I decided to walk." }
+    ],
+    // Part 2：瞬間英作文（Week3 の50問から各日2問）
+    part2: [
+      { jp: "最近、私はジムに通っています。", en: "These days, I'm going to the gym." },
+      { jp: "ふだんは家で働いていますが、今週はカフェで働いています。", en: "I usually work from home, but this week I'm working at a café." },
+      { jp: "私は傘を持たずに家を出ました。", en: "I left home without my umbrella." },
+      { jp: "上司から電話が来たとき、私は昼ごはんを食べていました。", en: "I was eating lunch when my boss called me." },
+      { jp: "日曜日に友達と会うことになっています。", en: "I'm meeting my friend on Sunday." },
+      { jp: "心配しないで。何も焦がさないよ。", en: "Don't worry. I won't burn anything." },
+      { jp: "出かけようとしたとき、電話が鳴りました。", en: "I was about to leave when the phone rang." },
+      { jp: "明日の今ごろ、私は沖縄へ向かう飛行機に乗っているでしょう。", en: "This time tomorrow, I'll be flying to Okinawa." },
+      { jp: "以前は、野菜が大嫌いでした。", en: "I used to hate vegetables." },
+      { jp: "昨日は早く起きなければなりませんでした。", en: "I had to get up early yesterday." }
+    ],
+    // Part 3 1️⃣ 音読：評価箇所から逆算した本文。5観点×4項目（1項目1点・20点満点）。生徒には評価箇所を知らせない
+    reading: {
+      passage: "Last Thursday, I woke up late because I was watching a movie until three in the morning. I got on the bus without my umbrella, and of course it started raining. While I was waiting at the bus stop, I met an old friend from school. We talked about the weather and our jobs, and I remembered our fun days in class. I used to stay up late every night, but now I'm trying to go to bed early. I feel more comfortable in the morning these days. Tomorrow, I'll call her again. Next Sunday, we're going to have lunch at a new café.",
+      viewpoints: [
+        { name: "流暢さ", target: "While I was waiting at the bus stop, I met an old friend from school.", items: [
+          { label: "止まらない", look: "途中で2秒以上止まらずに読めたか", groups: ["流暢さ"], syms: ["fl-stop"] },
+          { label: "言い直さない", look: "戻って読み直していないか", groups: ["流暢さ"], syms: ["fl-redo"] },
+          { label: "正しく読む", look: "読み間違い・飛ばし・付け足しがないか", groups: ["流暢さ"], syms: ["fl-miss", "fl-skip"] },
+          { label: "かたまりで読む", look: "While I was waiting ／ at the bus stop ／ I met an old friend ／ from school", groups: ["流暢さ"], syms: ["fl-word", "fl-chunk"] }
+        ] },
+        { name: "個別の音", items: [
+          { label: "three", look: "th（/θ/）", groups: ["th"], syms: ["th-s", "th-t"], words: ["three"] },
+          { label: "weather", look: "th（/ð/）", groups: ["th"], syms: ["th-z", "th-t"], words: ["weather"] },
+          { label: "bus", look: "/ʌ/（口をあまり開けない短い「ア」）", groups: ["/ʌ/"], syms: ["uh-a", "uh-o"], words: ["bus"] },
+          { label: "class", look: "/æ/", groups: ["/æ/"], syms: ["ae-a", "ae-e"], words: ["class"] }
+        ] },
+        { name: "リンキング", items: [
+          { label: "woke up", look: "k と u をつなげる（ウォウカップ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["woke", "up"] },
+          { label: "got on", look: "t と o をつなげる（ガトン）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["got", "on"] },
+          { label: "an old", look: "n と o をつなげる（アノウルド）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["old"] },
+          { label: "late every", look: "t と e をつなげる（レイテヴリ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["late", "every"] }
+        ] },
+        { name: "アクセント", items: [
+          { label: "umbrella", look: "BREL を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["umbrella"], tip: "umbrella は真ん中の BREL を強く読みます（ʌmˈbrelə）。「アンブレラ」と平らに読まず、BREL を大きく高く言いましょう。" },
+          { label: "remembered", look: "MEM を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["remember"], tip: "remember は真ん中の MEM を強く読みます（rɪˈmembər）。最初の re は弱く短く「リ」と言いましょう。" },
+          { label: "comfortable", look: "COM を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["comfortable"], tip: "comfortable は最初の COM を強く読みます（ˈkʌmftərbəl）。後ろは弱く短く、「カンフタブル」に近い音です。「コンフォータブル」と全部はっきり読まないようにしましょう。" },
+          { label: "tomorrow", look: "MOR を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["tomorrow"], tip: "tomorrow は真ん中の MOR を強く読みます（təˈmɑːroʊ）。最初の to は弱く「タ」くらいで言いましょう。" }
+        ] },
+        { name: "リズム・抑揚", target: "Next Sunday, we're going to have lunch at a new café.", items: [
+          { label: "大事な語を強く", look: "Sunday・lunch・new・café を強く", groups: ["リズム"], syms: ["rh-weak"] },
+          { label: "小さな語を弱く", look: "we're・to・at・a を弱く短く", groups: ["リズム"], syms: ["rh-strong"] },
+          { label: "かたまりで区切る", look: "Next Sunday ／ we're going to have lunch ／ at a new café", groups: ["リズム"], syms: ["rh-chunk"] },
+          { label: "文末を下げる", look: "café で下げて終わる", groups: ["リズム"], syms: ["rh-up"] }
+        ] }
+      ]
+    },
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声から各デイ1文（Q1〜Q3は短め）
+    repeat: [
+      { day: "Day15", text: "Kittens grow up fast.", chunks: ["Kittens", "grow up fast."] },
+      { day: "Day17", text: "It's going to rain all weekend.", chunks: ["It's going to rain", "all weekend."] },
+      { day: "Day19", text: "I used to keep everything in my head.", chunks: ["I used to keep everything", "in my head."] },
+      { day: "Day16", text: "Forty minutes later, I was still watching them.", chunks: ["Forty minutes later,", "I was still watching them."] },
+      { day: "Day18", text: "While we were driving there, my father got lost,", chunks: ["While we were driving there,", "my father got lost,"] }
+    ],
+    repeatPage: "week3-kakunin-repeat.html",
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
+    part4theme: "最近変わったこと（前はどうだったか／今どうしているか／これからどうするか）",
+    speakingPoints: [
+      { title: "前・今・これからを時制で分ける", detail: "used to／過去形 → 現在形・現在進行形 → will・be going to を使い分ける" },
+      { title: "続いていた場面を言う", detail: "過去進行形＋when／while を1回以上使う" },
+      { title: "最近のことは進行形で", detail: "these days・this week＋現在進行形を1回以上使う" },
+      { title: "見直す", detail: "過去の否定・疑問は did＋原形か、三単現の s がついているか確認する" }
+    ],
+    weakTypes: {
+      grammar: "正解／現在形（習慣・事実・時刻表）／三単現／現在進行形（今・最近）／状態動詞を進行形にしない／過去形（不規則動詞）／過去の否定・疑問（did＋原形）／was・were／過去進行形／when・while／be about to／未来（will・be going to・予定の進行形）／未来進行形／used to／could・was able to／had to／was going to／時制の混同／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
+      pattern: "",
+      sound: "流暢さ／th／/ʌ/／/æ/／リンキング／アクセント／リズム／リピート／その他"
+    },
+    // 直し方の例文を、この週の本文に合わせる（ない項目は共通の文を使う）
+    symTips: {
+      "fl-word": "While I was waiting ／ at the bus stop のように、意味のかたまりごとにまとめて読みましょう。かたまりの中は止めずにつなげます。",
+      "fl-chunk": "区切るのは、意味のかたまりの切れ目（カンマや while・because の前など）だけにしましょう。at the bus ／ stop のように、かたまりの途中で切らないようにします。",
+      "fl-miss": "読む前に一度黙読して、知らない単語や似た形の単語（walk と work など）を確かめておきましょう。",
+      "ln-cut": "前の語が子音（k・t・n など）で終わり、次の語が母音で始まるときは、つなげて1語のように読みます。woke up は「ウォウカップ」、got on は「ガトン」のイメージです。",
+      "ln-vowel": "最後の子音のあとに「オ」「ウ」の音を入れず、そのまま次の語の母音につなげます。ゆっくり「woke-up」と言ってから、だんだん速くしてつなげる練習をしましょう。",
+      "rh-weak": "意味を伝える語（Sunday・lunch・new・café など）は、大きく・はっきり・少し長めに読みましょう。",
+      "rh-strong": "we're・to・at・a などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。",
+      "rh-chunk": "Next Sunday ／ we're going to have lunch ／ at a new café のように、意味のかたまりの切れ目で区切りましょう。"
+    },
+    drills: {
+      "リンキング": "woke up・got on・an old・late every を、ゆっくり→速くの順でつなげて5回ずつ",
+      "リズム": "Next Sunday, we're going to have lunch at a new café. を、大事な語で手をたたきながら5回",
+      "リピート": "Week3 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
+    }
   }
 };
 
 // 補助教材のライン（この点数以下なら「あり」）
-const LATEST_WEEK = Object.keys(WEEKS)[Object.keys(WEEKS).length - 1]; // 問題データが入っている一番新しい週
+// 新しい下書きの週：回答シートが決まっている一番新しい週（次の週のデータを先に入れても、フォームができるまでは前の週のまま）
+const LATEST_WEEK = Object.keys(WEEKS).filter(k => WEEKS[k].part1SheetId).pop() || Object.keys(WEEKS)[0];
 const SUPPORT_LINE = { part2: 17, part3: 15 }; // 9割未満（Part 2：18/20未満、Part 3：15.3/17未満）
 const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", "第5文型"];
 
@@ -549,6 +668,8 @@ const SYMPTOMS = {
     { id: "rp-rhythm", label: "リズム・抑揚がちがった", say: "強弱や上げ下げが、お手本とちがっていました。", tip: "大事な語を強く、小さな語を弱く言うリズムをまねしましょう。手をたたきながら、強いところだけ合わせる練習も効果的です。" }
   ]
 };
+// 崩れ方の直し方：例文が週の本文に合うよう、週ごとに差し替えられる（WEEKS[週].symTips）
+const symTip = x => ((WEEKS[state.week] || {}).symTips || {})[x.id] || x.tip;
 const SYMPTOM_BY_ID = {};
 Object.keys(SYMPTOMS).forEach(g => SYMPTOMS[g].forEach(x => { SYMPTOM_BY_ID[x.id] = Object.assign({ group: g }, x); }));
 // 記録シートの弱点タイプ（一覧にない音は「その他」）
@@ -1451,7 +1572,7 @@ function buildStudentPage(d) {
   const drillKeys = [];
   const drillText = keys => [...new Set(keys)].map(k => k.startsWith("word:")
     ? (w.part3ipa.find(x => x.word === k.slice(5)) || {}).drill
-    : DRILLS[k] || DRILLS["その他"]).filter(Boolean);
+    : (w.drills || {})[k] || DRILLS[k] || DRILLS["その他"]).filter(Boolean);
   if (isReading() && state.p3done) {
     const R = w.reading;
     L.push(`▶ **Part 3　音読　${d.p3.read} / ${d.p3.readMax}**`, "| 観点 | 点数 |", "|---|---|");
@@ -1467,7 +1588,7 @@ function buildStudentPage(d) {
     const tipOnce = (key, text) => { if (used.has(key)) return "直し方は上と同じです。"; used.add(key); return text; };
     const sounds = [];
     readBadList().forEach(b => {
-      const tip = b.it.tip || (b.x ? b.x.tip : SOUND_TIPS[b.group] || SOUND_TIPS["その他"]);
+      const tip = b.it.tip || (b.x ? symTip(b.x) : SOUND_TIPS[b.group] || SOUND_TIPS["その他"]);
       const say = b.x ? b.x.say : (b.s.note ? `${b.s.note}。` : `「${b.it.label}」（${b.it.look}）ができていませんでした。`);
       sounds.push(`- **${b.it.label}**（${b.vp.name}）：${say}${b.x && b.s.note ? `（${b.s.note}）` : ""}**直し方**：${tipOnce(b.it.tip ? "item:" + b.it.label : (b.x ? b.x.id : "g:" + b.group), tip)}` +
         (b.it.words ? `　${audioLinks(b.it.words)}` : ""));
@@ -1478,7 +1599,7 @@ function buildStudentPage(d) {
       const g = y ? y.group : "その他";
       const say = y ? y.say : (x.note ? `${x.note}。` : "気になる読み方がありました。");
       const isWord = /^[A-Za-z'’-]+(\s+[A-Za-z'’-]+){0,2}$/.test(x.text.trim());
-      sounds.push(`- **${x.text}**：${say}${y && x.note ? `（${x.note}）` : ""}**直し方**：${tipOnce(y ? y.id : "g:" + g, y ? y.tip : SOUND_TIPS[g] || SOUND_TIPS["その他"])}` +
+      sounds.push(`- **${x.text}**：${say}${y && x.note ? `（${x.note}）` : ""}**直し方**：${tipOnce(y ? y.id : "g:" + g, y ? symTip(y) : SOUND_TIPS[g] || SOUND_TIPS["その他"])}` +
         (isWord ? `　${audioLinks(x.text.trim().split(/\s+/))}` : ""));
       drillKeys.push(g);
     });
@@ -1498,13 +1619,13 @@ function buildStudentPage(d) {
         const y = b.x;
         const say = y ? y.say : (b.s.note ? `${b.s.note}。` : "このかたまりが、お手本のように言えていませんでした。");
         const key = y ? y.id : "rp-other";
-        const tip = used.has(key) ? "直し方は上と同じです。" : (used.add(key), y ? y.tip : SOUND_TIPS["リピート"]);
+        const tip = used.has(key) ? "直し方は上と同じです。" : (used.add(key), y ? symTip(y) : SOUND_TIPS["リピート"]);
         lines.push(`- **Q${x.no}「${b.chunk}」**（1回目${b.m1 ? "✕" : "◯"}・2回目${b.m2 ? "✕" : "◯"}）：${say}${y && b.s.note ? `（${b.s.note}）` : ""}**直し方**：${tip}`);
       }));
       if (lines.length) L.push("", "**言えなかったところと直し方**", ...lines);
       else L.push("", "5問とも、お手本の音声をしっかり再現できていました！");
       if (RS.items.some(x => x.stop || x.redo)) L.push("", "**詰まり・言い直しについて**", "途中で止まったり言い直したりしたところがありました。完ぺきに言えなくても、聞こえた音のまま最後まで言い切ることを優先しましょう。");
-      L.push("", "**ペア練習**", "- " + DRILLS["リピート"]);
+      L.push("", "**ペア練習**", "- " + ((w.drills || {})["リピート"] || DRILLS["リピート"]));
       L.push("◀", "");
     }
   } else if (d.p3.complete) {
