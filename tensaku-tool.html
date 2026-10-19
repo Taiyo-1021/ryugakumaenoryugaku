@@ -559,6 +559,116 @@ const WEEKS = {
       "リズム": "Next Sunday, we're going to have lunch at a new café. を、大事な語で手をたたきながら5回",
       "リピート": "Week3 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
     }
+  },
+  "Week4": {
+    part1SheetId: "", // フォームを作ったら回答シートのIDを入れる（入れるまでは、新しい下書きの週は Week3 のまま）
+    focus: "助動詞（can・could・be able to／should・had better・be supposed to／will・may・might／must・have to・don't have to・must not／提案の could）",
+    part1Mode: "translate",
+    part1: [
+      { jp: "私はスペイン語を少し話すことができます。", target: "can（できる）", en: "I can speak a little Spanish." },
+      { jp: "ドアを閉めてもらえますか？", target: "Can you（依頼）", en: "Can you close the door?" },
+      { jp: "子どもの頃、私は泳ぐことができませんでした。", target: "couldn't（できなかった）", en: "I couldn't swim when I was a child." },
+      { jp: "来月には、一人で運転できるようになるでしょう。", target: "will be able to", en: "I'll be able to drive by myself next month." },
+      { jp: "昨日、私はなんとか終電に乗ることができました。", target: "was able to（1回やり遂げた）", en: "I was able to catch the last train yesterday." },
+      { jp: "あなたはもっと水を飲むべきです。", target: "should", en: "You should drink more water." },
+      { jp: "夜遅くにコーヒーを飲むべきではありません。", target: "shouldn't", en: "You shouldn't drink coffee late at night." },
+      { jp: "雨が降っているので、傘を持っていった方がいいよ。", target: "had better", en: "It's raining, so you'd better take an umbrella." },
+      { jp: "遅刻しない方がいいよ。", target: "had better not", en: "You'd better not be late." },
+      { jp: "私たちは9時に会社に着くことになっています。", target: "be supposed to", en: "We're supposed to arrive at the office at nine." },
+      { jp: "彼はたぶん明日来るでしょう。", target: "will（予想）", en: "He will probably come tomorrow." },
+      { jp: "今夜は雪が降るかもしれません。", target: "may・might（かもしれない）", en: "It may snow tonight." },
+      { jp: "彼女はその知らせを聞いたら驚くかもしれません。", target: "might", en: "She might be surprised when she hears the news." },
+      { jp: "私は今週末、出かけないかもしれません。", target: "may not・might not", en: "I may not go out this weekend." },
+      { jp: "窓を開けてもいいですか？", target: "May I・Can I（許可）", en: "May I open the window?" },
+      { jp: "私は今日、レポートを書き終えなければなりません。", target: "have to", en: "I have to finish my report today." },
+      { jp: "彼は毎朝6時に起きなければなりません。", target: "has to（三単現）", en: "He has to get up at six every morning." },
+      { jp: "明日は会社に行く必要はありません。", target: "don't have to（必要ない）", en: "I don't have to go to work tomorrow." },
+      { jp: "ここで写真を撮ってはいけません。", target: "must not（禁止）", en: "You must not take pictures here." },
+      { jp: "私たちはパスポートを持っていかなければなりません。", target: "must", en: "We must take our passports." },
+      { jp: "先生に聞いてみてもいいと思うよ。", target: "could（提案）", en: "You could ask your teacher." },
+      { jp: "明日までにこの本を返さなければなりませんか？", target: "Do I have to（疑問）", en: "Do I have to return this book by tomorrow?" },
+      { jp: "私は来年、留学できるかもしれません。", target: "might be able to", en: "I might be able to study abroad next year." },
+      { jp: "ここで待っていればいいのですか？（待つことになっていますか）", target: "be supposed to（疑問）", en: "Am I supposed to wait here?" }
+    ],
+    // Part 2：瞬間英作文（Week4 の50問から各日2問）
+    part2: [
+      { jp: "私は、きちんと荷造りをすることができませんでした。", en: "I wasn't able to pack properly." },
+      { jp: "仕事では、落ち着いて対応することができます。", en: "At work, I am able to stay calm." },
+      { jp: "私は、小さなミスから学ぶべきです。", en: "I should learn from small mistakes." },
+      { jp: "学校や仕事では、時間を守ることになっています。", en: "At school and work, we are supposed to be on time." },
+      { jp: "将来、AI翻訳はおそらくもっと良くなるでしょう。", en: "In the future, AI translation will probably become much better." },
+      { jp: "AIは完璧なアニメを作るかもしれません。", en: "AI may create perfect animation." },
+      { jp: "でも、すべてを一人でする必要はありません。", en: "But I don't have to do everything alone." },
+      { jp: "大切でないことに時間を使ってはいけません。", en: "We must not spend time on unimportant things." },
+      { jp: "でも、急いで関係をはっきりさせるべきではありません。", en: "But you shouldn't rush to make the relationship clear." },
+      { jp: "文化の違いは、誤解を生むかもしれません。", en: "Cultural differences might cause misunderstandings." }
+    ],
+    // Part 3 1️⃣ 音読：評価箇所から逆算した本文。5観点×4項目（1項目1点・20点満点）。生徒には評価箇所を知らせない
+    reading: {
+      passage: "Last month, I couldn't sleep well because I had too much work. My doctor said, “You should relax more, and you'd better not drink coffee at night.” Now I'm able to sleep better. I have to get up at six, but I don't have to check emails in bed. I'm supposed to go to a party this weekend, so I might stay out a little late. That's okay. I can enjoy the evening and still take care of my health. Maybe I'll start yoga next month.",
+      viewpoints: [
+        { name: "流暢さ", target: "I have to get up at six, but I don't have to check emails in bed.", items: [
+          { label: "止まらない", look: "途中で2秒以上止まらずに読めたか", groups: ["流暢さ"], syms: ["fl-stop"] },
+          { label: "言い直さない", look: "戻って読み直していないか", groups: ["流暢さ"], syms: ["fl-redo"] },
+          { label: "正しく読む", look: "読み間違い・飛ばし・付け足しがないか", groups: ["流暢さ"], syms: ["fl-miss", "fl-skip"] },
+          { label: "かたまりで読む", look: "I have to get up at six ／ but I don't have to ／ check emails ／ in bed", groups: ["流暢さ"], syms: ["fl-word", "fl-chunk"] }
+        ] },
+        { name: "個別の音", items: [
+          { label: "health", look: "th（/θ/）", groups: ["th"], syms: ["th-s", "th-t"], words: ["health"] },
+          { label: "evening", look: "v（下唇に歯を当てる）", groups: ["v"], syms: ["v-b"], words: ["evening"] },
+          { label: "relax", look: "/æ/（LAX）", groups: ["/æ/"], syms: ["ae-a", "ae-e"], words: ["relax"] },
+          { label: "much", look: "/ʌ/（口をあまり開けない短い「ア」）", groups: ["/ʌ/"], syms: ["uh-a", "uh-o"], words: ["much"] }
+        ] },
+        { name: "リンキング", items: [
+          { label: "get up", look: "t と u をつなげる（ゲラップ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["get", "up"] },
+          { label: "check emails", look: "k と e をつなげる（チェッキーメイルズ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["check", "emails"] },
+          { label: "out a", look: "t と a をつなげる（アウラ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["out"] },
+          { label: "care of", look: "r と o をつなげる（ケアロヴ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["care", "of"] }
+        ] },
+        { name: "アクセント", items: [
+          { label: "doctor", look: "DOC を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["doctor"], tip: "doctor は最初の DOC を強く読みます（ˈdɑːktər）。後ろの tor は弱く短く、「ダクタ」に近い音です。「ドクター」と平らに読まないようにしましょう。" },
+          { label: "coffee", look: "COF を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["coffee"], tip: "coffee は最初の COF を強く読みます（ˈkɔːfi）。「コーヒー」と全部同じ強さで読まず、「カ」を強く、後ろの fee は弱く短く言いましょう。" },
+          { label: "supposed", look: "POSED を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["supposed"], tip: "supposed は後ろの POSED を強く読みます（səˈpoʊzd）。最初の sup は弱く「サ」くらいで言いましょう。be supposed to では d の音はほとんど聞こえません。" },
+          { label: "enjoy", look: "JOY を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["enjoy"], tip: "enjoy は後ろの JOY を強く読みます（ɪnˈdʒɔɪ）。最初の en は弱く短く、「インジョイ」の「ジョイ」を大きく言いましょう。" }
+        ] },
+        { name: "リズム・抑揚", target: "Maybe I'll start yoga next month.", items: [
+          { label: "大事な語を強く", look: "Maybe・start・yoga・month を強く", groups: ["リズム"], syms: ["rh-weak"] },
+          { label: "小さな語を弱く", look: "I'll を弱く短く", groups: ["リズム"], syms: ["rh-strong"] },
+          { label: "かたまりで区切る", look: "Maybe ／ I'll start yoga ／ next month", groups: ["リズム"], syms: ["rh-chunk"] },
+          { label: "文末を下げる", look: "month で下げて終わる", groups: ["リズム"], syms: ["rh-up"] }
+        ] }
+      ]
+    },
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声が届いたら、各デイ1文を入れる
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
+    part4theme: "自分のルールとこれからの目標（しなければならないこと／しなくていいこと／するべきこと／できるようになりたいこと）",
+    speakingPoints: [
+      { title: "助動詞の後ろは原形", detail: "can・should・must・will・may の後ろは動詞の原形（s や to をつけない）" },
+      { title: "しなければならない／しなくていい", detail: "have to（must）と don't have to を1回ずつ以上使い分ける" },
+      { title: "アドバイス・予定の確かさ", detail: "should／had better（not）を1回以上、will と may・might を言い分ける" },
+      { title: "見直す", detail: "he・she のときは has to になっているか、can の過去は could・was able to か確認する" }
+    ],
+    weakTypes: {
+      grammar: "正解／can・can't（できる）／could・couldn't（できた・できなかった）／be able to（was・will be able to）／依頼・許可（Can you・May I）／should・shouldn't／had better（not）／be supposed to／will（予想）／may・might（かもしれない）／must・have to／has to（三単現）／don't have to（必要ない）／must not（禁止）／提案の could／助動詞の後ろの原形／助動詞の疑問・否定の語順／時制／三単現／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
+      pattern: "",
+      sound: "流暢さ／th／v／/æ/／/ʌ/／リンキング／アクセント／リズム／リピート／その他"
+    },
+    // 直し方の例文を、この週の本文に合わせる（ない項目は共通の文を使う）
+    symTips: {
+      "fl-word": "I have to get up at six ／ but I don't have to のように、意味のかたまりごとにまとめて読みましょう。かたまりの中は止めずにつなげます。",
+      "fl-chunk": "区切るのは、意味のかたまりの切れ目（カンマや but・because の前など）だけにしましょう。have ／ to のように、かたまりの途中で切らないようにします。",
+      "fl-miss": "読む前に一度黙読して、知らない単語や似た形の単語（supposed と support など）を確かめておきましょう。",
+      "ln-cut": "前の語が子音（t・k・r など）で終わり、次の語が母音で始まるときは、つなげて1語のように読みます。get up は「ゲラップ」、care of は「ケアロヴ」のイメージです。",
+      "ln-vowel": "最後の子音のあとに「ト」「ク」などの母音を入れず、そのまま次の語の母音につなげます。ゆっくり「get-up」と言ってから、だんだん速くしてつなげる練習をしましょう。",
+      "rh-weak": "意味を伝える語（Maybe・start・yoga・month など）は、大きく・はっきり・少し長めに読みましょう。",
+      "rh-strong": "I'll・to・a などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。",
+      "rh-chunk": "Maybe ／ I'll start yoga ／ next month のように、意味のかたまりの切れ目で区切りましょう。"
+    },
+    drills: {
+      "リンキング": "get up・check emails・out a・care of を、ゆっくり→速くの順でつなげて5回ずつ",
+      "リズム": "Maybe I'll start yoga next month. を、大事な語で手をたたきながら5回",
+      "リピート": "Week4 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
+    }
   }
 };
 
