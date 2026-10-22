@@ -102,6 +102,12 @@
   .msg.err { background: var(--ng-bg); color: var(--ng); }
   .msg.ok { background: var(--ok-bg); color: var(--ok); }
   .msg.warn { background: var(--warn-bg); color: #92400e; }
+  /* 採点を終えたチェック：未チェックのあいだは目立たせる（チェックしないと点数が出ない） */
+  .done-check { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 12px 14px; border: 2px solid var(--ng); border-radius: 10px; background: var(--ng-bg); color: var(--ng); font-size: 15px; font-weight: 700; cursor: pointer; }
+  .done-check input { width: 22px; height: 22px; margin: 0; flex: none; cursor: pointer; }
+  .done-check small { display: block; font-size: 12px; font-weight: 400; margin-top: 2px; }
+  .done-check:has(input:checked) { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+  .done-check:has(input:checked) small { display: none; }
   .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   @media (max-width: 640px) { .summary { grid-template-columns: 1fr; } }
   .stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -184,11 +190,11 @@
     <div class="subhead">1️⃣ 音読：評価箇所のほかに気になったところ（点数には入りません）</div>
     <div class="tbl-scroll"><table id="p3extra"></table></div>
     <div class="btns"><button class="btn sub" id="p3addExtra" type="button">＋ 追加</button></div>
-    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3done"> 音読の録音を最後まで聞いて、採点を終えた</label>
+    <label class="done-check"><input type="checkbox" id="p3done"><span>✅ 音読の録音を最後まで聞いて、採点を終えた<small>ここにチェックを入れるまで、音読の点数は出ず、Notion にも送られません。</small></span></label>
     <div class="subhead">2️⃣ リピート（ネイティブ音声が2回流れ、そのあとに生徒がまねして言う）</div>
     <p class="hint">録音を聞き、各かたまりを<strong>言えなかった回だけ</strong>✕にチェックして、理由を選びます（何もチェックしなければ「言えた」です）。1回目で全部言えたら2点、2回目で言えたら1点、どちらもだめなら0点。さらに「詰まった」「言い直した」がなければ各1点（1問4点・20点満点）。点数はツールが数えます。</p>
     <div class="tbl-scroll"><table id="p3rep"></table></div>
-    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3repDone"> リピートの録音を最後まで聞いて、採点を終えた</label>
+    <label class="done-check"><input type="checkbox" id="p3repDone"><span>✅ リピートの録音を最後まで聞いて、採点を終えた<small>ここにチェックを入れるまで、リピートの点数は出ず、Notion にも送られません。</small></span></label>
     </div>
   </div>
 
