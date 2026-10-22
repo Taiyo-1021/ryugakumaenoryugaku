@@ -102,6 +102,12 @@
   .msg.err { background: var(--ng-bg); color: var(--ng); }
   .msg.ok { background: var(--ok-bg); color: var(--ok); }
   .msg.warn { background: var(--warn-bg); color: #92400e; }
+  /* 採点を終えたチェック：未チェックのあいだは目立たせる（チェックしないと点数が出ない） */
+  .done-check { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 12px 14px; border: 2px solid var(--ng); border-radius: 10px; background: var(--ng-bg); color: var(--ng); font-size: 15px; font-weight: 700; cursor: pointer; }
+  .done-check input { width: 22px; height: 22px; margin: 0; flex: none; cursor: pointer; }
+  .done-check small { display: block; font-size: 12px; font-weight: 400; margin-top: 2px; }
+  .done-check:has(input:checked) { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+  .done-check:has(input:checked) small { display: none; }
   .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   @media (max-width: 640px) { .summary { grid-template-columns: 1fr; } }
   .stat { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -184,11 +190,11 @@
     <div class="subhead">1️⃣ 音読：評価箇所のほかに気になったところ（点数には入りません）</div>
     <div class="tbl-scroll"><table id="p3extra"></table></div>
     <div class="btns"><button class="btn sub" id="p3addExtra" type="button">＋ 追加</button></div>
-    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3done"> 音読の録音を最後まで聞いて、採点を終えた</label>
+    <label class="done-check"><input type="checkbox" id="p3done"><span>✅ 音読の録音を最後まで聞いて、採点を終えた<small>ここにチェックを入れるまで、音読の点数は出ず、Notion にも送られません。</small></span></label>
     <div class="subhead">2️⃣ リピート（ネイティブ音声が2回流れ、そのあとに生徒がまねして言う）</div>
     <p class="hint">録音を聞き、各かたまりを<strong>言えなかった回だけ</strong>✕にチェックして、理由を選びます（何もチェックしなければ「言えた」です）。1回目で全部言えたら2点、2回目で言えたら1点、どちらもだめなら0点。さらに「詰まった」「言い直した」がなければ各1点（1問4点・20点満点）。点数はツールが数えます。</p>
     <div class="tbl-scroll"><table id="p3rep"></table></div>
-    <label style="display:block;margin-top:12px;font-size:14px"><input type="checkbox" id="p3repDone"> リピートの録音を最後まで聞いて、採点を終えた</label>
+    <label class="done-check"><input type="checkbox" id="p3repDone"><span>✅ リピートの録音を最後まで聞いて、採点を終えた<small>ここにチェックを入れるまで、リピートの点数は出ず、Notion にも送られません。</small></span></label>
     </div>
   </div>
 
@@ -668,6 +674,116 @@ const WEEKS = {
       "リンキング": "get up・check emails・out a・care of を、ゆっくり→速くの順でつなげて5回ずつ",
       "リズム": "Maybe I'll start yoga next month. を、大事な語で手をたたきながら5回",
       "リピート": "Week4 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
+    }
+  },
+  "Week5": {
+    part1SheetId: "", // フォームを作ったら回答シートのIDを入れる
+    focus: "比較（比較級 -er・more／better・worse・less／than のあと／最上級 the -est・the most・the best）",
+    part1Mode: "translate",
+    part1: [
+      { jp: "今日は昨日より暑いです。", target: "比較級（-er・つづりの変化）", en: "It's hotter today than yesterday." },
+      { jp: "私の兄は私より3歳年上です。", target: "比較級＋差（3歳）", en: "My brother is three years older than me." },
+      { jp: "この箱はあの箱より重いです。", target: "比較級（y → ier）", en: "This box is heavier than that one." },
+      { jp: "東京は大阪より大きいですか？", target: "比較級の疑問", en: "Is Tokyo bigger than Osaka?" },
+      { jp: "彼は私より速く走ります。", target: "副詞の比較級・than I do", en: "He runs faster than I do." },
+      { jp: "この本はあの本よりおもしろいです。", target: "more＋長い形容詞", en: "This book is more interesting than that one." },
+      { jp: "英語を話すことは、読むことより難しいです。", target: "more difficult（-ing が主語）", en: "Speaking English is more difficult than reading it." },
+      { jp: "もっとゆっくり話してもらえますか？", target: "more＋副詞（more slowly）", en: "Can you speak more slowly?" },
+      { jp: "私は前より英語の映画をたくさん見ています。", target: "more＋名詞・than before", en: "I watch more English movies than before." },
+      { jp: "私の町には、この街より公園がたくさんあります。", target: "There are more＋名詞", en: "There are more parks in my town than in this city." },
+      { jp: "私は肉より魚の方が好きです。", target: "like A better than B", en: "I like fish better than meat." },
+      { jp: "彼女は私より歌が上手です。", target: "better at", en: "She is better at singing than I am." },
+      { jp: "今日の天気は昨日より悪いです。", target: "worse", en: "The weather today is worse than yesterday." },
+      { jp: "私は前ほど緊張しなくなりました。", target: "less（〜ほど…ない）", en: "I'm less nervous than before." },
+      { jp: "今日は今年で一番寒い日です。", target: "最上級（the -est of）", en: "Today is the coldest day of the year." },
+      { jp: "富士山は日本で一番高い山です。", target: "最上級（the -est in）", en: "Mount Fuji is the highest mountain in Japan." },
+      { jp: "彼はクラスで一番背が高いです。", target: "最上級（the tallest in）", en: "He is the tallest in our class." },
+      { jp: "これはこの店で一番高い（値段の）かばんです。", target: "the most＋長い形容詞", en: "This is the most expensive bag in this store." },
+      { jp: "3人の中で、誰が一番早く起きますか？", target: "最上級の疑問（of the three）", en: "Who gets up the earliest of the three?" },
+      { jp: "家族の中で、母が一番料理が上手です。", target: "the best", en: "My mother is the best cook in my family." },
+      { jp: "一番大切なのは、毎日続けることです。", target: "the most important", en: "The most important thing is to keep going every day." },
+      { jp: "昔、私の部屋は今より小さかったです。", target: "比較級の過去", en: "My room was smaller before." },
+      { jp: "私は前より上手に料理ができます。", target: "can＋better", en: "I can cook better than before." },
+      { jp: "犬と猫、どちらの方が好きですか？", target: "Which … better", en: "Which do you like better, dogs or cats?" }
+    ],
+    // Part 2：瞬間英作文（Week5 の50問から各日2問）
+    part2: [
+      { jp: "私の故郷は今住んでいる街より小さいです。", en: "My hometown is smaller than the city I live in now." },
+      { jp: "あなたはどちらの街が好きですか?", en: "Which city do you like better?" },
+      { jp: "私は料理が彼より上手です。", en: "I am better at cooking than he is." },
+      { jp: "彼らは私たちより忙しかったです。", en: "They were busier than we were." },
+      { jp: "今は自由な時間がもっとあります。", en: "I have more free time now." },
+      { jp: "今より昔の方が自信がありませんでした。", en: "I was less confident before." },
+      { jp: "それは今週で一番穏やかな日でした。", en: "It was the most peaceful day this week." },
+      { jp: "夕焼けが一番きれいでした。", en: "The sunset was the most beautiful." },
+      { jp: "私は昔より失敗を恐れなくなりました。", en: "I am less afraid of failing than before." },
+      { jp: "本当の自信は、見せかけの強さより大切です。", en: "Real confidence is more important than fake strength." }
+    ],
+    // Part 3 1️⃣ 音読：評価箇所から逆算した本文。5観点×4項目（1項目1点・20点満点）。生徒には評価箇所を知らせない
+    reading: {
+      passage: "Last spring, I moved to a bigger city. My hometown was quieter, and the air was cleaner, but this city is more convenient. There are more shops and restaurants, and the trains come more often. At first, I felt a little less confident than before. Now I think my life here is better than I expected. My best friend from home visited me last weekend. We walked along the river, and the sunset was the most beautiful thing that day. I still love my hometown, but I'm happier now.",
+      viewpoints: [
+        { name: "流暢さ", target: "Now I think my life here is better than I expected.", items: [
+          { label: "止まらない", look: "途中で2秒以上止まらずに読めたか", groups: ["流暢さ"], syms: ["fl-stop"] },
+          { label: "言い直さない", look: "戻って読み直していないか", groups: ["流暢さ"], syms: ["fl-redo"] },
+          { label: "正しく読む", look: "読み間違い・飛ばし・付け足しがないか", groups: ["流暢さ"], syms: ["fl-miss", "fl-skip"] },
+          { label: "かたまりで読む", look: "Now I think ／ my life here is better ／ than I expected", groups: ["流暢さ"], syms: ["fl-word", "fl-chunk"] }
+        ] },
+        { name: "個別の音", items: [
+          { label: "than", look: "th（/ð/）", groups: ["th"], syms: ["th-z", "th-t"], words: ["than"] },
+          { label: "river", look: "v（下唇に歯を当てる）", groups: ["v"], syms: ["v-b"], words: ["river"] },
+          { label: "happier", look: "/æ/（HAP）", groups: ["/æ/"], syms: ["ae-a", "ae-e"], words: ["happier"] },
+          { label: "sunset", look: "/ʌ/（口をあまり開けない短い「ア」）", groups: ["/ʌ/"], syms: ["uh-a", "uh-o"], words: ["sunset"] }
+        ] },
+        { name: "リンキング", items: [
+          { label: "felt a", look: "t と a をつなげる（フェルタ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["felt"] },
+          { label: "more often", look: "r と o をつなげる（モアロフン）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["often"] },
+          { label: "walked along", look: "t と a をつなげる（ウォークタロング）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["walked", "along"] },
+          { label: "but I'm", look: "t と I をつなげる（バライム）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["but"] }
+        ] },
+        { name: "アクセント", items: [
+          { label: "convenient", look: "VEN を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["convenient"], tip: "convenient は2つ目の VEN を強く読みます（kənˈviːniənt）。最初の con は弱く「カン」くらいで、「ヴィー」を大きく長めに言いましょう。" },
+          { label: "confident", look: "CON を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["confident"], tip: "confident は最初の CON を強く読みます（ˈkɑːnfɪdənt）。後ろは弱く短く、「カンフィデント」の「カン」だけを大きく言いましょう。" },
+          { label: "expected", look: "PEC を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["expected"], tip: "expected は真ん中の PEC を強く読みます（ɪkˈspektɪd）。最初の ex は弱く「イク」くらいで言いましょう。" },
+          { label: "beautiful", look: "BEAU を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["beautiful"], tip: "beautiful は最初の BEAU を強く読みます（ˈbjuːtɪfəl）。後ろの ti・ful は弱く短く、「ビューディフォ」に近い音です。" }
+        ] },
+        { name: "リズム・抑揚", target: "I still love my hometown, but I'm happier now.", items: [
+          { label: "大事な語を強く", look: "still・love・hometown・happier・now を強く", groups: ["リズム"], syms: ["rh-weak"] },
+          { label: "小さな語を弱く", look: "I・my・but I'm を弱く短く", groups: ["リズム"], syms: ["rh-strong"] },
+          { label: "かたまりで区切る", look: "I still love my hometown ／ but I'm happier now", groups: ["リズム"], syms: ["rh-chunk"] },
+          { label: "文末を下げる", look: "now で下げて終わる", groups: ["リズム"], syms: ["rh-up"] }
+        ] }
+      ]
+    },
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声が届いたら、各デイ1文を入れる
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
+    part4theme: "地元と今をくらべる（地元と今の街のちがい／前の自分と今の自分／一番好きなところ）",
+    speakingPoints: [
+      { title: "くらべる形を使い分ける", detail: "短い語は -er、長い語は more ～、good は better にする" },
+      { title: "than のあとをそろえる", detail: "than＋名詞・than I am・than before を1回以上使う" },
+      { title: "一番を言う", detail: "the＋-est／the most ～／the best を1回以上使う" },
+      { title: "見直す", detail: "more bigger のように more と -er を重ねていないか、最上級に the がついているか確認する" }
+    ],
+    weakTypes: {
+      grammar: "正解／比較級（-er）／つづりの変化（hotter・heavier）／more＋形容詞・副詞／more・less＋名詞／better・worse／less（〜ほど…ない）／than のあと（than I am・than before）／比較級の疑問（Which … better）／最上級（the -est）／the most＋形容詞／the best／in・of（〜の中で）／more と -er の重複（more bigger）／最上級の the の抜け／時制／三単現／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
+      pattern: "",
+      sound: "流暢さ／th／v／/æ/／/ʌ/／リンキング／アクセント／リズム／リピート／その他"
+    },
+    // 直し方の例文を、この週の本文に合わせる（ない項目は共通の文を使う）
+    symTips: {
+      "fl-word": "Now I think ／ my life here is better のように、意味のかたまりごとにまとめて読みましょう。かたまりの中は止めずにつなげます。",
+      "fl-chunk": "区切るのは、意味のかたまりの切れ目（カンマや than・but の前など）だけにしましょう。is ／ better のように、かたまりの途中で切らないようにします。",
+      "fl-miss": "読む前に一度黙読して、知らない単語や似た形の単語（quieter と quite など）を確かめておきましょう。",
+      "ln-cut": "前の語が子音（t・r など）で終わり、次の語が母音で始まるときは、つなげて1語のように読みます。felt a は「フェルタ」、but I'm は「バライム」のイメージです。",
+      "ln-vowel": "最後の子音のあとに「ト」「ド」などの母音を入れず、そのまま次の語の母音につなげます。ゆっくり「walked-along」と言ってから、だんだん速くしてつなげる練習をしましょう。",
+      "rh-weak": "意味を伝える語（still・love・hometown・happier・now など）は、大きく・はっきり・少し長めに読みましょう。",
+      "rh-strong": "I・my・but などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。",
+      "rh-chunk": "I still love my hometown ／ but I'm happier now のように、意味のかたまりの切れ目で区切りましょう。"
+    },
+    drills: {
+      "リンキング": "felt a・more often・walked along・but I'm を、ゆっくり→速くの順でつなげて5回ずつ",
+      "リズム": "I still love my hometown, but I'm happier now. を、大事な語で手をたたきながら5回",
+      "リピート": "Week5 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
     }
   }
 };
