@@ -177,256 +177,65 @@
 const BLOCK_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"];
 
 const DATA = [
-  {
-    "block": 1,
-    "jp": "私は英語を勉強しています。なぜなら将来必要だからです。",
-    "en": "I study English because I will need it in the future."
-  },
-  {
-    "block": 1,
-    "jp": "あなたはなぜ英語を勉強しているのですか?",
-    "en": "Why do you study English?"
-  },
-  {
-    "block": 1,
-    "jp": "英語は世界中で使われているので、重要です。",
-    "en": "English is important because it is used all over the world."
-  },
-  {
-    "block": 1,
-    "jp": "私は旅行したいので、英語を勉強しています。",
-    "en": "I study English because I want to travel."
-  },
-  {
-    "block": 1,
-    "jp": "失敗しても、私は学び続けます。なぜなら成長したいからです。",
-    "en": "Even if I make mistakes, I keep learning because I want to grow."
-  },
-  {
-    "block": 1,
-    "jp": "英語が好きなので、毎日少し練習しています。",
-    "en": "I like English, so I practice a little every day."
-  },
-  {
-    "block": 1,
-    "jp": "英語は便利だから、勉強する価値があります。",
-    "en": "English is useful, so it is worth studying."
-  },
-  {
-    "block": 1,
-    "jp": "私は将来の夢のために英語を勉強しています。",
-    "en": "I study English for my future dream."
-  },
-  {
-    "block": 1,
-    "jp": "英語で話せると楽しいので、続けています。",
-    "en": "It's fun to speak English, so I keep studying it."
-  },
-  {
-    "block": 1,
-    "jp": "私は英語で自分の考えを言えるようになりたいです。",
-    "en": "I want to be able to express my thoughts in English."
-  },
-  {
-    "block": 2,
-    "jp": "私はこの街が便利なので好きです。",
-    "en": "I like this city because it is convenient."
-  },
-  {
-    "block": 2,
-    "jp": "この街はお店が多いので、生活が楽です。",
-    "en": "This city has many shops, so life is easy here."
-  },
-  {
-    "block": 2,
-    "jp": "この街は安全だから、安心して暮らせます。",
-    "en": "This city is safe, so I can live here with peace of mind."
-  },
-  {
-    "block": 2,
-    "jp": "人が親切なので、ここに住むのが好きです。",
-    "en": "The people are kind, so I like living here."
-  },
-  {
-    "block": 2,
-    "jp": "この街は交通が便利なので、車がいりません。",
-    "en": "Transportation is convenient in this city, so I don't need a car."
-  },
-  {
-    "block": 2,
-    "jp": "あなたはなぜ自分の街が好きなのですか?",
-    "en": "Why do you like your city?"
-  },
-  {
-    "block": 2,
-    "jp": "この街は自然も多いので、私はリラックスできます。",
-    "en": "This city has a lot of nature, so I can relax."
-  },
-  {
-    "block": 2,
-    "jp": "駅が近いので、通学が楽です。",
-    "en": "The station is close, so going to school is easy."
-  },
-  {
-    "block": 2,
-    "jp": "私はこの街が好きです。なぜなら人が温かいからです。",
-    "en": "I like this city because the people are warm and friendly."
-  },
-  {
-    "block": 2,
-    "jp": "この街は住みやすいので、私は長く住みたいです。",
-    "en": "This city is comfortable to live in, so I want to live here for a long time."
-  },
-  {
-    "block": 3,
-    "jp": "私は彼が努力しているのを知っているので、彼を尊敬しています。",
-    "en": "I respect him because I know he works hard."
-  },
-  {
-    "block": 3,
-    "jp": "彼は人に親切なので、人気があります。",
-    "en": "He is kind to people, so he is popular."
-  },
-  {
-    "block": 3,
-    "jp": "なぜあなたはその友達を尊敬していますか?",
-    "en": "Why do you respect that friend?"
-  },
-  {
-    "block": 3,
-    "jp": "彼はいつも私を助けてくれます。",
-    "en": "He always helps me."
-  },
-  {
-    "block": 3,
-    "jp": "彼の態度のおかげで、私は前向きになれます。",
-    "en": "Because of his attitude, I can stay positive."
-  },
-  {
-    "block": 3,
-    "jp": "彼女は失敗しても諦めません。",
-    "en": "She doesn't give up even when she fails."
-  },
-  {
-    "block": 3,
-    "jp": "私の母は周りの人から信頼されています。",
-    "en": "People around my mother trust her."
-  },
-  {
-    "block": 3,
-    "jp": "私は彼の努力を尊敬しています。",
-    "en": "I respect his effort."
-  },
-  {
-    "block": 3,
-    "jp": "誰を一番尊敬していますか?",
-    "en": "Who do you respect the most?"
-  },
-  {
-    "block": 3,
-    "jp": "その理由を教えてください。",
-    "en": "Can you tell me why?"
-  },
-  {
-    "block": 4,
-    "jp": "私は健康のために運動します。",
-    "en": "I exercise for my health."
-  },
-  {
-    "block": 4,
-    "jp": "運動すると、ストレスが減ります。",
-    "en": "When I exercise, my stress decreases."
-  },
-  {
-    "block": 4,
-    "jp": "なぜあなたは運動が大切だと思いますか?",
-    "en": "Why do you think exercise is important?"
-  },
-  {
-    "block": 4,
-    "jp": "新鮮な空気のために、私は外を歩きます。",
-    "en": "I walk outside for the fresh air."
-  },
-  {
-    "block": 4,
-    "jp": "運動しないと、私はすぐ疲れます。",
-    "en": "If I don't exercise, I get tired easily."
-  },
-  {
-    "block": 4,
-    "jp": "私は友達と一緒に運動するのが好きです。",
-    "en": "I like exercising with my friends."
-  },
-  {
-    "block": 4,
-    "jp": "運動すると、気分が前向きになります。",
-    "en": "When I exercise, I feel more positive."
-  },
-  {
-    "block": 4,
-    "jp": "仕事の後に、私はよく散歩します。",
-    "en": "I often go for a walk after work."
-  },
-  {
-    "block": 4,
-    "jp": "あなたはどれくらいの頻度で運動しますか?",
-    "en": "How often do you exercise?"
-  },
-  {
-    "block": 4,
-    "jp": "私は心と体のために運動が必要だと思います。",
-    "en": "I think exercise is necessary for both my mind and body."
-  },
-  {
-    "block": 5,
-    "jp": "私は人を助けることが大切だと思います。",
-    "en": "I think helping others is important."
-  },
-  {
-    "block": 5,
-    "jp": "親切は人を幸せにするので、私は大事だと思います。",
-    "en": "I think kindness is important because it makes people happy."
-  },
-  {
-    "block": 5,
-    "jp": "私たちは皆、時々助けが必要です。",
-    "en": "We all need help sometimes."
-  },
-  {
-    "block": 5,
-    "jp": "私は友達を助けたので、とても嬉しかったです。",
-    "en": "I helped my friend, so I felt very happy."
-  },
-  {
-    "block": 5,
-    "jp": "人を助けると、自分の気分も良くなります。",
-    "en": "When I help others, I also feel good."
-  },
-  {
-    "block": 5,
-    "jp": "その経験のおかげで、私は考え方が変わりました。",
-    "en": "Because of that experience, my way of thinking changed."
-  },
-  {
-    "block": 5,
-    "jp": "私は思いやりが大切だと思います。",
-    "en": "I think compassion is important."
-  },
-  {
-    "block": 5,
-    "jp": "人を助けると、社会はもっと良くなります。",
-    "en": "If people help each other, society will become better."
-  },
-  {
-    "block": 5,
-    "jp": "なぜあなたは人を助けることが大切だと思いますか?",
-    "en": "Why do you think helping others is important?"
-  },
-  {
-    "block": 5,
-    "jp": "私はこれからも人を助けたいです。",
-    "en": "I want to keep helping people from now on."
-  }
+  // ===== 1️⃣ (Day43) =====
+  {block:1, jp:"あなたは今までに何か怖いことに挑戦したことがありますか？", en:"Have you ever tried something scary?"},
+  {block:1, jp:"私はその映画を2回見たことがあります。", en:"I have watched that movie twice."},
+  {block:1, jp:"私は虫を食べたことが一度もありません。", en:"I have never eaten insects."},
+  {block:1, jp:"私は京都に3回行ったことがあります。", en:"I have been to Kyoto three times."},
+  {block:1, jp:"彼女は空港へ行ってしまいました（今ここにいません）。", en:"She has gone to the airport."},
+  {block:1, jp:"私は最近、新しい趣味を始めました。", en:"I have started a new hobby recently."},
+  {block:1, jp:"私は以前より自信がつきました。", en:"I have become more confident."},
+  {block:1, jp:"今のところ、コップを10個くらい作りました。", en:"I have made about ten cups so far."},
+  {block:1, jp:"あなたは今までに外国へ行ったことがありますか？", en:"Have you ever been to another country?"},
+  {block:1, jp:"挑戦することは成功することより大切だと学びました。", en:"I have learned that trying is more important than succeeding."},
+
+  // ===== 2️⃣ (Day44) =====
+  {block:2, jp:"私は京都に何度も行ったことがあります。", en:"I have been to Kyoto many times."},
+  {block:2, jp:"私は先月そこへ行きました。", en:"I went there last month."},
+  {block:2, jp:"あなたは以前その公園に行ったことがありますか？", en:"Have you been to that park before?"},
+  {block:2, jp:"私は昨日彼に会いました。", en:"I saw him yesterday."},
+  {block:2, jp:"私はもう彼に会いました。", en:"I have already seen him."},
+  {block:2, jp:"彼女は以前日本に行ったことがありません。", en:"She hasn't been to Japan before."},
+  {block:2, jp:"私は初めて一人でそこへ行きました。", en:"I went there alone for the first time."},
+  {block:2, jp:"私はあの日を一度も忘れたことがありません。", en:"I have never forgotten that day."},
+  {block:2, jp:"それ以来、ほかの街にもたくさん行きました。", en:"I have been to many other cities since then."},
+  {block:2, jp:"そのお寺は長い間守られてきました。", en:"The temple has been protected for a long time."},
+
+  // ===== 3️⃣ (Day45) =====
+  {block:3, jp:"私は5年間日記をつけています。", en:"I have kept a journal for five years."},
+  {block:3, jp:"彼女は4月から英語を勉強しています。", en:"She has studied English since April."},
+  {block:3, jp:"あなたはどのくらいの期間ここに住んでいますか？", en:"How long have you lived here?"},
+  {block:3, jp:"私はずっとこの曲が好きです。", en:"I have always loved this song."},
+  {block:3, jp:"彼は生まれてからずっとここに住んでいます。", en:"He has lived here all his life."},
+  {block:3, jp:"この仕事を始めて以来、私はこの方法を使っています。", en:"I have used this method since I started this job."},
+  {block:3, jp:"私たちは卒業して以来、彼に会っていません。", en:"We haven't seen him since we graduated."},
+  {block:3, jp:"私は高校生のころから毎晩書いています。", en:"I have written every night since I was in high school."},
+  {block:3, jp:"私の字はそれ以来大きく変わりました。", en:"My handwriting has changed a lot since then."},
+  {block:3, jp:"私はずっと京都に行きたいと思っています。", en:"I have always wanted to visit Kyoto."},
+
+  // ===== 4️⃣ (Day46) =====
+  {block:4, jp:"私はちょうど宿題を終えたところです。", en:"I have just finished my homework."},
+  {block:4, jp:"彼女はもう家を出ました。", en:"She has already left home."},
+  {block:4, jp:"あなたはもう宿題を終えましたか？", en:"Have you finished your homework yet?"},
+  {block:4, jp:"私はまだ決めていません。", en:"I haven't decided yet."},
+  {block:4, jp:"カギをなくしてしまいました。", en:"I have lost my key."},
+  {block:4, jp:"私は2週間、朝スマホを見ていません。", en:"I haven't checked my phone in the morning for two weeks."},
+  {block:4, jp:"私はもう違いに気づきました。", en:"I have already noticed a difference."},
+  {block:4, jp:"彼女はまだ私のメッセージに返信していません。", en:"She hasn't replied to my message yet."},
+  {block:4, jp:"今のところ、すべて順調です。", en:"So far, everything has gone well."},
+  {block:4, jp:"この小さな変化がもう違いを生んでいます。", en:"This small change has already made a difference."},
+
+  // ===== 5️⃣ (Day47) =====
+  {block:5, jp:"私は6年間犬を飼っています。", en:"I have had a dog for six years."},
+  {block:5, jp:"私は彼女を3つの公園に連れて行ったことがあります。", en:"I have taken her to three parks."},
+  {block:5, jp:"彼女はもう少し白くなってきました。", en:"She has already turned a little gray."},
+  {block:5, jp:"彼女は私が今までに会った中で一番頑固な犬です。", en:"She is the most stubborn dog I have ever met."},
+  {block:5, jp:"私は彼女の小さないびきに慣れました。", en:"I have gotten used to her small snoring."},
+  {block:5, jp:"私は彼女から忍耐を学びました。", en:"I have learned patience from her."},
+  {block:5, jp:"彼女は一度も謝ったことがありません。", en:"She has never apologized."},
+  {block:5, jp:"彼女は子犬のころから私のベッドの横で寝ています。", en:"She has slept next to my bed since she was a puppy."},
+  {block:5, jp:"彼女はまだじっと座ることを覚えていません。", en:"She hasn't learned to sit still yet."},
+  {block:5, jp:"あなたは今までにペットを飼ったことがありますか？", en:"Have you ever had a pet?"},
 ];
 
 const Q_SEC = 7;
