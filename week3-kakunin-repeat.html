@@ -59,7 +59,9 @@
 <script>
   const COUNT = 5;
   // 再生したかはこのブラウザに残す（ページを開き直しても、もう一度聞けないように）
-  const PLAY_KEY = 'week3-kakunin-repeat-played';
+  // 2回目の受験は ?try=2 のリンクで開く（1回目の「再生しました」の記録とは別に数える）
+  const TRY = (new URLSearchParams(location.search).get('try') || '').replace(/\D/g, '');
+  const PLAY_KEY = 'week3-kakunin-repeat-played' + (TRY && TRY !== '1' ? '-try' + TRY : '');
   let played = [];
   try { const v = JSON.parse(localStorage.getItem(PLAY_KEY)); if (Array.isArray(v)) played = v; } catch (e) { /* 保存できない環境でも動かす */ }
   const savePlayed = () => { try { localStorage.setItem(PLAY_KEY, JSON.stringify(played)); } catch (e) { /* 無視 */ } };
