@@ -787,10 +787,14 @@ const WEEKS = {
     }
   }
 };
+// 2回目の受験：中身は元の週と同じ。週の名前を分けて、1回目の Notion・記録シート・生徒ページを上書きしない
+// （回答シートは元の週と同じ。同じ名前の回答は新しいほうが読み込まれる）
+// retakeFrom：2回目のテストを送った日。回答一覧の「2回目」には、この日以降の回答だけを出す
+WEEKS["Week2（2回目）"] = Object.assign({}, WEEKS.Week2, { retakeOf: "Week2", retakeFrom: "2026-10-23" });
 
 // 補助教材のライン（この点数以下なら「あり」）
-// 新しい下書きの週：回答シートが決まっている一番新しい週（次の週のデータを先に入れても、フォームができるまでは前の週のまま）
-const LATEST_WEEK = Object.keys(WEEKS).filter(k => WEEKS[k].part1SheetId).pop() || Object.keys(WEEKS)[0];
+// 新しい下書きの週：回答シートが決まっている一番新しい週（次の週のデータを先に入れても、フォームができるまでは前の週のまま。2回目の週は除く）
+const LATEST_WEEK = Object.keys(WEEKS).filter(k => WEEKS[k].part1SheetId && !WEEKS[k].retakeOf).pop() || Object.keys(WEEKS)[0];
 const SUPPORT_LINE = { part2: 17, part3: 15 }; // 9割未満（Part 2：18/20未満、Part 3：15.3/17未満）
 const TYPE_NAMES = ["", "第1文型", "第2文型", "第3文型", "第4文型", "第5文型"];
 
@@ -1705,7 +1709,7 @@ const taskLink = (wk, name) => {
   if (/発音/.test(name)) return l.hatsuon || "";
   return "";
 };
-const nextWeekOf = wk => { const n = Number(String(wk).replace(/\D/g, "")); return n ? `Week${n + 1}` : "次週"; };
+const nextWeekOf = wk => { const n = Number((String(wk).match(/\d+/) || [])[0]); return n ? `Week${n + 1}` : "次週"; };
 const SPEAKING_PLACEHOLDER = "（ここに講師が書きます：スピーキングテストを受けて、次週の独り言で意識すること）";
 const SECTION_NAMES = ["診断", "重点1", "重点2", "よかったところ", "Part2の解説", "Part4の解説", "確認問題の答え"];
 
@@ -2095,14 +2099,18 @@ async function loadPart1() {
   }
   const weeks = Object.keys(WEEKS).filter(k => WEEKS[k].part1SheetId).reverse(); // 新しい週から
   sel.innerHTML = '<option value="">（回答を読み込んでいます…）</option>';
-  const list = [], fails = [];
+  const list = [], fails = [], bySheet = {}; // 2回目の週は元の週と同じ回答シートなので、1回だけ読む
   for (const wk of weeks) {
     try {
-      const res = await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "part1", sheetId: WEEKS[wk].part1SheetId }) });
-      const json = await res.json();
+      const sid = WEEKS[wk].part1SheetId;
+      const json = bySheet[sid] || (bySheet[sid] = await (await fetch(relay.url, { method: "POST", body: JSON.stringify({ pass: relay.pass, action: "part1", sheetId: sid }) })).json());
       if (json.error) throw new Error(json.error);
       if (json.known) roster = json.known;
-      (json.students || []).forEach(s => list.push(Object.assign({ week: wk }, s)));
+      const from = WEEKS[wk].retakeFrom ? new Date(WEEKS[wk].retakeFrom + "T00:00:00") : null;
+      (json.students || []).forEach(s => {
+        if (from && !(new Date(s.row[0]) >= from)) return;
+        list.push(Object.assign({ week: wk }, s));
+      });
     } catch (e) { fails.push(`${wk}：${e.message}`); }
   }
   p1Students = list;
