@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>STEP1 復習テスト</title>
+<style>
+  :root{
+    --blue:#2563eb;
+    --blue-dark:#1d4ed8;
+    --green:#16a34a;
+    --red:#dc2626;
+    --gray:#6b7280;
+    --bg:#f3f4f6;
+    --card:#ffffff;
+    --text:#1f2937;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding:20px 16px 40px;
+    display:flex;
+    flex-direction:column;
+  }
+  .card{
+    background:var(--card);
+    border-radius:16px;
+    padding:24px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  }
+  h1{
+    font-size:1.4rem;
+    margin:0 0 8px;
+  }
+  h2{
+    font-size:1.1rem;
+    margin:0 0 12px;
+  }
+  p{
+    line-height:1.6;
+  }
+  .muted{color:var(--gray);font-size:0.9rem;}
+
+  /* start screen */
+  #start-screen ul{
+    padding-left:1.2em;
+    line-height:1.8;
+    color:var(--text);
+  }
+  .big-btn{
+    width:100%;
+    padding:16px;
+    font-size:1.1rem;
+    font-weight:bold;
+    border:none;
+    border-radius:12px;
+    background:var(--blue);
+    color:#fff;
+    cursor:pointer;
+    margin-top:20px;
+    transition:background 0.15s;
+  }
+  .big-btn:active{background:var(--blue-dark);}
+  .big-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+
+  /* progress */
+  .progress-wrap{
+    margin-bottom:16px;
+  }
+  .progress-top{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .progress-bar-bg{
+    width:100%;
+    height:8px;
+    background:#e5e7eb;
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .progress-bar-fill{
+    height:100%;
+    background:var(--blue);
+    transition:width 0.2s;
+  }
+  .timer-bar-bg{
+    width:100%;
+    height:5px;
+    background:#e5e7eb;
+    border-radius:3px;
+    overflow:hidden;
+    margin-top:8px;
+  }
+  .timer-bar-fill{
+    height:100%;
+    background:var(--green);
+    transition:width 1s linear;
+  }
+  .section-tag{
+    display:inline-block;
+    font-size:0.75rem;
+    font-weight:bold;
+    padding:3px 10px;
+    border-radius:999px;
+    margin-bottom:10px;
+    color:#fff;
+  }
+  .tag-pattern{background:#7c3aed;}
+  .tag-chunk{background:#16a34a;}
+  .tag-grammar{background:#ea580c;}
+  .day-tag{
+    display:inline-block;
+    font-size:0.7rem;
+    font-weight:bold;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:6px;
+    background:#e5e7eb;
+    color:var(--gray);
+  }
+
+  .question-text{
+    font-size:1.15rem;
+    line-height:1.7;
+    margin:0 0 20px;
+    white-space:pre-wrap;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .option-btn{
+    text-align:left;
+    padding:16px;
+    font-size:1rem;
+    border:2px solid #e5e7eb;
+    border-radius:12px;
+    background:#fff;
+    cursor:pointer;
+    transition:border-color 0.15s, background 0.15s;
+    line-height:1.5;
+  }
+  .option-btn:active{background:#f3f4f6;}
+  .option-btn.selected-correct{
+    border-color:var(--green);
+    background:#f0fdf4;
+  }
+  .option-btn.selected-wrong{
+    border-color:var(--red);
+    background:#fef2f2;
+  }
+  .option-btn.reveal-correct{
+    border-color:var(--green);
+    background:#f0fdf4;
+  }
+  .option-btn:disabled{cursor:default;}
+
+  .feedback-box{
+    margin-top:18px;
+    padding:14px 16px;
+    border-radius:12px;
+    font-size:0.95rem;
+    line-height:1.6;
+  }
+  .feedback-correct{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+  .feedback-wrong{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+
+  /* result screen */
+  .score-circle{
+    text-align:center;
+    margin:10px 0 24px;
+  }
+  .score-num{
+    font-size:2.6rem;
+    font-weight:bold;
+    color:var(--blue);
+  }
+  .score-sub{
+    color:var(--gray);
+    font-size:0.95rem;
+  }
+  .result-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:16px;
+  }
+  .result-item-correct{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:#f0fdf4;
+    border-radius:10px;
+    font-size:0.9rem;
+    color:#166534;
+  }
+  .result-item-correct .mark{font-weight:bold;font-size:1.1rem;}
+  .result-item-wrong{
+    padding:14px 16px;
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    border-radius:12px;
+  }
+  .result-item-wrong .q-num{
+    font-weight:bold;
+    color:var(--red);
+    margin-bottom:6px;
+    font-size:0.9rem;
+  }
+  .result-item-wrong .q-text{
+    margin:0 0 10px;
+    font-size:0.98rem;
+    line-height:1.6;
+    white-space:pre-wrap;
+  }
+  .answer-row{
+    font-size:0.9rem;
+    margin:4px 0;
+  }
+  .answer-row .label{
+    color:var(--gray);
+    margin-right:4px;
+  }
+  .your-answer{color:var(--red);font-weight:bold;}
+  .correct-answer{color:var(--green);font-weight:bold;}
+  .explain-box{
+    margin-top:8px;
+    padding-top:8px;
+    border-top:1px dashed #fecaca;
+    font-size:0.88rem;
+    color:#7f1d1d;
+    line-height:1.6;
+  }
+  .retry-btn{
+    margin-top:24px;
+  }
+  .copy-btn{
+    background:var(--green);
+    margin-top:16px;
+  }
+  .copy-btn:active{
+    background:#128a45;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const QUESTIONS = [
+  // ---- チャンク問題（10問：Day52 5問 ＋ Day53 5問） ----
+  { id:1, day:52, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「話題が尽きることがない」",
+    options:["I never run out of topics", "I never run out topics", "I never run out of topic"], correct:0,
+    explanation:"run out of〜で「〜が尽きる」。topics は複数形。" },
+  { id:2, day:52, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「それは何についての話にもなる」",
+    options:["It becomes a story about anything", "It becomes a story about something anything", "It become a story about anything"], correct:0,
+    explanation:"It が主語なので becomes。" },
+  { id:3, day:52, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「これらの思い出はしばしばお題になる」",
+    options:["These memories often become prompts", "These memories often becomes prompts", "These memories become often prompts"], correct:0,
+    explanation:"頻度の often は一般動詞の前。memories は複数なので become。" },
+  { id:4, day:52, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「なぜか孤独について話すことになった」",
+    options:["I somehow ended up discussing loneliness", "I somehow ended up discuss loneliness", "I somehow ended up discussing about loneliness"], correct:0,
+    explanation:"end up〜ing で「結局〜することになる」。discuss は about 不要。" },
+  { id:5, day:52, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「これは私の生活を練習に変える」",
+    options:["This turns my life into practice", "This turns my life to into practice", "This turn my life into practice"], correct:0,
+    explanation:"turn A into B で「A を B に変える」。This が主語なので turns。" },
+  { id:6, day:53, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「好奇心が私を助けてくれる友達」",
+    options:["A friend whose curiosity helps me", "A friend who curiosity helps me", "A friend whose curiosity help me"], correct:0,
+    explanation:"「その人の好奇心」なので whose。curiosity が主語なので helps。" },
+  { id:7, day:53, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「彼は物語を見つけるタイプの人だ」",
+    options:["He's the kind who finds stories", "He's the kind which finds stories", "He's the kind who find stories"], correct:0,
+    explanation:"人を説明するのは who。the kind に合わせて finds。" },
+  { id:8, day:53, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「彼と話すと少し気持ちが軽くなる」",
+    options:["Talking to him makes me feel lighter", "Talking to him makes me to feel lighter", "Talking to him makes me feel light more"], correct:0,
+    explanation:"make＋人＋動詞の原形。light の比較級は lighter。" },
+  { id:9, day:53, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「行き詰まった時、私は「なぜ？」と聞く」",
+    options:["When I get stuck, I ask, “Why?”", "When I get stucked, I ask, “Why?”", "When I get stuck, I ask to, “Why?”"], correct:0,
+    explanation:"get stuck で「行き詰まる」。stuck は stick の過去分詞。" },
+  { id:10, day:53, type:"chunk",
+    question:"次の意味になる正しいチャンクはどれ？（チャンク表より）\n「彼はその川がどうやって消えたのかを見せてくれた」",
+    options:["He showed how the river had disappeared", "He showed how had the river disappeared", "He showed the way how the river had disappeared"], correct:0,
+    explanation:"how の後ろは主語＋動詞の語順。the way how とは言わない。" },
+  // ---- 文法問題（10問：Day52 5問 ＋ Day53 5問） ----
+  { id:11, day:52, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「これはいわゆる学習習慣です。」\nThis is what is (　) a learning habit.",
+    options:["called", "calling", "call"], correct:0,
+    explanation:"what is called〜で「いわゆる〜」。" },
+  { id:12, day:52, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「この方法は簡単です。そのうえ無料です。」\nThis method is easy, and what is (　), it is free.",
+    options:["more", "most", "much"], correct:0,
+    explanation:"what is more で「そのうえ・さらに」。" },
+  { id:13, day:52, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「今の私があるのは両親のおかげです。」\nI owe (　) I am to my parents.",
+    options:["what", "who", "that"], correct:0,
+    explanation:"what I am で「今の私」。" },
+  { id:14, day:52, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「私はわずかな自由時間を英語の復習に使いました。」\nI used what (　) free time I had to review English.",
+    options:["little", "few", "less"], correct:0,
+    explanation:"what little＋名詞で「わずかながらある〜」。time は数えないので little。" },
+  { id:15, day:52, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「この方法について私が好きなのは、話題が尽きないことです。」\nWhat I like about this method (　) that I never run out of topics.",
+    options:["is", "does", "do"], correct:0,
+    explanation:"関係詞の what で作った主語のカタマリ。疑問文ではないので is。" },
+  { id:16, day:53, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「私は彼がどうやってその問題を解決したのかを学びました。」\nI learned (　) he solved the problem.",
+    options:["how", "the way how", "what"], correct:0,
+    explanation:"「どのように〜するか」は how。the way how とは言わない。" },
+  { id:17, day:53, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「これが私の考え方を変えた方法です。」\nThis is the (　) I changed my thinking.",
+    options:["way", "how", "way how"], correct:0,
+    explanation:"the way＋主語＋動詞で「〜する方法」。" },
+  { id:18, day:53, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「それが私が彼を信頼している理由です。」\nThat is (　) I trust him.",
+    options:["why", "because", "how"], correct:0,
+    explanation:"That is why〜で「それが〜する理由だ・だから〜」。" },
+  { id:19, day:53, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「私はなぜ彼が助けてくれたのかわかりません。」\nI don't know why (　) me.",
+    options:["he helped", "did he help", "helped he"], correct:0,
+    explanation:"関係詞の後ろは主語＋動詞の語順。疑問文の語順にしない。" },
+  { id:20, day:53, type:"grammar",
+    question:"（　）に入る正しいものはどれ？\n「彼女はその川がどうやって消えたのかを説明しました。」\nShe explained how the river (　).",
+    options:["disappeared", "did disappear", "was disappear"], correct:0,
+    explanation:"how の後ろは主語＋動詞（the river disappeared）。" },
+];
+
+const TYPE_LABEL = { chunk:"チャンク", pattern:"文型", grammar:"文法" };
+const TYPE_TAGCLASS = { chunk:"tag-chunk", pattern:"tag-pattern", grammar:"tag-grammar" };
+
+const DAYS = Array.from(new Set(QUESTIONS.map(q => q.day))).sort((a,b)=>a-b);
+const DAY_LABEL = DAYS.map(d => "Day" + d).join("・");
+const CHUNK_COUNT = QUESTIONS.filter(q => q.type === "chunk").length;
+const PATTERN_COUNT = QUESTIONS.filter(q => q.type === "pattern").length;
+const GRAMMAR_COUNT = QUESTIONS.filter(q => q.type === "grammar").length;
+const TYPE_SUMMARY = [["チャンク問題", CHUNK_COUNT], ["文型判定問題", PATTERN_COUNT], ["文法問題", GRAMMAR_COUNT]]
+  .filter(([, n]) => n > 0);
+
+const TIME_PER_Q = 40; // seconds, visual only
+
+let state = {
+  screen: "start", // start | quiz | result
+  quizOrder: [],
+  current: 0,
+  answers: [], // { selected, isCorrect }
+  locked: false,
+  timeLeft: TIME_PER_Q,
+  timerId: null,
+};
+
+const app = document.getElementById("app");
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(q){
+  const idxs = shuffle(q.options.map((_, i) => i));
+  return { ...q, options: idxs.map(i => q.options[i]), correct: idxs.indexOf(q.correct) };
+}
+
+function buildQuizOrder(){
+  const chunkQs = shuffle(QUESTIONS.filter(q => q.type === "chunk"));
+  const patternQs = shuffle(QUESTIONS.filter(q => q.type === "pattern"));
+  const grammarQs = shuffle(QUESTIONS.filter(q => q.type === "grammar"));
+  return [...chunkQs, ...patternQs, ...grammarQs].map(shuffleOptions);
+}
+
+function render(){
+  if(state.screen === "start") renderStart();
+  else if(state.screen === "quiz") renderQuiz();
+  else renderResult();
+}
+
+function renderStart(){
+  app.innerHTML = `
+    <div class="card" id="start-screen">
+      <h1>${DAY_LABEL} STEP1 復習テスト</h1>
+      <p class="muted">教材に取り組んだ翌日に受けるテストです。${DAYS.length > 1 ? "直近2日分" : "前回"}（${DAY_LABEL}）の${TYPE_SUMMARY.map(([l]) => l.replace(/判定?問題$|問題$/, "")).join("・")}が身についているか確認します。</p>
+      <ul>
+        <li>${TYPE_SUMMARY.map(([l, n]) => l + " " + n + "問").join(" → ")} の順（合計${QUESTIONS.length}問・約10分）</li>
+        <li>1問ずつ進み、選んだらすぐ次に進みます</li>
+        <li>前の問題には戻れません</li>
+        <li>終了後、間違えた問題だけ解説つきで確認できます</li>
+      </ul>
+      <button class="big-btn" id="start-btn">テストを始める</button>
+    </div>
+  `;
+  document.getElementById("start-btn").onclick = () => {
+    state.screen = "quiz";
+    state.quizOrder = buildQuizOrder();
+    state.current = 0;
+    state.answers = [];
+    startQuestion();
+  };
+}
+
+function startQuestion(){
+  state.locked = false;
+  state.timeLeft = TIME_PER_Q;
+  clearInterval(state.timerId);
+  render();
+  state.timerId = setInterval(()=>{
+    state.timeLeft--;
+    updateTimerBar();
+    if(state.timeLeft <= 0){
+      clearInterval(state.timerId);
+    }
+  }, 1000);
+}
+
+function updateTimerBar(){
+  const fill = document.getElementById("timer-bar-fill");
+  const label = document.getElementById("timer-label");
+  if(!fill) return;
+  const pct = Math.max(0, (state.timeLeft / TIME_PER_Q) * 100);
+  fill.style.width = pct + "%";
+  if(label) label.textContent = Math.max(0, state.timeLeft) + "秒";
+}
+
+function renderQuiz(){
+  const q = state.quizOrder[state.current];
+  const total = state.quizOrder.length;
+  const idx = state.current + 1;
+
+  app.innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span>問題 ${idx} / ${total}</span>
+        <span id="timer-label">${state.timeLeft}秒</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width:${(state.current/total)*100}%"></div>
+      </div>
+      <div class="timer-bar-bg">
+        <div class="timer-bar-fill" id="timer-bar-fill" style="width:100%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="section-tag ${TYPE_TAGCLASS[q.type]}">${TYPE_LABEL[q.type]}</span>
+      <p class="question-text">${escapeHtml(q.question)}</p>
+      <div class="options" id="options"></div>
+      <div id="feedback-area"></div>
+      <button class="big-btn" id="next-btn" style="display:none;">次へ</button>
+    </div>
+  `;
+
+  const optionsWrap = document.getElementById("options");
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = opt;
+    btn.onclick = () => selectOption(i);
+    optionsWrap.appendChild(btn);
+  });
+}
+
+function selectOption(i){
+  if(state.locked) return;
+  state.locked = true;
+  clearInterval(state.timerId);
+
+  const q = state.quizOrder[state.current];
+  const isCorrect = i === q.correct;
+  state.answers[state.current] = { selected: i, isCorrect };
+
+  const optionBtns = document.querySelectorAll("#options .option-btn");
+  optionBtns.forEach((btn, idx) => {
+    btn.disabled = true;
+    if(idx === i && isCorrect) btn.classList.add("selected-correct");
+    else if(idx === i && !isCorrect) btn.classList.add("selected-wrong");
+    else if(idx === q.correct) btn.classList.add("reveal-correct");
+  });
+
+  const feedbackArea = document.getElementById("feedback-area");
+  feedbackArea.innerHTML = `
+    <div class="feedback-box ${isCorrect ? "feedback-correct" : "feedback-wrong"}">
+      ${isCorrect ? "○ 正解！" : "× 不正解"}　${escapeHtml(q.explanation)}
+    </div>
+  `;
+
+  const nextBtn = document.getElementById("next-btn");
+  nextBtn.style.display = "block";
+  nextBtn.textContent = (state.current === state.quizOrder.length - 1) ? "結果を見る" : "次へ";
+  nextBtn.onclick = goNext;
+}
+
+function goNext(){
+  if(state.current === state.quizOrder.length - 1){
+    state.screen = "result";
+    render();
+  } else {
+    state.current++;
+    startQuestion();
+  }
+}
+
+function renderResult(){
+  const total = state.quizOrder.length;
+  const correctCount = state.answers.filter(a => a && a.isCorrect).length;
+  const scorePct = Math.round((correctCount/total)*100);
+
+  const wrongItems = [];
+  const correctItems = [];
+  const wrongPhrases = [];
+
+  state.quizOrder.forEach((q, i) => {
+    const a = state.answers[i];
+    if(a && a.isCorrect){
+      correctItems.push(`
+        <div class="result-item-correct">
+          <span class="mark">○</span>
+          <span>${escapeHtml(shorten(q.question))}</span>
+        </div>
+      `);
+    } else {
+      wrongPhrases.push(q.options[q.correct]);
+      const yourAnswerText = a ? q.options[a.selected] : "(未回答)";
+      wrongItems.push(`
+        <div class="result-item-wrong">
+          <div class="q-num">${TYPE_LABEL[q.type]}<span class="day-tag">Day${q.day}</span></div>
+          <p class="q-text">${escapeHtml(q.question)}</p>
+          <div class="answer-row"><span class="label">あなたの回答：</span><span class="your-answer">${escapeHtml(yourAnswerText)}</span></div>
+          <div class="answer-row"><span class="label">正解：</span><span class="correct-answer">${escapeHtml(q.options[q.correct])}</span></div>
+          <div class="explain-box">${escapeHtml(q.explanation)}</div>
+        </div>
+      `);
+    }
+  });
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>結果</h1>
+      <div class="score-circle">
+        <div class="score-num">${correctCount} / ${total}</div>
+        <div class="score-sub">正答率 ${scorePct}点</div>
+      </div>
+      <button class="big-btn copy-btn" id="copy-result-btn">結果をコピーする</button>
+
+      ${wrongItems.length > 0 ? `
+        <h2>間違えた問題（${wrongItems.length}問）</h2>
+        <div class="result-list">${wrongItems.join("")}</div>
+      ` : `<p>全問正解です！素晴らしいです。</p>`}
+
+      ${correctItems.length > 0 ? `
+        <h2 style="margin-top:24px;">正解した問題（${correctItems.length}問）</h2>
+        <div class="result-list">${correctItems.join("")}</div>
+      ` : ``}
+
+      <button class="big-btn retry-btn" id="retry-btn">もう一度挑戦する</button>
+    </div>
+  `;
+
+  document.getElementById("retry-btn").onclick = () => {
+    state = { screen:"start", quizOrder:[], current:0, answers:[], locked:false, timeLeft:TIME_PER_Q, timerId:null };
+    render();
+  };
+
+  document.getElementById("copy-result-btn").onclick = (e) => {
+    let text = `${DAY_LABEL} STEP1復習テスト結果\n${correctCount} / ${total}（正答率${scorePct}点）`;
+    if(wrongPhrases.length > 0){
+      text += `\n\n復習が必要な項目：\n` + wrongPhrases.map(p => "・" + p).join("\n");
+    }
+    copyTextToClipboard(text, e.currentTarget);
+  };
+}
+
+function shorten(text){
+  const oneLine = text.replace(/\n/g, " ");
+  return oneLine.length > 40 ? oneLine.slice(0,40) + "…" : oneLine;
+}
+
+function copyTextToClipboard(text, btn){
+  function fallbackCopy(){
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+  const original = btn.textContent;
+  btn.textContent = "コピーしました！";
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.disabled = false;
+  }, 2000);
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+render();
+</script>
+</body>
+</html>
