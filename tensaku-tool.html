@@ -764,7 +764,16 @@ const WEEKS = {
         ] }
       ]
     },
-    // Part 3 2️⃣ リピート：発音リスニングトレーニング（シャドーイング）の音声が届いたら、各デイ1文を入れる
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング PART2（シャドーイング、自然な速さ）から各デイ1文。
+    // 本文と音声を自動で照らし合わせて（pocketsphinx）文の位置を決め、文の前後の語が入らないように切り出している
+    repeat: [
+      { day: "Day30", text: "I am quieter than him,", chunks: ["I am quieter", "than him,"] },
+      { day: "Day31", text: "but I use it less wisely.", chunks: ["but I use it", "less wisely."] },
+      { day: "Day32", text: "and it tasted better than any fancy meal.", chunks: ["and it tasted better", "than any fancy meal."] },
+      { day: "Day29", text: "It is much smaller and quieter than Tokyo.", chunks: ["It is much smaller", "and quieter than Tokyo."] },
+      { day: "Day33", text: "I'm starting to feel that real confidence is quieter than pride.", chunks: ["I'm starting to feel", "that real confidence is quieter than pride."] }
+    ],
+    repeatPage: "week5-kakunin-repeat.html",
     supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
     part4theme: "地元と今をくらべる（地元と今の街のちがい／前の自分と今の自分／一番好きなところ）",
     speakingPoints: [
