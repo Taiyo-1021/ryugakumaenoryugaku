@@ -74,7 +74,7 @@
     row.style.marginBottom = i < COUNT - 1 ? '18px' : '0';
     row.innerHTML = `<div class="q"><div class="no">Q${i + 1}</div><button class="play" data-i="${i}">▶ 再生</button></div><div class="status" data-s="${i}"></div>`;
     list.appendChild(row);
-    const a = new Audio(`audio/week4-repeat-q${i + 1}.mp3`);
+    const a = new Audio(`audio/week4-repeat-q${i + 1}.mp3?v=2`); // ?v=：音声を作り直したら数字を上げる（古い音声がキャッシュで流れないように）
     a.preload = 'auto';
     audios.push(a);
   }
