@@ -883,7 +883,16 @@ const WEEKS = {
         ] }
       ]
     },
-    // Part 3 2️⃣ リピート：発音リスニングトレーニング PART2（シャドーイング、自然な速さ）の音声が届いたら、各デイ1文を入れる
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング PART2（シャドーイング、自然な速さ）から各デイ1文。
+    // 本文と音声を自動で照らし合わせて（pocketsphinx）文の位置を決め、切り出した音声を本文なしの聞き取りでも確かめている
+    repeat: [
+      { day: "Day39", text: "If he gave me advice, I would follow it.", chunks: ["If he gave me advice,", "I would follow it."] },
+      { day: "Day40", text: "If it rains tomorrow, my plans will probably change.", chunks: ["If it rains tomorrow,", "my plans will probably change."] },
+      { day: "Day38", text: "It would be hard, but that is why I want to try it.", chunks: ["It would be hard,", "but that is why I want to try it."] },
+      { day: "Day37", text: "If I were rich, I would not just buy expensive things.", chunks: ["If I were rich,", "I would not just buy expensive things."] },
+      { day: "Day36", text: "Free time is important because it shows me who I really am.", chunks: ["Free time is important", "because it shows me who I really am."] }
+    ],
+    repeatPage: "week6-kakunin-repeat.html",
     supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
     part4theme: "1か月休めたら（どこで何をしたいか／だれと過ごしたいか／なぜそうしたいか）",
     speakingPoints: [
