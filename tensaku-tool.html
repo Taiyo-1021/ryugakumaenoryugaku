@@ -922,8 +922,129 @@ const WEEKS = {
       "リズム": "If I don't try it now, I might never do it. を、大事な語で手をたたきながら5回",
       "リピート": "Week6 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
     }
+  },
+  "Week7": {
+    part1SheetId: "", // Part 1のフォームの回答シート（フォームを作ったら入れる）
+    focus: "現在完了（経験 ever・never・回数・been to と gone to／過去形との使い分け／継続 for・since・How long／完了・結果 just・already・yet／最上級＋I have ever）",
+    part1Mode: "translate",
+    part1: [
+      { jp: "私はスカイダイビングを一度したことがあります。", target: "経験＋回数（once）", en: "I have gone skydiving once." },
+      { jp: "あなたは今までに英語でスピーチをしたことがありますか？", target: "Have you ever …?", en: "Have you ever given a speech in English?" },
+      { jp: "私は一度も海外に住んだことがありません。", target: "never（一度も〜ない）", en: "I have never lived abroad." },
+      { jp: "彼は沖縄を何度か訪れたことがあります。", target: "経験＋回数（a few times）・has", en: "He has visited Okinawa a few times." },
+      { jp: "彼女は買い物に行ってしまいました（今ここにいません）。", target: "have gone（行ってしまった）と have been の使い分け", en: "She has gone shopping." },
+      { jp: "私は最近、前より勇敢になりました。", target: "have become", en: "I have become braver recently." },
+      { jp: "私は去年、初めて一人で旅行しました。", target: "過去形（last year）と現在完了の使い分け", en: "I traveled alone for the first time last year." },
+      { jp: "私は3日前に彼女に会いました。", target: "過去形（〜ago）と現在完了の使い分け", en: "I met her three days ago." },
+      { jp: "あなたは以前その映画を見たことがありますか？", target: "疑問文＋before", en: "Have you seen that movie before?" },
+      { jp: "この橋は100年以上守られてきました。", target: "現在完了の受け身（has been＋過去分詞）", en: "This bridge has been protected for more than 100 years." },
+      { jp: "私は10年間ここに住んでいます。", target: "継続＋for", en: "I have lived here for ten years." },
+      { jp: "彼は先月から日記をつけています。", target: "継続＋since（時点）", en: "He has kept a journal since last month." },
+      { jp: "あなたはどのくらいの期間、英語を勉強していますか？", target: "How long have you …?", en: "How long have you studied English?" },
+      { jp: "私は子どものころからずっと犬が好きです。", target: "since＋主語＋過去形", en: "I have loved dogs since I was a child." },
+      { jp: "私たちは高校を卒業して以来、会っていません。", target: "継続の否定（haven't）＋since＋主語＋過去形", en: "We haven't seen each other since we graduated from high school." },
+      { jp: "私はちょうど昼ご飯を食べ終えたところです。", target: "完了＋just", en: "I have just finished lunch." },
+      { jp: "電車はもう出発してしまいました。", target: "完了＋already", en: "The train has already left." },
+      { jp: "あなたはもうレポートを書き終えましたか？", target: "疑問文＋yet", en: "Have you finished your report yet?" },
+      { jp: "私はまだ彼のメールに返信していません。", target: "not … yet（まだ〜していない）", en: "I haven't replied to his email yet." },
+      { jp: "私はスマホをなくしてしまいました（今も見つかっていません）。", target: "結果（〜してしまった）", en: "I have lost my phone." },
+      { jp: "今のところ、新しい仕事は順調です。", target: "so far（今のところ）", en: "So far, my new job has gone well." },
+      { jp: "これは私が今までに見た中で一番美しい景色です。", target: "最上級＋I have ever＋過去分詞", en: "This is the most beautiful view I have ever seen." },
+      { jp: "兄はまだ車の運転を覚えていません。", target: "hasn't … yet（三単現）", en: "My brother hasn't learned to drive yet." },
+      { jp: "私は京都に3回行ったことがありますが、大阪には一度も行ったことがありません。", target: "have been to＋回数／never（1文に2つ）", en: "I have been to Kyoto three times, but I have never been to Osaka." }
+    ],
+    // Part 2：瞬間英作文（Week7 の50問から各日2問）
+    part2: [
+      { jp: "私は虫を食べたことが一度もありません。", en: "I have never eaten insects." },
+      { jp: "あなたは今までに外国へ行ったことがありますか？", en: "Have you ever been to another country?" },
+      { jp: "私は先月そこへ行きました。", en: "I went there last month." },
+      { jp: "私はもう彼に会いました。", en: "I have already seen him." },
+      { jp: "彼女は4月から英語を勉強しています。", en: "She has studied English since April." },
+      { jp: "あなたはどのくらいの期間ここに住んでいますか？", en: "How long have you lived here?" },
+      { jp: "あなたはもう宿題を終えましたか？", en: "Have you finished your homework yet?" },
+      { jp: "彼女はまだ私のメッセージに返信していません。", en: "She hasn't replied to my message yet." },
+      { jp: "私は6年間犬を飼っています。", en: "I have had a dog for six years." },
+      { jp: "うちの犬は一度も病気になったことがありません。", en: "My dog has never gotten sick." }
+    ],
+    // Part 3 1️⃣ 音読：評価箇所から逆算した本文。5観点×4項目（1項目1点・20点満点）。生徒には評価箇所を知らせない
+    reading: {
+      passage: "I have lived in this town for three years, and I have always loved the quiet mornings here. I have never been good at waking up early, but recently I have started walking by the river. I have already noticed a big change. My brother thinks it's just a phase, but I haven't missed a single day yet. Have you ever tried a small habit that changed your whole day? I think a good habit doesn't have to be difficult.",
+      viewpoints: [
+        { name: "流暢さ", target: "I have never been good at waking up early, but recently I have started walking by the river.", items: [
+          { label: "止まらない", look: "途中で2秒以上止まらずに読めたか", groups: ["流暢さ"], syms: ["fl-stop"] },
+          { label: "言い直さない", look: "戻って読み直していないか", groups: ["流暢さ"], syms: ["fl-redo"] },
+          { label: "正しく読む", look: "読み間違い・飛ばし・付け足しがないか", groups: ["流暢さ"], syms: ["fl-miss", "fl-skip"] },
+          { label: "かたまりで読む", look: "I have never been good at waking up early ／ but recently ／ I have started walking by the river", groups: ["流暢さ"], syms: ["fl-word", "fl-chunk"] }
+        ] },
+        { name: "個別の音", items: [
+          { label: "thinks", look: "th（/θ/）", groups: ["th"], syms: ["th-s", "th-t"], words: ["thinks"] },
+          { label: "loved", look: "v（下唇に歯を当てる）", groups: ["v"], syms: ["v-b"], words: ["loved"] },
+          { label: "habit", look: "/æ/（HAB）", groups: ["/æ/"], syms: ["ae-a", "ae-e"], words: ["habit"] },
+          { label: "brother", look: "/ʌ/（口をあまり開けない短い「ア」）", groups: ["/ʌ/"], syms: ["uh-a", "uh-o"], words: ["brother"] }
+        ] },
+        { name: "リンキング", items: [
+          { label: "lived in", look: "d と i をつなげる（リヴディン）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["lived"] },
+          { label: "good at", look: "d と a をつなげる（グダッ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["good"] },
+          { label: "noticed a", look: "t と a をつなげる（ノゥティスタ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["noticed"] },
+          { label: "thinks it's", look: "s と i をつなげる（スィンクスィッツ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["thinks", "it's"] }
+        ] },
+        { name: "アクセント", items: [
+          { label: "recently", look: "RE を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["recently"], tip: "recently は最初の RE を強く読みます（ˈriːsntli）。「リーセントリー」の「リー」を大きく長めに言い、後ろは弱く短くしましょう。" },
+          { label: "already", look: "READ を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["already"], tip: "already は真ん中の READ を強く読みます（ɔːlˈredi）。「オールレディ」の「レ」を大きく言いましょう。" },
+          { label: "noticed", look: "NO を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["noticed"], tip: "noticed は最初の NO を強く読みます（ˈnoʊtɪst）。「ノゥティスト」の「ノゥ」を大きく言い、最後の -ced は「スト」と短くつなげます。" },
+          { label: "difficult", look: "DIF を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["difficult"], tip: "difficult は最初の DIF を強く読みます（ˈdɪfɪkəlt）。「ディフィカルト」の「ディ」を大きく言いましょう。" }
+        ] },
+        { name: "リズム・抑揚", target: "I think a good habit doesn't have to be difficult.", items: [
+          { label: "大事な語を強く", look: "think・good・habit・doesn't・difficult を強く", groups: ["リズム"], syms: ["rh-weak"] },
+          { label: "小さな語を弱く", look: "I・a・have to be を弱く短く", groups: ["リズム"], syms: ["rh-strong"] },
+          { label: "かたまりで区切る", look: "I think ／ a good habit ／ doesn't have to be difficult", groups: ["リズム"], syms: ["rh-chunk"] },
+          { label: "文末を下げる", look: "difficult で下げて終わる", groups: ["リズム"], syms: ["rh-up"] }
+        ] }
+      ]
+    },
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング PART2（シャドーイング、自然な速さ）から各デイ1文。
+    // 本文と音声を自動で照らし合わせて（pocketsphinx）文の位置を決め、切り出した音声を本文なしの聞き取りでも確かめている
+    // 音声は本文の I have を I've と短縮して読んでいるので、英文も音声に合わせている
+    repeat: [
+      { day: "Day45", text: "I've never shown my journal to anyone, and I don't think I ever will.", chunks: ["I've never shown my journal to anyone,", "and I don't think I ever will."] },
+      { day: "Day47", text: "I've had a dog named Mochi for six years now.", chunks: ["I've had a dog named Mochi", "for six years now."] },
+      { day: "Day43", text: "I've also started a new hobby: pottery.", chunks: ["I've also started a new hobby:", "pottery."] },
+      { day: "Day44", text: "I've visited Kyoto many times, and I always find something new there.", chunks: ["I've visited Kyoto many times,", "and I always find something new there."] },
+      { day: "Day46", text: "I haven't done that for two weeks now, and it feels strange in a good way.", chunks: ["I haven't done that for two weeks now,", "and it feels strange in a good way."] }
+    ],
+    repeatPage: "week7-kakunin-repeat.html",
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
+    part4theme: "最近始めたこと（いつから続けているか／これまでにあったこと／それで何が変わったか）",
+    speakingPoints: [
+      { title: "経験を言う", detail: "I have ～ / I have never ～ で、したことがある・ないことを1回以上言う" },
+      { title: "続いていることを言う", detail: "for・since を1回以上使う" },
+      { title: "いつのことか区別する", detail: "yesterday・last ～・～ ago があるときは過去形にする" },
+      { title: "見直す", detail: "have・has のあとは過去分詞か、he・she には has を使っているか確認する" }
+    ],
+    weakTypes: {
+      grammar: "正解／経験（ever・never）／回数（once・twice・times）／have been to と have gone to／過去形と現在完了の使い分け（yesterday・ago・last）／現在完了の受け身／継続 for と since の使い分け／How long have you …／since＋主語＋過去形／完了 just・already／yet（疑問文・否定文）／結果（〜してしまった）／so far／最上級＋I have ever／have と has（三単現）／過去分詞の形／時制／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
+      pattern: "",
+      sound: "流暢さ／th／v／/æ/／/ʌ/／リンキング／アクセント／リズム／リピート／その他"
+    },
+    // 直し方の例文を、この週の本文に合わせる（ない項目は共通の文を使う）
+    symTips: {
+      "fl-word": "I have never been good at waking up early ／ but recently のように、意味のかたまりごとにまとめて読みましょう。かたまりの中は止めずにつなげます。",
+      "fl-chunk": "区切るのは、意味のかたまりの切れ目（カンマや but の前など）だけにしましょう。walking ／ by the river のように、かたまりの途中で切らないようにします。",
+      "fl-miss": "読む前に一度黙読して、知らない単語や似た形の単語（loved と lived など）を確かめておきましょう。",
+      "ln-cut": "前の語が子音（d・t・s など）で終わり、次の語が母音で始まるときは、つなげて1語のように読みます。lived in は「リヴディン」、good at は「グダッ」のイメージです。",
+      "ln-vowel": "最後の子音のあとに「ド」「ト」などの母音を入れず、そのまま次の語の母音につなげます。ゆっくり「good-at」と言ってから、だんだん速くしてつなげる練習をしましょう。",
+      "rh-weak": "意味を伝える語（think・good・habit・doesn't・difficult など）は、大きく・はっきり・少し長めに読みましょう。",
+      "rh-strong": "I・a・have to be などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。",
+      "rh-chunk": "I think ／ a good habit ／ doesn't have to be difficult のように、意味のかたまりの切れ目で区切りましょう。"
+    },
+    drills: {
+      "リンキング": "lived in・good at・noticed a・thinks it's を、ゆっくり→速くの順でつなげて5回ずつ",
+      "リズム": "I think a good habit doesn't have to be difficult. を、大事な語で手をたたきながら5回",
+      "リピート": "Week7 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
+    }
   }
 };
+
 // 2回目の受験：中身は元の週と同じ。週の名前を分けて、1回目の Notion・記録シート・生徒ページを上書きしない
 // （回答シートは元の週と同じ。同じ名前の回答は新しいほうが読み込まれる）
 // retakeFrom：2回目のテストを送った日。回答一覧の「2回目」には、この日以降の回答だけを出す
