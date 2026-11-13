@@ -1004,11 +1004,12 @@ const WEEKS = {
     },
     // Part 3 2️⃣ リピート：発音リスニングトレーニング PART2（シャドーイング、自然な速さ）から各デイ1文。
     // 本文と音声を自動で照らし合わせて（pocketsphinx）文の位置を決め、切り出した音声を本文なしの聞き取りでも確かめている
+    // 音声は本文の I have を I've と短縮して読んでいるので、英文も音声に合わせている
     repeat: [
-      { day: "Day45", text: "I have kept a journal for almost five years now.", chunks: ["I have kept a journal", "for almost five years now."] },
-      { day: "Day47", text: "I have had a dog named Mochi for six years now.", chunks: ["I have had a dog named Mochi", "for six years now."] },
-      { day: "Day43", text: "I have also started a new hobby: pottery.", chunks: ["I have also started a new hobby:", "pottery."] },
-      { day: "Day44", text: "I have visited Kyoto many times, and I always find something new there.", chunks: ["I have visited Kyoto many times,", "and I always find something new there."] },
+      { day: "Day45", text: "I've kept a journal for almost five years now.", chunks: ["I've kept a journal", "for almost five years now."] },
+      { day: "Day47", text: "I've had a dog named Mochi for six years now.", chunks: ["I've had a dog named Mochi", "for six years now."] },
+      { day: "Day43", text: "I've also started a new hobby: pottery.", chunks: ["I've also started a new hobby:", "pottery."] },
+      { day: "Day44", text: "I've visited Kyoto many times, and I always find something new there.", chunks: ["I've visited Kyoto many times,", "and I always find something new there."] },
       { day: "Day46", text: "I haven't done that for two weeks now, and it feels strange in a good way.", chunks: ["I haven't done that for two weeks now,", "and it feels strange in a good way."] }
     ],
     repeatPage: "week7-kakunin-repeat.html",
