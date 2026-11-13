@@ -93,7 +93,7 @@
 
   // ピッのあとのポーズ（あなたの番）かどうかを、音の大きさの代わりに再生位置で判断する
   // 各音声の英文の長さ（秒）。q*.mp3 を作ったときの値
-  const CLIP = [2.41, 2.46, 2.39, 3.93, 3.92];
+  const CLIP = [3.39, 2.46, 2.39, 3.93, 3.92];
   const LEAD = 0.6, BEEP = 0.18;
   function phase(i, t) {
     const c = CLIP[i], pause = Math.max(4.0, c * 1.6 + 1.5) - BEEP;
