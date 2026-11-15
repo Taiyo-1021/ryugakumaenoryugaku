@@ -1855,18 +1855,31 @@ function splitRow(line) {
 }
 
 // 【B】を「### 見出し」ごとに分ける
+// AIの画面から文字だけをコピーすると「###」が消える／「## 」「**診断**」「1. 診断」になることもあるので、
+// 「#」の見出しに加えて、決まった見出し名だけの行も見出しとして読む
+const normHead = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/\s/g, "");
+const SECTION_HEAD = /^(診断|重点[12]|よかったところ|Part[124]の解説|確認問題の答え)/;
+function headingOf(line) {
+  const l = line.trim();
+  const h = l.match(/^#{1,6}\s*(.+?)\s*#*$/);
+  let s = h ? h[1] : l;
+  s = s.replace(/^\*\*(.+?)\*\*[:：]?$/, "$1").replace(/^\*\*(.+?)\*\*/, "$1")
+       .replace(/^[0-9０-９]+[.．)）]\s*/, "").replace(/^【(.+?)】/, "$1").trim();
+  if (h) return s;
+  return s.length <= 60 && SECTION_HEAD.test(normHead(s)) ? s : null;
+}
 function parseSections(text) {
   const out = {};
   let key = null;
   text.split("\n").forEach(line => {
-    const m = line.match(/^###\s+(.+?)\s*$/);
-    if (m) { key = m[1]; out[key] = []; }
+    const head = headingOf(line);
+    if (head) { key = head; out[key] = []; }
     else if (key) out[key].push(line);
   });
   Object.keys(out).forEach(k => { out[k] = out[k].join("\n").trim(); });
   return out;
 }
-const findSection = (secs, prefix) => Object.keys(secs).find(k => k.replace(/\s/g, "").startsWith(prefix));
+const findSection = (secs, prefix) => Object.keys(secs).find(k => normHead(k).startsWith(prefix));
 
 // 音読（Week2以降）：崩れていた評価箇所の一覧
 function readBadList() {
