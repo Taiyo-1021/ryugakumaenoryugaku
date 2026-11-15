@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week3 確認問題プラス</title>
+<style>
+  :root{
+    --pink:#cc007e; --pink-light:#ff66c4; --pink-bg:#fff0f8;
+    --gray:#6b7280; --bg:#f6f4f5; --card:#ffffff; --text:#1f2937;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);line-height:1.6;
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,"Segoe UI",Arial,sans-serif;}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+  header{background:var(--card);border-radius:16px;padding:20px 20px 16px;
+    border-top:6px solid var(--pink);box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .week{color:var(--pink);font-weight:800;letter-spacing:2px;font-size:14px;}
+  h1{margin:4px 0 12px;font-size:22px;}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .tab{flex:1 1 0;min-width:56px;border:2px solid var(--pink);background:#fff;color:var(--pink);
+    border-radius:10px;padding:8px 4px;font-size:15px;font-weight:800;cursor:pointer;}
+  .tab.active{background:var(--pink);color:#fff;}
+  .theme{color:var(--gray);font-size:14px;margin-bottom:12px;}
+  .howto{background:var(--pink-bg);border-radius:10px;padding:12px 14px;font-size:14px;}
+  .howto ol{margin:4px 0 0;padding-left:20px;}
+  .q{background:var(--card);border-radius:14px;margin:12px 0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+  .q-head{background:var(--pink);color:#fff;padding:10px 14px;display:flex;gap:10px;align-items:baseline;font-weight:700;}
+  .q-num{background:rgba(255,255,255,.25);border-radius:6px;padding:0 8px;font-size:14px;flex-shrink:0;}
+  .q-a{font-size:16px;word-break:break-word;}
+  .q-body{padding:12px 16px 14px;}
+  .b-jp{font-size:16px;margin-bottom:8px;}
+  .b-label{color:var(--gray);font-size:13px;overflow:hidden;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="week">WEEK 3</div>
+    <h1>確認問題プラス（各Day 20問）</h1>
+    <div class="tabs" id="tabs"></div>
+    <div class="theme" id="theme"></div>
+    <div class="howto">
+      <b>やり方</b>
+      <ol>
+        <li>AさんとBさんのセリフを読み、場面を想像する。</li>
+        <li>Grammar Focusで学んだ表現から、場面に合う文法を選ぶ。</li>
+        <li>Bさんの返事を英訳し、ノートに書く。</li>
+      </ol>
+    </div>
+  </header>
+  <div id="list"></div>
+</div>
+<script>
+const DAYS = {
+ "15": {
+  "theme": "現在形・現在進行形",
+  "qs": [
+   {
+    "a": "How often do you cook?",
+    "b": "週に3回くらい料理します。"
+   },
+   {
+    "a": "Do you drink coffee in the morning?",
+    "b": "はい、毎朝2杯飲みます。"
+   },
+   {
+    "a": "What does your brother do?",
+    "b": "彼は病院で働いています。"
+   },
+   {
+    "a": "Do you ever go to bed early?",
+    "b": "12時前に寝ることは、めったにありません。"
+   },
+   {
+    "a": "How do you usually get to work?",
+    "b": "たいてい自転車で行きます。"
+   },
+   {
+    "a": "Do you watch TV on weekdays?",
+    "b": "いいえ、平日はテレビを見ません。"
+   },
+   {
+    "a": "What time does the shop open?",
+    "b": "10時に開きます。"
+   },
+   {
+    "a": "When does the movie start?",
+    "b": "7時半に始まります。"
+   },
+   {
+    "a": "Is the library open tomorrow?",
+    "b": "いいえ、月曜日はお休みなんです。"
+   },
+   {
+    "a": "What time does your flight leave tomorrow?",
+    "b": "朝9時5分に出発します。"
+   },
+   {
+    "a": "Can you talk now?",
+    "b": "ごめんなさい、今運転中なんです。"
+   },
+   {
+    "a": "Where's Ken?",
+    "b": "部屋で寝ています。"
+   },
+   {
+    "a": "Is it raining outside?",
+    "b": "はい、けっこう強く降っています。"
+   },
+   {
+    "a": "Are you busy these days?",
+    "b": "はい、最近は毎晩残業しています。"
+   },
+   {
+    "a": "What are you reading these days?",
+    "b": "最近は料理の本を読んでいます。"
+   },
+   {
+    "a": "Are you still going to the gym?",
+    "b": "いいえ、今月は行っていません。"
+   },
+   {
+    "a": "Do you usually cook dinner?",
+    "b": "いつもは私が作りますが、今週は夫が作っています。"
+   },
+   {
+    "a": "Do you still drink soda?",
+    "b": "いつもは毎日飲むんですが、最近はお茶にしています。"
+   },
+   {
+    "a": "Do you know Mr. Tanaka?",
+    "b": "はい、よく知っています。"
+   },
+   {
+    "a": "Do you want some cake?",
+    "b": "いいえ、今はいりません。おなかいっぱいなんです。"
+   }
+  ]
+ },
+ "16": {
+  "theme": "過去形・be動詞の過去形・過去進行形",
+  "qs": [
+   {
+    "a": "What did you do last night?",
+    "b": "家で夕食を作りました。"
+   },
+   {
+    "a": "Did you call your mom?",
+    "b": "はい、昨日電話しました。"
+   },
+   {
+    "a": "Did you help your friend move?",
+    "b": "はい、一日中手伝いました。"
+   },
+   {
+    "a": "Did you watch the game?",
+    "b": "いいえ、見ませんでした。早く寝ました。"
+   },
+   {
+    "a": "Where did you go on Sunday?",
+    "b": "友達と海に行きました。"
+   },
+   {
+    "a": "What did you have for breakfast?",
+    "b": "トーストを1枚食べただけです。"
+   },
+   {
+    "a": "How did you get to the airport?",
+    "b": "タクシーに乗りました。"
+   },
+   {
+    "a": "Did you buy anything at the mall?",
+    "b": "はい、新しい靴を買いました。"
+   },
+   {
+    "a": "Who did you meet at the party?",
+    "b": "大学時代の友達に会いました。"
+   },
+   {
+    "a": "Did you find your key?",
+    "b": "はい、ソファの下で見つかりました。"
+   },
+   {
+    "a": "Did you make lunch today?",
+    "b": "いいえ、今日は作らずに、コンビニで買いました。"
+   },
+   {
+    "a": "How was the movie?",
+    "b": "すごく面白かったです。"
+   },
+   {
+    "a": "Were you at home yesterday?",
+    "b": "いいえ、一日中仕事でした。"
+   },
+   {
+    "a": "Was the restaurant crowded?",
+    "b": "いいえ、あまり混んでいませんでした。"
+   },
+   {
+    "a": "How were your parents?",
+    "b": "二人とも元気でした。"
+   },
+   {
+    "a": "What were you doing at seven this morning?",
+    "b": "犬の散歩をしていました。"
+   },
+   {
+    "a": "Why didn't you answer the phone?",
+    "b": "シャワーを浴びていました。"
+   },
+   {
+    "a": "Were you sleeping at midnight?",
+    "b": "いいえ、まだ勉強していました。"
+   },
+   {
+    "a": "When did you start this job?",
+    "b": "3年前に始めました。"
+   },
+   {
+    "a": "What did you do on your day off?",
+    "b": "まず部屋を掃除して、それから映画を見に行きました。"
+   }
+  ]
+ },
+ "17": {
+  "theme": "will・be going to・現在進行形の未来",
+  "qs": [
+   {
+    "a": "The phone is ringing.",
+    "b": "私が出ます。"
+   },
+   {
+    "a": "It's cold in here.",
+    "b": "窓を閉めますね。"
+   },
+   {
+    "a": "What would you like to drink?",
+    "b": "オレンジジュースにします。"
+   },
+   {
+    "a": "Please don't tell anyone.",
+    "b": "誰にも言いません。約束します。"
+   },
+   {
+    "a": "You're always late!",
+    "b": "次は遅れずに来ます。"
+   },
+   {
+    "a": "This bag is so heavy.",
+    "b": "持ちますよ。"
+   },
+   {
+    "a": "Who do you think will win?",
+    "b": "日本が勝つと思います。"
+   },
+   {
+    "a": "Will the store be busy tomorrow?",
+    "b": "たぶん混まないと思います。"
+   },
+   {
+    "a": "Do you have any plans for the summer?",
+    "b": "北海道を旅行する予定です。"
+   },
+   {
+    "a": "What are you going to buy with your bonus?",
+    "b": "新しいパソコンを買うつもりです。"
+   },
+   {
+    "a": "Are you going to cook tonight?",
+    "b": "いいえ、今夜は料理しないつもりです。"
+   },
+   {
+    "a": "Is Yuki going to come to the party?",
+    "b": "はい、彼女も来る予定です。"
+   },
+   {
+    "a": "Why are you running?",
+    "b": "電車に乗り遅れそうなんです！"
+   },
+   {
+    "a": "Look at the sky.",
+    "b": "本当だ。雪が降りそうですね。"
+   },
+   {
+    "a": "Are you free tonight?",
+    "b": "いいえ、今夜は同僚とごはんを食べる約束があるんです。"
+   },
+   {
+    "a": "When are you leaving for Osaka?",
+    "b": "金曜日の朝に出発します。もう新幹線も取ってあります。"
+   },
+   {
+    "a": "What are you doing tomorrow afternoon?",
+    "b": "友達とテニスをする約束をしています。"
+   },
+   {
+    "a": "Are you working this Sunday?",
+    "b": "いいえ、今週の日曜日は仕事がありません。"
+   },
+   {
+    "a": "When does your English class start?",
+    "b": "4月3日に始まります。"
+   },
+   {
+    "a": "Can you come to the meeting at three?",
+    "b": "すみません、3時はお客さんと会う約束があって。あとでこちらから電話しますね。"
+   }
+  ]
+ },
+ "18": {
+  "theme": "when／while・未来進行形・be about to・時制のつなぎ",
+  "qs": [
+   {
+    "a": "When did you hurt your leg?",
+    "b": "スキーをしているときに転んだんです。"
+   },
+   {
+    "a": "When did you meet your wife?",
+    "b": "ロンドンで働いていたときに出会いました。"
+   },
+   {
+    "a": "What happened last night?",
+    "b": "テレビを見ていたら、停電しました。"
+   },
+   {
+    "a": "Did you see the accident?",
+    "b": "はい、バスを待っているときに見ました。"
+   },
+   {
+    "a": "What were you doing when I called?",
+    "b": "ちょうど夕飯を作っていました。"
+   },
+   {
+    "a": "When did it start to rain?",
+    "b": "歩いて家に帰っている途中で降り始めました。"
+   },
+   {
+    "a": "Why didn't you see my message?",
+    "b": "運転中だったので、スマホを見ていなかったんです。"
+   },
+   {
+    "a": "Can I call you at eight tonight?",
+    "b": "8時ごろは、ちょうど電車に乗っているところです。"
+   },
+   {
+    "a": "What will you be doing this time next week?",
+    "b": "ハワイのビーチでのんびりしていると思います。"
+   },
+   {
+    "a": "Will you be using your laptop this afternoon?",
+    "b": "いいえ、使いません。どうぞ。"
+   },
+   {
+    "a": "Will you be coming to the office tomorrow?",
+    "b": "はい、いつも通り9時から仕事をしていますよ。"
+   },
+   {
+    "a": "Where will you be living next year?",
+    "b": "来年の今ごろは、東京に住んでいると思います。"
+   },
+   {
+    "a": "Can you help me for a minute?",
+    "b": "ごめんなさい、ちょうど会議が始まるところなんです。"
+   },
+   {
+    "a": "Did you eat the cake?",
+    "b": "いいえ。食べようとしていたときに、母が帰ってきました。"
+   },
+   {
+    "a": "Are you going to bed?",
+    "b": "はい、ちょうど寝るところです。"
+   },
+   {
+    "a": "Did you send the email?",
+    "b": "送ろうとしたところで、パソコンが固まってしまったんです。"
+   },
+   {
+    "a": "How was your first day at work?",
+    "b": "そのときはとても緊張していました。"
+   },
+   {
+    "a": "Do you still talk to your old teacher?",
+    "b": "はい、今でも年に一度会います。"
+   },
+   {
+    "a": "What's your plan from now on?",
+    "b": "これからは、毎朝英語のニュースを聞くつもりです。"
+   },
+   {
+    "a": "How did you feel about the trip?",
+    "b": "そのときは疲れていましたが、今はいい思い出です。"
+   }
+  ]
+ },
+ "19": {
+  "theme": "used to・can／could・had to・was going to・Before／Now／Next",
+  "qs": [
+   {
+    "a": "Did you play any sports in school?",
+    "b": "昔はよくサッカーをしていました。"
+   },
+   {
+    "a": "Do you live in Tokyo?",
+    "b": "以前は東京に住んでいましたが、今は横浜です。"
+   },
+   {
+    "a": "Do you drink coffee?",
+    "b": "以前は飲みませんでしたが、今は毎日飲みます。"
+   },
+   {
+    "a": "Did you use to have long hair?",
+    "b": "はい、昔は長かったんです。"
+   },
+   {
+    "a": "Were you shy as a child?",
+    "b": "はい、昔は人前で話すのが苦手でした。"
+   },
+   {
+    "a": "Can you swim?",
+    "b": "子どもの頃は泳げませんでしたが、今は泳げます。"
+   },
+   {
+    "a": "How's your English?",
+    "b": "以前は英語の映画がわかりませんでしたが、今は字幕なしで少しわかります。"
+   },
+   {
+    "a": "Can you cook anything now?",
+    "b": "はい、今はカレーが作れます。"
+   },
+   {
+    "a": "Did you get tickets for the concert?",
+    "b": "はい、なんとか2枚取れました。"
+   },
+   {
+    "a": "Did you catch the last train?",
+    "b": "はい、走って間に合いました。"
+   },
+   {
+    "a": "Why were you late?",
+    "b": "忘れ物をして、途中で家に戻らないといけなかったんです。"
+   },
+   {
+    "a": "Did you work on Saturday?",
+    "b": "はい、急な仕事が入って、出勤しないといけなかったんです。"
+   },
+   {
+    "a": "Did you pay for parking?",
+    "b": "いいえ、払う必要はありませんでした。無料でした。"
+   },
+   {
+    "a": "Did you have to wait long?",
+    "b": "いいえ、待つ必要はありませんでした。"
+   },
+   {
+    "a": "Did you go to the gym yesterday?",
+    "b": "行くつもりだったんですが、雨が降っていたのでやめました。"
+   },
+   {
+    "a": "Why didn't you call me?",
+    "b": "電話するつもりだったんですが、忘れてしまいました。"
+   },
+   {
+    "a": "Did you buy the jacket?",
+    "b": "買うつもりでしたが、高すぎました。"
+   },
+   {
+    "a": "Tell me about your mornings.",
+    "b": "以前はよく朝食を抜いていましたが、今は毎朝食べています。"
+   },
+   {
+    "a": "What are you going to do next?",
+    "b": "次は週に2回ジョギングをするつもりです。"
+   },
+   {
+    "a": "How is your English study going?",
+    "b": "前は単語を覚えるのが嫌いでしたが、今はアプリで楽しく覚えられます。次は文法もやってみます。"
+   }
+  ]
+ }
+};
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const keys = Object.keys(DAYS);
+const tabs = document.getElementById('tabs');
+keys.forEach(d => {
+  const b = document.createElement('button');
+  b.className = 'tab'; b.textContent = 'Day' + d; b.dataset.day = d;
+  b.onclick = () => { location.hash = 'day' + d; };
+  tabs.appendChild(b);
+});
+function show(d){
+  if (!DAYS[d]) d = keys[0];
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.day === d));
+  document.getElementById('theme').textContent = 'Day' + d + ' の文法：' + DAYS[d].theme;
+  document.title = 'Week3 Day' + d + ' 確認問題プラス';
+  document.getElementById('list').innerHTML = DAYS[d].qs.map((q, i) => `
+    <div class="q">
+      <div class="q-head"><span class="q-num">Q${i+1}</span><span class="q-a">A: "${esc(q.a)}"</span></div>
+      <div class="q-body">
+        <div class="b-jp">B: 「${esc(q.b)}」</div>
+        <div class="b-label">B (English)：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</div>
+      </div>
+    </div>`).join('');
+  window.scrollTo(0, 0);
+}
+function fromHash(){ show((location.hash.match(/day(\d+)/) || [])[1]); }
+window.addEventListener('hashchange', fromHash);
+fromHash();
+</script>
+</body>
+</html>
