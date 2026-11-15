@@ -1859,9 +1859,11 @@ function splitRow(line) {
 // 「#」の見出しに加えて、決まった見出し名だけの行も見出しとして読む
 const normHead = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/\s/g, "");
 const SECTION_HEAD = /^(診断|重点[12]|よかったところ|Part[124]の解説|確認問題の答え)/;
-function headingOf(line) {
+// hashOnly：「#」の見出しがある返事では、「#」の行だけを見出しにする（確認問題の答えの中の「**重点1**」などを見出しにしない）
+function headingOf(line, hashOnly) {
   const l = line.trim();
   const h = l.match(/^#{1,6}\s*(.+?)\s*#*$/);
+  if (!h && hashOnly) return null;
   let s = h ? h[1] : l;
   s = s.replace(/^\*\*(.+?)\*\*[:：]?$/, "$1").replace(/^\*\*(.+?)\*\*/, "$1")
        .replace(/^[0-9０-９]+[.．)）]\s*/, "").replace(/^【(.+?)】/, "$1").trim();
@@ -1871,8 +1873,12 @@ function headingOf(line) {
 function parseSections(text) {
   const out = {};
   let key = null;
+  const hashOnly = text.split("\n").some(l => { const m = l.trim().match(/^#{1,6}\s*(.+)$/); return m && SECTION_HEAD.test(normHead(headingOf(l, true) || "")); });
   text.split("\n").forEach(line => {
-    const head = headingOf(line);
+    let head = headingOf(line, hashOnly);
+    // 同じ見出しが2回目に出てきたら（確認問題の答えの中の「重点1」など）、見出しにせず本文として読む
+    const name = head && (normHead(head).match(SECTION_HEAD) || [])[1];
+    if (name && Object.keys(out).some(k => normHead(k).startsWith(name))) head = null;
     if (head) { key = head; out[key] = []; }
     else if (key) out[key].push(line);
   });
