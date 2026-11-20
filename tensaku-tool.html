@@ -1042,8 +1042,128 @@ const WEEKS = {
       "リズム": "I think a good habit doesn't have to be difficult. を、大事な語で手をたたきながら5回",
       "リピート": "Week7 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
     }
+  },
+  "Week8": {
+    part1SheetId: "", // Part 1のフォームの回答シート（フォームを作ったら入れる）
+    focus: "関係詞（who・whose／which・that／where・when／what／how・why／whatever・however などの複合関係詞）",
+    part1Mode: "translate",
+    part1: [
+      { jp: "私には、毎朝ジョギングをする友達がいます。", target: "主格の who（人＋who＋動詞）", en: "I have a friend who jogs every morning." },
+      { jp: "彼女は、私が一番尊敬している先生です。", target: "目的格の who（人＋who＋主語＋動詞）", en: "She is the teacher who I respect the most." },
+      { jp: "彼は、私がいつも頼れる人です。", target: "前置詞が後ろに残る who（rely on）", en: "He is someone who I can always rely on." },
+      { jp: "私は、お母さんが医者の友達を知っています。", target: "所有格の whose（whose＋名詞）", en: "I know a friend whose mother is a doctor." },
+      { jp: "人前で話すのが苦手な生徒はたくさんいます。", target: "主格の who（主語を後ろから説明）", en: "There are many students who are not good at speaking in public." },
+      { jp: "これは、私の人生を変えた本です。", target: "主格の which・that（物＋which＋動詞）", en: "This is a book which changed my life." },
+      { jp: "これは、私が先週買ったかばんです。", target: "目的格の which・that（物＋which＋主語＋動詞）", en: "This is the bag which I bought last week." },
+      { jp: "彼女は、私が今でも覚えている話をしてくれました。", target: "目的格の that", en: "She told me a story that I still remember." },
+      { jp: "ここは、私がリラックスできる場所です。", target: "関係副詞 where（場所＋where＋主語＋動詞）", en: "This is a place where I can relax." },
+      { jp: "私は、初めて彼に会った日を覚えています。", target: "関係副詞 when（時＋when＋主語＋動詞）", en: "I remember the day when I first met him." },
+      { jp: "私が住んでいる町は、海の近くにあります。", target: "where（主語を後ろから説明する）", en: "The town where I live is near the sea." },
+      { jp: "私に必要なのは、もっと練習することです。", target: "what（〜すること・もの）が主語", en: "What I need is more practice." },
+      { jp: "これは、私が毎日使っているものです。", target: "what が補語（the thing を入れない）", en: "This is what I use every day." },
+      { jp: "私は、先生が言ったことを覚えています。", target: "what が目的語", en: "I remember what my teacher said." },
+      { jp: "この仕事の好きなところは、いろいろな人に会えることです。", target: "What I like about ～ is that …", en: "What I like about this job is that I can meet many different people." },
+      { jp: "それが、私が彼を信頼している理由です。", target: "That is why …", en: "That is why I trust him." },
+      { jp: "私は、彼がどうやってその問題を解決したのか知りたいです。", target: "how＋主語＋動詞（疑問文の語順にしない）", en: "I want to know how he solved the problem." },
+      { jp: "私は、なぜ彼女が怒っていたのか分かりません。", target: "why＋主語＋動詞（疑問文の語順にしない）", en: "I don't know why she was angry." },
+      { jp: "これが、私が英語を勉強する方法です。", target: "how・the way（the way how にしない）", en: "This is how I study English." },
+      { jp: "あなたが日本に来た理由は何ですか？", target: "the reason why …", en: "What is the reason why you came to Japan?" },
+      { jp: "何が起きても、私はあなたの味方です。", target: "whatever（何が〜しても）", en: "Whatever happens, I'm on your side." },
+      { jp: "どんなに疲れていても、私は毎晩日記を書きます。", target: "however＋形容詞＋主語＋動詞", en: "However tired I am, I write in my diary every night." },
+      { jp: "いつ会っても、彼は笑顔です。", target: "whenever（いつ〜しても）", en: "Whenever I see him, he is smiling." },
+      { jp: "好きな本をどれでも選んでいいですよ。", target: "whichever＋名詞", en: "You can choose whichever book you like." }
+    ],
+    // Part 2：瞬間英作文（Week8 の50問から各日2問）
+    part2: [
+      { jp: "私にやる気をくれる人は、兄です。", en: "The person who motivates me is my older brother." },
+      { jp: "彼女は、私がピアノを習った先生です。", en: "She is the teacher who I learned the piano from." },
+      { jp: "それは、駅の近くにある小さな本屋です。", en: "It is a small bookstore which is near the station." },
+      { jp: "そこは、私が子どもの頃によく遊んだ公園です。", en: "It is the park where I often played when I was a child." },
+      { jp: "私が毎朝飲むものは、コーヒーです。", en: "What I drink every morning is coffee." },
+      { jp: "私は、彼が言ったことが理解できませんでした。", en: "I couldn't understand what he said." },
+      { jp: "私には、お父さんが料理人の友達がいます。", en: "I have a friend whose father is a chef." },
+      { jp: "あなたが英語を勉強している理由は何ですか？", en: "What is the reason why you study English?" },
+      { jp: "私を変えた1冊は、ある料理の本です。", en: "One book that changed me is a cookbook." },
+      { jp: "どこへ行っても、私はカメラを持っていきます。", en: "Wherever I go, I take my camera with me." }
+    ],
+    // Part 3 1️⃣ 音読：評価箇所から逆算した本文。5観点×4項目（1項目1点・20点満点）。生徒には評価箇所を知らせない
+    reading: {
+      passage: "The person who taught me the most is my grandmother. She lives in a small town where everyone knows each other. She has a garden which she takes care of every morning. What I love about her is her laugh. I used to think cooking was boring, but she showed me how to make rice balls. I still remember the day when we cooked together. That is the reason why I visit her whenever I have time.",
+      viewpoints: [
+        { name: "流暢さ", target: "She lives in a small town where everyone knows each other.", items: [
+          { label: "止まらない", look: "途中で2秒以上止まらずに読めたか", groups: ["流暢さ"], syms: ["fl-stop"] },
+          { label: "言い直さない", look: "戻って読み直していないか", groups: ["流暢さ"], syms: ["fl-redo"] },
+          { label: "正しく読む", look: "読み間違い・飛ばし・付け足しがないか", groups: ["流暢さ"], syms: ["fl-miss", "fl-skip"] },
+          { label: "かたまりで読む", look: "She lives ／ in a small town ／ where everyone knows each other", groups: ["流暢さ"], syms: ["fl-word", "fl-chunk"] }
+        ] },
+        { name: "個別の音", items: [
+          { label: "think", look: "th（/θ/）", groups: ["th"], syms: ["th-s", "th-t"], words: ["think"] },
+          { label: "visit", look: "v（下唇に歯を当てる）", groups: ["v"], syms: ["v-b"], words: ["visit"] },
+          { label: "laugh", look: "/æ/（LAF）", groups: ["/æ/"], syms: ["ae-a", "ae-e"], words: ["laugh"] },
+          { label: "love", look: "/ʌ/（口をあまり開けない短い「ア」）", groups: ["/ʌ/"], syms: ["uh-a", "uh-o"], words: ["love"] }
+        ] },
+        { name: "リンキング", items: [
+          { label: "lives in", look: "z と i をつなげる（リヴズィン）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["lives"] },
+          { label: "care of", look: "r と o をつなげる（ケアロヴ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["care"] },
+          { label: "What I", look: "t と I をつなげる（ワライ）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["What"] },
+          { label: "visit her", look: "her の h を弱くしてつなげる（ヴィズィター）", groups: ["リンキング"], syms: ["ln-cut", "ln-vowel"], words: ["visit", "her"] }
+        ] },
+        { name: "アクセント", items: [
+          { label: "grandmother", look: "GRAND を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["grandmother"], tip: "grandmother は最初の GRAND を強く読みます（ˈɡrænmʌðər）。「グランマザー」の「グラン」を大きく言い、後ろは弱く短くしましょう。" },
+          { label: "everyone", look: "EV を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["everyone"], tip: "everyone は最初の EV を強く読みます（ˈevriwʌn）。「エヴリワン」の「エ」を大きく言いましょう。" },
+          { label: "remember", look: "MEM を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["remember"], tip: "remember は真ん中の MEM を強く読みます（rɪˈmembər）。最初の re は弱く短く、「メン」を大きく言いましょう。" },
+          { label: "together", look: "GE を強く", groups: ["アクセント"], syms: ["acc-pos", "acc-flat"], words: ["together"], tip: "together は真ん中の GE を強く読みます（təˈɡeðər）。最初の to は弱く「タ」くらいで、「ゲ」を大きく言いましょう。" }
+        ] },
+        { name: "リズム・抑揚", target: "That is the reason why I visit her whenever I have time.", items: [
+          { label: "大事な語を強く", look: "reason・visit・whenever・time を強く", groups: ["リズム"], syms: ["rh-weak"] },
+          { label: "小さな語を弱く", look: "That is the・why I・her・I have を弱く短く", groups: ["リズム"], syms: ["rh-strong"] },
+          { label: "かたまりで区切る", look: "That is the reason ／ why I visit her ／ whenever I have time", groups: ["リズム"], syms: ["rh-chunk"] },
+          { label: "文末を下げる", look: "time で下げて終わる", groups: ["リズム"], syms: ["rh-up"] }
+        ] }
+      ]
+    },
+    // Part 3 2️⃣ リピート：発音リスニングトレーニング PART2（シャドーイング、自然な速さ）から各デイ1文。
+    // 本文と音声を自動で照らし合わせて（pocketsphinx）文の位置を決め、切り出した音声を本文なしの聞き取りでも確かめている
+    repeat: [
+      { day: "Day54", text: "Wherever he goes, its image follows him.", chunks: ["Wherever he goes,", "its image follows him."] },
+      { day: "Day50", text: "The person who inspires me is my English teacher.", chunks: ["The person who inspires me", "is my English teacher."] },
+      { day: "Day51", text: "It feels like a puzzle that the city has left behind.", chunks: ["It feels like a puzzle", "that the city has left behind."] },
+      { day: "Day52", text: "What I use every day for English is the photo gallery on my phone.", chunks: ["What I use every day for English", "is the photo gallery on my phone."] },
+      { day: "Day53", text: "I have a friend whose curiosity helps me see ordinary days differently.", chunks: ["I have a friend whose curiosity", "helps me see ordinary days differently."] }
+    ],
+    repeatPage: "week8-kakunin-repeat.html",
+    supportLine: { part2: 17, part3: 35 }, // 9割未満（Part 2：18/20未満、Part 3：音読＋リピートの合計 36/40未満）
+    part4theme: "私に影響を与えた人（どんな人か／その人とどんなことがあったか／それで自分がどう変わったか）",
+    speakingPoints: [
+      { title: "人や物を説明する", detail: "who・which・that を1回以上使う" },
+      { title: "場所や時を説明する", detail: "where・when を1回以上使う" },
+      { title: "「〜なこと」を言う", detail: "what（What I like about ～ is … など）を1回以上使う" },
+      { title: "見直す", detail: "関係詞のあとに主語・動詞がそろっているか、it・her などを二重に入れていないか確認する" }
+    ],
+    weakTypes: {
+      grammar: "正解／主格の who・which・that／目的格の who・which・that／前置詞が後ろに残る形／whose／where と which の使い分け／when／what（the thing を入れない）／how・why の語順（疑問文の語順にする）／the way how／That is why／複合関係詞（whatever・however など）／関係詞の後ろに it などを二重に入れる／関係詞の抜け（説明の文をつなげられない）／動詞の数（先行詞に合わせる）／時制／三単現／冠詞・所有格／前置詞／語彙／語順（日本語の順）／未回答／その他",
+      pattern: "",
+      sound: "流暢さ／th／v／/æ/／/ʌ/／リンキング／アクセント／リズム／リピート／その他"
+    },
+    // 直し方の例文を、この週の本文に合わせる（ない項目は共通の文を使う）
+    symTips: {
+      "fl-word": "She lives ／ in a small town ／ where everyone knows each other のように、意味のかたまりごとにまとめて読みましょう。かたまりの中は止めずにつなげます。",
+      "fl-chunk": "区切るのは、意味のかたまりの切れ目（where・which・when の前など）だけにしましょう。small ／ town のように、かたまりの途中で切らないようにします。",
+      "fl-miss": "読む前に一度黙読して、知らない単語や似た形の単語（laugh と late など）を確かめておきましょう。",
+      "ln-cut": "前の語が子音（z・r・t など）で終わり、次の語が母音で始まるときは、つなげて1語のように読みます。lives in は「リヴズィン」、What I は「ワライ」のイメージです。",
+      "ln-vowel": "最後の子音のあとに「ズ」「ト」などの母音を入れず、そのまま次の語の母音につなげます。ゆっくり「lives-in」と言ってから、だんだん速くしてつなげる練習をしましょう。",
+      "rh-weak": "意味を伝える語（reason・visit・whenever・time など）は、大きく・はっきり・少し長めに読みましょう。",
+      "rh-strong": "That is the・why I・her などは、弱く短く、次の語にくっつけるように読みます。強弱の差があると英語らしいリズムになります。",
+      "rh-chunk": "That is the reason ／ why I visit her ／ whenever I have time のように、意味のかたまりの切れ目で区切りましょう。"
+    },
+    drills: {
+      "リンキング": "lives in・care of・What I・visit her を、ゆっくり→速くの順でつなげて5回ずつ",
+      "リズム": "That is the reason why I visit her whenever I have time. を、大事な語で手をたたきながら5回",
+      "リピート": "Week8 のシャドーイング音声を1文ずつ止めて聞き、本文を見ずにすぐまねして言う（1日1デイ分）"
+    }
   }
 };
+
 
 // 2回目の受験：中身は元の週と同じ。週の名前を分けて、1回目の Notion・記録シート・生徒ページを上書きしない
 // （回答シートは元の週と同じ。同じ名前の回答は新しいほうが読み込まれる）
